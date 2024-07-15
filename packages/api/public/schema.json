@@ -1,19 +1,19 @@
  {
-  "$schema": "",
-  "$id": "",
-  "title": "L0002",
-  "description": "A starter language",
-  "type": "object",
-  "properties": {
-    "hello": {
-      "description": "The person, place or thing being greeted",
-      "type": "string",
-    },
-    "theme": {
-      "description": "Light or dark theme",
-      "type": "string",
-      "enum": ["light", "dark"],
-    }
-  },
-  "required": ["hello"]
-}
+   "$schema": "",
+   "$id": "",
+   "title": "L0158",
+   "description": "A language for Learnosity integrations",
+   "type": "object",
+   "properties": {
+     "hello": {
+       "description": "The person, place or thing being greeted",
+       "type": "string",
+     },
+     "theme": {
+       "description": "Light or dark theme",
+       "type": "string",
+       "enum": ["light", "dark"],
+     }
+   },
+   "required": ["hello"]
+ }
