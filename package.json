@@ -25,5 +25,9 @@
       "<rootDir>/packages/",
       "<rootDir>/node_modules/"
     ]
+  },
+  "dependencies": {
+    "fetch": "^1.1.0",
+    "node-fetch": "^3.3.2"
   }
 }

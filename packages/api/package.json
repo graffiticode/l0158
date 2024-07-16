@@ -18,11 +18,13 @@
     "errorhandler": "^1.5.1",
     "graphql-request": "^6.1.0",
     "hashids": "^2.3.0",
+    "learnosity-sdk-nodejs": "github:Learnosity/learnosity-sdk-nodejs",
     "method-override": "^3.0.0",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",
