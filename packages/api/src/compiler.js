@@ -104,9 +104,7 @@ export class Transformer extends BasisTransformer {
       const data = options?.data || {};
       const err = e0;
       const val = v0.pop();
-      resume(err, {
-        val,
-      });
+      resume(err, val);
     });
   }
 }
