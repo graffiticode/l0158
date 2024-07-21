@@ -6,7 +6,7 @@ import { buildQuestionsApi } from "./questions.js";
 const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
 const secret = process.env.LEARNOSITY_SECRET;
-
+const domain = process.env.AUTH_URL && "localhost" || "graffiticode.com";
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
   Checker as BasisChecker,
@@ -15,9 +15,9 @@ import {
 } from '@graffiticode/basis';
 
 const baseUrl = 'https://data.learnosity.com/v2024.1.LTS';
-const dataApi = buildDataApi({baseUrl});
-const items = buildItemsApi({sdk, key, secret, dataApi});
-const questions = buildQuestionsApi({sdk, key, secret, dataApi});
+const dataApi = buildDataApi({baseUrl, domain});
+const items = buildItemsApi({sdk, key, secret, domain, dataApi});
+const questions = buildQuestionsApi({sdk, key, secret, domain, dataApi});
 
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
