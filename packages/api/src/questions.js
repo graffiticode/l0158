@@ -1,8 +1,9 @@
 import { v4 as uuid } from "uuid";
 const route = "/itembank/questions";
 
-export const buildQuestionsApi = ({ sdk, key, secret, domain, dataApi }) => async () => {
+export const buildQuestionsApi = ({ sdk, key, secret, domain, dataApi }) => async ({ questions }) => {
   console.log("buildQuestionsApi() domain=" + domain);
+  console.log("buildQuestionsApi() questions=" + JSON.stringify(questions, null, 2));
   const user_id = uuid();    // Generate a UUID for the user ID
   const session_id = uuid(); // Generate a UUID for the session ID
   const data = sdk.init( // Set Learnosity init options
@@ -16,21 +17,7 @@ export const buildQuestionsApi = ({ sdk, key, secret, domain, dataApi }) => asyn
     {
       "id": "x0001",
       "name": "Test",
-      questions: [
-        {
-          response_id: '60005',
-          type: 'association',
-          stimulus: 'Match the cities to the parent nation.',
-          stimulus_list: ['London', 'Dublin', 'Paris', 'Sydney'],
-          possible_responses: ['Australia', 'France', 'Ireland', 'England'],
-          validation: {
-            valid_responses: [
-              ['England'],['Ireland'],['France'],['Australia']
-            ]
-          },
-          instant_feedback: true
-        }
-      ],
+      questions,
       session_id,
     },
   );

@@ -93,14 +93,11 @@ export const View = () => {
   }
 
   return (
-    <div className="border border-1">
-      <h2>Question 1</h2>
+    <>
       <span className="learnosity-response question-60005"></span>
       {
-          isNonNullNonEmptyObject(state.data) &&
-            <Form state={state} /> ||
-              <div />
+          isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
       }
-    </div>
+    </>
   );
 }
