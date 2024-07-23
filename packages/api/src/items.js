@@ -1,10 +1,9 @@
 import { v4 as uuid } from "uuid";
 const route = "/itembank/items";
 
-export const buildItemsApi = ({ sdk, key, secret, dataApi }) => async () => {
+export const buildItemsApi = ({ sdk, key, secret, domain, dataApi }) => async () => {
   const user_id = uuid();    // Generate a UUID for the user ID
   const session_id = uuid(); // Generate a UUID for the session ID
-  const domain = 'localhost';   // Set the domain
   const data = sdk.init(  // Set Learnosity init options
     'data', // Select Data API
     {

@@ -1,7 +1,7 @@
 import LearnositySDK from "learnosity-sdk-nodejs";
 import { buildDataApi } from "./dataapi.js";
 import { buildItemsApi } from "./items.js";
-import { buildQuestionsApi } from "./questions.js";
+import { buildCreateQuestions } from "./questions.js";
 
 const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
@@ -17,7 +17,7 @@ import {
 const baseUrl = 'https://data.learnosity.com/v2024.1.LTS';
 const dataApi = buildDataApi({baseUrl, domain});
 const items = buildItemsApi({sdk, key, secret, domain, dataApi});
-const questions = buildQuestionsApi({sdk, key, secret, domain, dataApi});
+const createQuestions = buildCreateQuestions({sdk, key, secret, domain, dataApi});
 
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
@@ -79,7 +79,7 @@ export class Transformer extends BasisTransformer {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const data = options?.data || {};
         const err = [];
-        const val = await questions({questions: v0});
+        const val = await createQuestions({questions: v0, save: true});
         resume(err, val);
       });
     });
