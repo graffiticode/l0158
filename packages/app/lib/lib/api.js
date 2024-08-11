@@ -5,6 +5,11 @@ function getApiUrl() {
   return host.indexOf("localhost") === 0 && "http://localhost:3100" || "https://api.graffiticode.com";
 }
 
+function getLangUrl() {
+  const host = window.document.location.host;
+  return host.indexOf("localhost") === 0 && "http://localhost:50158" || "https://l0158.graffiticode.org";
+}
+
 export const getApiTask = async ({ auth, id }) => {
   try {
     const headers = { "Authorization": auth.token };
@@ -43,8 +48,8 @@ export const postApiCompile = async ({ accessToken, id, data }) => {
       authorization: accessToken,
       "x-graffiticode-storage-type": "persistent",
     };
-    const apiUrl = getApiUrl();
-    const post = bent(apiUrl, "POST", "json", headers);
+    const baseUrl = getApiUrl();
+    const post = bent(baseUrl, "POST", "json", headers);
     const body = { id, data };
     const resp = await post('/compile', body);
     if (resp.status !== "success") {
@@ -62,15 +67,14 @@ export const postLangCompile = async ({ accessToken, code, data }) => {
     const headers = {
       authorization: accessToken,
     };
-    const post = bent("", "POST", "json", headers);
+    const baseUrl = getLangUrl();
+    const post = bent(baseUrl, "POST", "json", headers);
     const body = { code, data };
     const resp = await post('/compile', body);
-    if (resp.status !== "success") {
-      throw new Error(`failed to post compile ${id}: ${error.message}`);
-    }
-    return resp.data;
+    console.log("postLangCompile() resp=" + JSON.stringify(resp, null, 2));
+    return resp;
   } catch (err) {
-    console.log("postApiCompile() err=" + err);
+    console.log("postLangCompile() err=" + err);
     throw err;
   }
 };

@@ -1,4 +1,4 @@
-import { postApiCompile, getApiData } from "../lib/api";
+import { postApiCompile, getApiData, postLangCompile } from "../lib/api";
 
 export const compile = async ({ accessToken, id, data }) => {
   try {
@@ -92,8 +92,9 @@ const code = {
 export const initRequest = async ({ accessToken, data }) => {
   console.log("initRequest() data=" + JSON.stringify(data, null, 2));
   try {
-    return await getLangCompile({accessToken, code, data});
+    return await postLangCompile({accessToken, code, data});
   } catch (err) {
+    console.log(x.stack);
     throw err;
   }
 };

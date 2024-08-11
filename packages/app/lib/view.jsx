@@ -21,6 +21,7 @@ export const View = () => {
   const [ recompile, setRecompile ] = useState(false);
   const [ doInit, setDoInit ] = useState(false);
   const [ height, setHeight ] = useState(0);
+  const [ data, setData ] = useState({});
 
   useEffect(() => {
     if (window.location.search) {
@@ -39,7 +40,7 @@ export const View = () => {
   }, [id]);
 
   const [ state ] = useState(createState({}, (data, { type, args }) => {
-    console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
+    // console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
     switch (type) {
     case "compiled":
       return {
@@ -67,10 +68,7 @@ export const View = () => {
   );
 
   if (dataResp.data) {
-    state.apply({
-      type: "compiled",
-      args: dataResp.data,
-    });
+    setData(dataResp.data);
     setDoGetData(false);
     setDoInit(true);
   }
@@ -85,23 +83,26 @@ export const View = () => {
   );
 
   if (compileResp.data) {
+    setData(dataResp.data);
+    setRecompile(false);
     setDoInit(true);
   }
 
   const initResp = useSWR(
-    doInit && compileResp.data && {
-    accessToken,
-    data: compileResp.data
+    doInit && data && {
+      accessToken,
+      data,
   }, initRequest);
   
-  if (initResp.data) {
-    setDoInit(false);
-    state.apply({
-      type: "compiled",
-      args: initResp.data,
-    });
-    setRecompile(false);
-  }
+  useEffect(() => {
+    if (initResp.data) {
+      setDoInit(false);
+      state.apply({
+        type: "compiled",
+        args: initResp.data,
+      });
+    }
+  }, [initResp.data]);
 
   return (
     <>

@@ -74,7 +74,6 @@ export const Form = ({ state }) => {
   }, []);
   useEffect(() => {
     if (scriptLoaded) {
-      console.log("Form() request=" + JSON.stringify(request, null, 2));
       const LearnosityApp = (window as any).LearnosityApp;
       LearnosityApp.init(request, {
         readyListener: () => {
