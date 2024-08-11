@@ -18,3 +18,82 @@ export const getData = async ({ accessToken, id }) => {
     throw err;
   }
 };
+
+const code = {
+  "1": {
+    "elts": [
+      "init"
+    ],
+    "tag": "IDENT"
+  },
+  "2": {
+    "elts": [
+      "data"
+    ],
+    "tag": "IDENT"
+  },
+  "3": {
+    "elts": [],
+    "tag": "RECORD"
+  },
+  "4": {
+    "elts": [
+      1,
+      2,
+      3
+    ],
+    "tag": "EXPRS"
+  },
+  "5": {
+    "elts": [
+      "RECORD"
+    ],
+    "tag": "IDENT"
+  },
+  "6": {
+    "elts": [
+      3
+    ],
+    "tag": "DATA"
+  },
+  "7": {
+    "elts": [
+      "DATA"
+    ],
+    "tag": "IDENT"
+  },
+  "8": {
+    "elts": [
+      6
+    ],
+    "tag": "INIT"
+  },
+  "9": {
+    "elts": [
+      "INIT"
+    ],
+    "tag": "IDENT"
+  },
+  "10": {
+    "elts": [
+      8
+    ],
+    "tag": "EXPRS"
+  },
+  "11": {
+    "elts": [
+      10
+    ],
+    "tag": "PROG"
+  },
+  "root": 11
+};
+
+export const initRequest = async ({ accessToken, data }) => {
+  console.log("initRequest() data=" + JSON.stringify(data, null, 2));
+  try {
+    return await getLangCompile({accessToken, code, data});
+  } catch (err) {
+    throw err;
+  }
+};

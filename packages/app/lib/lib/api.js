@@ -57,6 +57,24 @@ export const postApiCompile = async ({ accessToken, id, data }) => {
   }
 };
 
+export const postLangCompile = async ({ accessToken, code, data }) => {
+  try {
+    const headers = {
+      authorization: accessToken,
+    };
+    const post = bent("", "POST", "json", headers);
+    const body = { code, data };
+    const resp = await post('/compile', body);
+    if (resp.status !== "success") {
+      throw new Error(`failed to post compile ${id}: ${error.message}`);
+    }
+    return resp.data;
+  } catch (err) {
+    console.log("postApiCompile() err=" + err);
+    throw err;
+  }
+};
+
 // export const postCompile = async ({ id, data }) => {
 //   const query = gql`
 //     mutation (id: String!, data: String!) {

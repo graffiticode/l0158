@@ -76,10 +76,9 @@ export const Form = ({ state }) => {
     if (scriptLoaded) {
       console.log("Form() request=" + JSON.stringify(request, null, 2));
       const LearnosityApp = (window as any).LearnosityApp;
-      const questionsApp = LearnosityApp.init(request, {
+      LearnosityApp.init(request, {
         readyListener: () => {
           console.log("ready");
-          console.log("questions=" + JSON.stringify(questionsApp.questions()));
         },
         errorListener(err) {
           console.log('error', err);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { Form } from "./components";
 import { createState } from "./lib/state";
-import { compile, getData } from './swr/fetchers';
+import { compile, getData, initRequest } from './swr/fetchers';
 import assert from "assert";
 import './index.css';
 
@@ -19,6 +19,7 @@ export const View = () => {
   const [ accessToken, setAccessToken ] = useState();
   const [ doGetData, setDoGetData ] = useState(true);
   const [ recompile, setRecompile ] = useState(false);
+  const [ doInit, setDoInit ] = useState(false);
   const [ height, setHeight ] = useState(0);
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export const View = () => {
   }, [id]);
 
   const [ state ] = useState(createState({}, (data, { type, args }) => {
-    // console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
+    console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
     switch (type) {
     case "compiled":
       return {
@@ -66,12 +67,12 @@ export const View = () => {
   );
 
   if (dataResp.data) {
-    assert(dataResp.data.data === undefined);
     state.apply({
       type: "compiled",
       args: dataResp.data,
     });
     setDoGetData(false);
+    setDoInit(true);
   }
 
   const compileResp = useSWR(
@@ -84,10 +85,20 @@ export const View = () => {
   );
 
   if (compileResp.data) {
-    assert(compileResp.data.data === undefined);
+    setDoInit(true);
+  }
+
+  const initResp = useSWR(
+    doInit && compileResp.data && {
+    accessToken,
+    data: compileResp.data
+  }, initRequest);
+  
+  if (initResp.data) {
+    setDoInit(false);
     state.apply({
       type: "compiled",
-      args: compileResp.data,
+      args: initResp.data,
     });
     setRecompile(false);
   }
