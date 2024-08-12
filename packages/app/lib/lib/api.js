@@ -71,7 +71,6 @@ export const postLangCompile = async ({ accessToken, code, data }) => {
     const post = bent(baseUrl, "POST", "json", headers);
     const body = { code, data };
     const resp = await post('/compile', body);
-    console.log("postLangCompile() resp=" + JSON.stringify(resp, null, 2));
     return resp;
   } catch (err) {
     console.log("postLangCompile() err=" + err);

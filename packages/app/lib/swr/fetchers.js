@@ -90,7 +90,6 @@ const code = {
 };
 
 export const initRequest = async ({ accessToken, data }) => {
-  console.log("initRequest() data=" + JSON.stringify(data, null, 2));
   try {
     return await postLangCompile({accessToken, code, data});
   } catch (err) {

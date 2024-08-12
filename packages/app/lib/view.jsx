@@ -17,8 +17,7 @@ function isNonNullNonEmptyObject(obj) {
 export const View = () => {
   const [ id, setId ] = useState();
   const [ accessToken, setAccessToken ] = useState();
-  const [ doGetData, setDoGetData ] = useState(true);
-  const [ recompile, setRecompile ] = useState(false);
+  const [ doRecompile, setDoRecompile ] = useState(false);
   const [ doInit, setDoInit ] = useState(false);
   const [ height, setHeight ] = useState(0);
   const [ data, setData ] = useState({});
@@ -35,7 +34,7 @@ export const View = () => {
   useEffect(() => {
     // If `id` changes, then recompile.
     if (id) {
-      setDoGetData(true);
+      setDoRecompile(true);
     }
   }, [id]);
 
@@ -48,7 +47,7 @@ export const View = () => {
         ...args,
       };
     case "change":
-      setRecompile(true);
+      setDoRecompile(true);
       return {
         ...data,
         ...args,
@@ -59,22 +58,8 @@ export const View = () => {
     }
   }));
 
-  const dataResp = useSWR(
-    doGetData && id && {
-      accessToken,
-      id,
-    },
-    getData
-  );
-
-  if (dataResp.data) {
-    setData(dataResp.data);
-    setDoGetData(false);
-    setDoInit(true);
-  }
-
   const compileResp = useSWR(
-    recompile && accessToken && id && {
+    doRecompile && accessToken && id && {
       accessToken,
       id,
       data: state.data,
@@ -83,8 +68,8 @@ export const View = () => {
   );
 
   if (compileResp.data) {
-    setData(dataResp.data);
-    setRecompile(false);
+    setData(compileResp.data);
+    setDoRecompile(false);
     setDoInit(true);
   }
 

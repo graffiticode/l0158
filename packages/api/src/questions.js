@@ -21,7 +21,7 @@ export const buildInitQuestions = ({
   save,
 }) => {
   // Construct a question api request and save questions to item bank.
-//  console.log("buildInitQuestions() save=" + save + " data=" + JSON.stringify(data, null, 2));
+  //console.log("buildInitQuestions() domain=" + domain + " data=" + JSON.stringify(data, null, 2));
   // if (save) {
   //   const { questions } = data;
   //   const questionsRef = uuid();
@@ -78,15 +78,19 @@ export const buildInitQuestions = ({
   //   console.log("createQuestions() itemsResp=" + JSON.stringify(itemsResp, null, 2));
   // }
   const user_id = uuid();
-  return sdk.init(
+  const consumer = {
+    consumer_key: key,
+    domain,
+    user_id,
+  };
+  console.log("initQuestions() consumer=" + JSON.stringify(consumer, null, 2));
+  const signedRequest = sdk.init(
     'questions',
-    {
-      consumer_key: key,
-      domain,
-      user_id,
-    },
+    consumer,
     secret,
     data
   );
+  console.log("initQuestions() signedRequest=" + JSON.stringify(signedRequest, null, 2));
+  return signedRequest;
 }
 
