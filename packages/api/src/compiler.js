@@ -6,7 +6,8 @@ import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
 const secret = process.env.LEARNOSITY_SECRET;
-const domain = process.env.AUTH_URL && "localhost" || "graffiticode.com";
+console.log("process.env=" + JSON.stringify(process.env, null, 2));
+const domain = process.env.AUTH_URL && "localhost" || "console.graffiticode.com";
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
   Checker as BasisChecker,
