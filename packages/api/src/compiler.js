@@ -7,7 +7,7 @@ const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
 const secret = process.env.LEARNOSITY_SECRET;
 console.log("process.env=" + JSON.stringify(process.env, null, 2));
-const domain = process.env.AUTH_URL && "localhost" || "graffiticode.org";
+const domain = process.env.AUTH_URL && "localhost" || "l0158.graffiticode.org";
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
   Checker as BasisChecker,
