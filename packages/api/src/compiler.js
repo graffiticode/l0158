@@ -1,6 +1,6 @@
 import LearnositySDK from "learnosity-sdk-nodejs";
 import { buildDataApi } from "./dataapi.js";
-import { buildItemsApi } from "./items.js";
+import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 
 const sdk = new LearnositySDK();
@@ -17,7 +17,8 @@ import {
 
 const baseUrl = 'https://data.learnosity.com/v2024.1.LTS';
 const dataApi = buildDataApi({baseUrl, domain});
-const items = buildItemsApi({sdk, key, secret, domain, dataApi});
+const createItems = buildCreateItems({sdk, key, secret, domain, dataApi});
+const initItems = buildInitItems({sdk, key, secret, domain});
 const createQuestions = buildCreateQuestions({sdk, key, secret, domain, dataApi});
 const initQuestions = buildInitQuestions({sdk, key, secret, domain});
 
@@ -56,7 +57,7 @@ export class Transformer extends BasisTransformer {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const data = options?.data || {};
       const err = [];
-      const val = await items({});
+      const val = v0;
       resume(err, val);
     });
   }
@@ -71,6 +72,9 @@ export class Transformer extends BasisTransformer {
       case "questions":
         val = await initQuestions(v0);
         break;
+      case "items":
+        val = await initItems(v0);
+        break;
       }
       resume(err, val);
     });
@@ -81,7 +85,7 @@ export class Transformer extends BasisTransformer {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const data = options?.data || {};
         const err = [];
-        const val = await items({
+        const val = await createItems({
           ...v0,
           ...v1,
           ...data,

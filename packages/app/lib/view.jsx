@@ -39,7 +39,7 @@ export const View = () => {
   }, [id]);
 
   const [ state ] = useState(createState({}, (data, { type, args }) => {
-    // console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
+    console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
     switch (type) {
     case "compiled":
       return {
@@ -91,9 +91,9 @@ export const View = () => {
 
   return (
     <>
-      <span className="learnosity-response question-60005"></span>
+      <span id="learnosity_assess" />
       {
-          isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
+        isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
       }
     </>
   );

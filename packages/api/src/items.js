@@ -1,26 +1,98 @@
 import { v4 as uuid } from "uuid";
-const route = "/itembank/items";
 
-export const buildItemsApi = ({ sdk, key, secret, domain, dataApi }) => async () => {
-  const user_id = uuid();    // Generate a UUID for the user ID
-  const session_id = uuid(); // Generate a UUID for the session ID
-  const data = sdk.init(  // Set Learnosity init options
-    'data', // Select Data API
-    {
-      consumer_key: key,
-      domain: 'localhost',
+export const buildCreateItems = ({
+  sdk,
+  key,
+  secret,
+  domain,
+  dataApi
+}) => async ({
+  items,
+  save
+}) => {
+  let itemsRef;
+  // if (save) {
+  //   itemsRef = uuid();
+  //   const itemsReq = sdk.init(
+  //     'data',
+  //     {
+  //       consumer_key: key,
+  //       domain,
+  //     },
+  //     secret,
+  //     {
+  //       items: [{
+  //         type: items[0].type,
+  //         reference: itemsRef,
+  //         data: items[0],
+  //       }],
+  //     },
+  //     "set",
+  //   );
+  //   const itemsResp = await dataApi({
+  //     route: "/itembank/items",
+  //     request: itemsReq,
+  //   });
+  //   const itemsRef = uuid();
+  //   const itemsReq = sdk.init(
+  //     'data',
+  //     {
+  //       consumer_key: key,
+  //       domain,
+  //     },
+  //     secret,
+  //     {
+  //       items: [{
+  //         reference: itemsRef,
+  //         definition: {
+  //           widgets: [{
+  //             reference: itemsRef,
+  //           }],
+  //         },
+  //         items: [{
+  //           reference: questionsRef,
+  //         }],
+  //       }],
+  //     },
+  //     "set",
+  //   );
+  //   const itemsResp = await dataApi({
+  //     route: "/itembank/items",
+  //     request: itemsReq,
+  //   });
+  // }
+  return {
+    type: "items",
+    data: {
+      "id": "x0001",
+      "name": "Test",
+      items,
+      session_id: uuid(),
     },
+    itemsRef,
+  };
+};
+
+export const buildInitItems = ({
+  sdk,
+  key,
+  secret,
+  domain,
+}) => async ({
+  data,
+}) => {
+  // Construct a question api request and save items to item bank.
+  const user_id = uuid();
+  const consumer = {
+    consumer_key: key,
+    domain,
+    user_id,
+  };
+  const signedRequest = sdk.init(
+    'items',
+    consumer,
     secret,
-    {
-      // types: [
-      //   "mcq"
-      // ],
-      item_references: [
-        "ARTC_770138d1-e3f9-4227-8f40-2599f13356db",
-      ],
-    },
-    "get",
+    data
   );
-  return await dataApi({route, data});
+  return signedRequest;
 }
-
