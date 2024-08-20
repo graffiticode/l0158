@@ -13,7 +13,8 @@ export const buildCreateItems = ({
   // FIXME fix these
   const [ item ] = items;
   const { questionRefs } = item;
-  const itemRef = `artcompiler-l0158-item-${questionId}`;
+  const itemId = (ids => ids[ids.length - 1])(questionRefs[0].split("-"));
+  const itemRef = `artcompiler-l0158-item-${itemId}`;
   const itemsReq = sdk.init(
     'data',
     {
@@ -27,7 +28,7 @@ export const buildCreateItems = ({
         status: "published",
         definition: {
           widgets: [{
-            reference: questionRef,
+            reference: questionRefs[0],
           }],
         },
         questions: [{

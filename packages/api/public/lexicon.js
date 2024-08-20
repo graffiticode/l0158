@@ -1,7 +1,7 @@
 window.gcexports.globalLexicon = {
   "init" : {"tk": 1, "name": "INIT", "cls": "function", "length": 1},
-  "items" : {"tk": 1, "name": "ITEMS", "cls": "function", "length": 2},
-  "questions" : {"tk": 1, "name": "QUESTIONS", "cls": "function", "length": 2},
+  "items" : {"tk": 1, "name": "ITEMS", "cls": "function", "length": 1},
+  "questions" : {"tk": 1, "name": "QUESTIONS", "cls": "function", "length": 1},
   "val" : {"tk": 1, "name": "VAL", "cls": "function", "length": 2},
   "key" : {"tk": 1, "name": "KEY", "cls": "function", "length": 2},
   "len" : {"tk": 1, "name": "LEN", "cls": "function", "length": 1},
