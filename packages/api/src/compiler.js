@@ -85,7 +85,7 @@ export class Transformer extends BasisTransformer {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const data = options?.data || {};
         const err = [];
-        const val = await createItems({items: v0});
+        const val = await createItems({items: [v0]});
         resume(err, val);
       });
     });

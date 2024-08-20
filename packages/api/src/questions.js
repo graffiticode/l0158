@@ -39,7 +39,7 @@ export const buildCreateQuestions = ({
       questions,
       session_id: uuid(),
     },
-    questionRef,
+    questionRefs: [questionRef],
   };
 };
 

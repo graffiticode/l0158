@@ -8,11 +8,11 @@ export const buildCreateItems = ({
   dataApi
 }) => async ({
   items,
-  save
 }) => {
+  console.log("createItems() items=" + JSON.stringify(items, null, 2));
   // FIXME fix these
   const [ item ] = items;
-  const { questionId, questionRef } = item;
+  const { questionRefs } = item;
   const itemRef = `artcompiler-l0158-item-${questionId}`;
   const itemsReq = sdk.init(
     'data',
@@ -31,7 +31,7 @@ export const buildCreateItems = ({
           }],
         },
         questions: [{
-          reference: questionRef,
+          reference: questionRefs[0],
         }],
       }],
     },

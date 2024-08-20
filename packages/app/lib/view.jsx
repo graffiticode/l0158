@@ -68,6 +68,7 @@ export const View = () => {
   );
 
   if (compileResp.data) {
+    console.log("view() compileResp.data=" + JSON.stringify(compileResp.data, null, 2));
     setData(compileResp.data);
     setDoRecompile(false);
     setDoInit(true);

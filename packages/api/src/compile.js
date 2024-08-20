@@ -7,8 +7,8 @@ export async function compile({ auth, authToken, code, data, config }) {
   }
   return await new Promise((resolve, reject) =>
     compiler.compile(code, data, config, (err, data) => {
-      console.log("compile code=" + JSON.stringify(code, null, 2));
-      console.log("compile data=" + JSON.stringify(data, null, 2));
+      // console.log("compile code=" + JSON.stringify(code, null, 2));
+      // console.log("compile data=" + JSON.stringify(data, null, 2));
       if (err && err.length) {
         reject({error: err});
       } else {
