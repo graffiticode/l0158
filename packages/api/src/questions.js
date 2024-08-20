@@ -6,10 +6,8 @@ export const buildCreateQuestions = ({
   secret,
   domain,
   dataApi
-}) => async ({
-  questions,
-  save
-}) => {
+}) => async ({ questions }) => {
+  // TODO Support multiple questions.
   const [ question ] = questions;
   const questionId = question.id || "00000";
   const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
@@ -33,58 +31,15 @@ export const buildCreateQuestions = ({
     route: "/itembank/questions",
     request: questionsReq,
   });
-  const itemRef = `artcompiler-l0158-item-${questionId}`;
-  const itemsReq = sdk.init(
-    'data',
-    {
-      consumer_key: key,
-      domain,
-    },
-    secret,
-    {
-      items: [{
-        reference: itemRef,
-        status: "published",
-        definition: {
-          widgets: [{
-            reference: questionRef,
-          }],
-        },
-        questions: [{
-          reference: questionRef,
-        }],
-      }],
-    },
-    "set",
-  );
-  const itemsResp = await dataApi({
-    route: "/itembank/items",
-    request: itemsReq,
-  });
-  // return {
-  //   type: "questions",
-  //   data: {
-  //     "id": "x0001",
-  //     "name": "Test",
-  //     questions,
-  //     session_id: uuid(),
-  //   },
-  //   questionRef,
-  // };
   return {
-    type: "items",
+    type: "questions",
     data: {
-      user_id: uuid(),
+      "id": "x0001",
+      "name": "Test",
+      questions,
       session_id: uuid(),
-      activity_id: 'artcompiler-questions-test',
-      rendering_type: 'assess',
-      type: 'submit_practice',
-      state: 'initial',
-      name: "Test",
-      items: [
-        itemRef,
-      ],
     },
+    questionRef,
   };
 };
 
@@ -93,10 +48,8 @@ export const buildInitQuestions = ({
   key,
   secret,
   domain,
-}) => async ({
-  data,
-}) => {
-  // Construct a question api request and save questions to item bank.
+}) => async ({ data }) => {
+  // Construct a questions api request.
   const user_id = uuid();
   const consumer = {
     consumer_key: key,

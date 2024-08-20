@@ -10,66 +10,51 @@ export const buildCreateItems = ({
   items,
   save
 }) => {
-  let itemsRef;
-  // if (save) {
-  //   itemsRef = uuid();
-  //   const itemsReq = sdk.init(
-  //     'data',
-  //     {
-  //       consumer_key: key,
-  //       domain,
-  //     },
-  //     secret,
-  //     {
-  //       items: [{
-  //         type: items[0].type,
-  //         reference: itemsRef,
-  //         data: items[0],
-  //       }],
-  //     },
-  //     "set",
-  //   );
-  //   const itemsResp = await dataApi({
-  //     route: "/itembank/items",
-  //     request: itemsReq,
-  //   });
-  //   const itemsRef = uuid();
-  //   const itemsReq = sdk.init(
-  //     'data',
-  //     {
-  //       consumer_key: key,
-  //       domain,
-  //     },
-  //     secret,
-  //     {
-  //       items: [{
-  //         reference: itemsRef,
-  //         definition: {
-  //           widgets: [{
-  //             reference: itemsRef,
-  //           }],
-  //         },
-  //         items: [{
-  //           reference: questionsRef,
-  //         }],
-  //       }],
-  //     },
-  //     "set",
-  //   );
-  //   const itemsResp = await dataApi({
-  //     route: "/itembank/items",
-  //     request: itemsReq,
-  //   });
-  // }
+  // FIXME fix these
+  const [ item ] = items;
+  const { questionId, questionRef } = item;
+  const itemRef = `artcompiler-l0158-item-${questionId}`;
+  const itemsReq = sdk.init(
+    'data',
+    {
+      consumer_key: key,
+      domain,
+    },
+    secret,
+    {
+      items: [{
+        reference: itemRef,
+        status: "published",
+        definition: {
+          widgets: [{
+            reference: questionRef,
+          }],
+        },
+        questions: [{
+          reference: questionRef,
+        }],
+      }],
+    },
+    "set",
+  );
+  const itemsResp = await dataApi({
+    route: "/itembank/items",
+    request: itemsReq,
+  });
   return {
     type: "items",
     data: {
-      "id": "x0001",
-      "name": "Test",
-      items,
+      user_id: uuid(),
       session_id: uuid(),
+      activity_id: 'artcompiler-questions-test',
+      rendering_type: 'assess',
+      type: 'submit_practice',
+      state: 'initial',
+      name: "Test",
+      items: [
+        itemRef,
+      ],
     },
-    itemsRef,
   };
 };
 
@@ -78,10 +63,8 @@ export const buildInitItems = ({
   key,
   secret,
   domain,
-}) => async ({
-  data,
-}) => {
-  // Construct a question api request and save items to item bank.
+}) => async ({ data }) => {
+  // Construct a items api request.
   const user_id = uuid();
   const consumer = {
     consumer_key: key,

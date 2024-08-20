@@ -2,12 +2,16 @@ import "../../index.css";
 import { useEffect, useState } from 'react';
 
 export const Form = ({ state }) => {
+  console.log("Form() state=" + JSON.stringify(state, null, 2));
   const [scriptLoaded, setScriptLoaded] = useState(false);
-  const request = state.data;
+  const { type, request } = state.data;
   useEffect(() => {
     // Dynamically load Learnosity script if not included in HTML
     const script = document.createElement('script');
-    script.src = 'https://items.learnosity.com/?latest-lts';
+    script.src =
+      type === "questions" &&
+        'https://questions.learnosity.com/?latest-lts' ||
+        'https://items.learnosity.com/?latest-lts';
     script.async = true;
     script.onload = () => {
       console.log("loaded");
@@ -23,7 +27,10 @@ export const Form = ({ state }) => {
   }, []);
   useEffect(() => {
     if (scriptLoaded) {
-      const LearnosityApp = (window as any).LearnosityItems;
+      const LearnosityApp =
+            type === "questions" &&
+              (window as any).LearnosityApp ||
+              (window as any).LearnosityItems;
       LearnosityApp.init(request, {
         readyListener: () => {
           console.log("ready");

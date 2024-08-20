@@ -78,20 +78,28 @@ export const View = () => {
       accessToken,
       data,
   }, initRequest);
-  
+
   useEffect(() => {
     if (initResp.data) {
       setDoInit(false);
       state.apply({
         type: "compiled",
-        args: initResp.data,
+        args: {
+          type: data.type,
+          request: initResp.data,
+        },
       });
     }
   }, [initResp.data]);
 
   return (
     <>
-      <span id="learnosity_assess" />
+      {
+        data.type === "questions" &&
+          <span className="learnosity-response question-60005"></span> ||
+          data.type === "items" &&
+          <span id="learnosity_assess" />
+      }
       {
         isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
       }
