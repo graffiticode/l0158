@@ -98,7 +98,7 @@ export const View = () => {
         data.type === "questions" &&
           <span className="learnosity-response question-60005"></span> ||
           data.type === "items" &&
-          <span className="learnosity-item" data-reference="item-1" />
+          <span  id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
       }
       {
         isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
