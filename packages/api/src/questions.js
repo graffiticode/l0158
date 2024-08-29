@@ -6,11 +6,17 @@ export const buildCreateQuestions = ({
   secret,
   domain,
   dataApi
-}) => async ({ questions }) => {
-  // TODO Support multiple questions.
-  const [ question ] = questions;
-  const questionId = question.id || "00000";
-  const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
+}) => async (data) => {
+  const questions = data.map((question, index) => {
+    const questionId = question.id || index;
+    const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
+    return {
+      type: question.type,
+      reference: questionRef,
+      data: question,
+    };
+  });
+  const questionRefs = questions.map(question => question.reference);
   const questionsReq = sdk.init(
     'data',
     {
@@ -19,11 +25,7 @@ export const buildCreateQuestions = ({
     },
     secret,
     {
-      questions: [{
-        type: questions[0].type,
-        reference: questionRef,
-        data: questions[0],
-      }],
+      questions,
     },
     "set",
   );
@@ -34,12 +36,12 @@ export const buildCreateQuestions = ({
   return {
     type: "questions",
     data: {
-      "id": "x0001",
+      "id": uuid(),
       "name": "Test",
       questions,
       session_id: uuid(),
     },
-    questionRefs: [questionRef],
+    questionRefs,
   };
 };
 

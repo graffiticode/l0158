@@ -9,12 +9,15 @@ export const buildCreateItems = ({
 }) => async ({
   items,
 }) => {
-  console.log("createItems() items=" + JSON.stringify(items, null, 2));
-  // FIXME fix these
   const [ item ] = items;
   const { questionRefs } = item;
   const itemId = questionRefs[0].split("-").slice(2).join("-");
   const itemRef = `artcompiler-${itemId}`;
+  const questions = item.data.questions.map(
+    question => ({
+      reference: question.reference
+    })
+  );
   const itemsReq = sdk.init(
     'data',
     {
@@ -27,13 +30,9 @@ export const buildCreateItems = ({
         reference: itemRef,
         status: "published",
         definition: {
-          widgets: [{
-            reference: questionRefs[0],
-          }],
+          widgets: questions,
         },
-        questions: [{
-          reference: questionRefs[0],
-        }],
+        questions,
       }],
     },
     "set",
