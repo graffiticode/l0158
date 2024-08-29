@@ -13,8 +13,8 @@ export const buildCreateItems = ({
   // FIXME fix these
   const [ item ] = items;
   const { questionRefs } = item;
-  const itemId = (ids => ids[ids.length - 1])(questionRefs[0].split("-"));
-  const itemRef = `artcompiler-l0158-item-${itemId}`;
+  const itemId = questionRefs[0].split("-").slice(2).join("-");
+  const itemRef = `artcompiler-${itemId}`;
   const itemsReq = sdk.init(
     'data',
     {
@@ -48,13 +48,20 @@ export const buildCreateItems = ({
       user_id: uuid(),
       session_id: uuid(),
       activity_id: 'artcompiler-questions-test',
-      rendering_type: 'assess',
+      rendering_type: 'inline',
       type: 'submit_practice',
       state: 'initial',
       name: "Test",
-      items: [
-        itemRef,
-      ],
+      items: [{
+        id: "item-1",
+        reference: itemRef,
+      }],
+      config: {
+        questions_api_init_options: {
+          // renderSaveButton: true,
+          // renderSubmitButton: true,
+        },
+      },
     },
   };
 };

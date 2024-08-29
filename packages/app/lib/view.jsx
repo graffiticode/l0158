@@ -3,7 +3,6 @@ import useSWR from 'swr';
 import { Form } from "./components";
 import { createState } from "./lib/state";
 import { compile, getData, initRequest } from './swr/fetchers';
-import assert from "assert";
 import './index.css';
 
 function isNonNullNonEmptyObject(obj) {
@@ -99,11 +98,13 @@ export const View = () => {
         data.type === "questions" &&
           <span className="learnosity-response question-60005"></span> ||
           data.type === "items" &&
-          <span id="learnosity_assess" />
+          <span className="learnosity-item" data-reference="item-1" />
       }
       {
         isNonNullNonEmptyObject(state.data) && <Form state={state} /> || <div />
       }
+      <span className="learnosity-save-button" />
+      <span className="learnosity-submit-button" />
     </>
   );
 }
