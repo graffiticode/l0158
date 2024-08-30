@@ -6,43 +6,25 @@
 Here is an example:
 
 ```
-questions [{
-  "id": "magicsquare-15",
-  "response_id": "60005",
+items questions [{
   "type": "custom",
-  "stimulus": "Complete the magic square",
+  "stimulus": "What color means go?",
   "valid_response": {
     "value": "Green",
     "score": 1
   },
   "js": {
-    "question": "https://l0154.graffiticode.org/question.js",
-    "scorer": "https://l0154.graffiticode.org/scorer.js"
+    "question": "https://l0155.graffiticode.org/question.js",
+    "scorer": "https://l0155.graffiticode.org/scorer.js"
   },
-  "css": "https://l0154.graffiticode.org/question.css",
-  "instant_feedback": true,
-  "problemStatement": "The magic number is",
-  "expression": "15",
-  "showFeedback": true,
-  "initializeGrid": true,
-  "terms": [
-    [
-      4,
-      3,
-      8
-    ],
-    [
-      9,
-      5,
-      1
-    ],
-    [
-      2,
-      7,
-      6
-    ]
-  ]
-}]..
+  "css": "https://l0155.graffiticode.org/question.css",
+  "instant_feedback": true
+}] {}..
 ```
 
-<iframe src="https://graffiticode.com/form?lang=0158&id=eyJ0YXNrSWRzIjpbIkNHOWprVVUyU3RtVDZ3UVQwUFhyIl19" width="100%" height="1000" border="none" />
+<iframe
+  src="https://graffiticode.com/form?id=eyJ0YXNrSWRzIjpbIms1dzBHNmZVVmJOekNWTURXb2pqIl19"
+  width=500"
+  height="220"
+  style="border: 0.5px solid gray; padding: 0px 20px;"
+/>
