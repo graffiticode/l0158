@@ -9,6 +9,10 @@ export const buildCreateItems = ({
 }) => async ({
   items,
 }) => {
+  console.log(
+    "createItems()",
+    "items=" + JSON.stringify(items, null, 2),
+  );
   const [ item ] = items;
   const { questionRefs } = item;
   const itemId = questionRefs[0].split("-").slice(2).join("-");
@@ -41,6 +45,7 @@ export const buildCreateItems = ({
     route: "/itembank/items",
     request: itemsReq,
   });
+  // TODO check for success or failure.
   return {
     type: "items",
     data: {

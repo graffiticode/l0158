@@ -1,13 +1,8 @@
-import LearnositySDK from "learnosity-sdk-nodejs";
 import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 
-const sdk = new LearnositySDK();
-const key = process.env.LEARNOSITY_KEY;
-const secret = process.env.LEARNOSITY_SECRET;
 console.log("process.env=" + JSON.stringify(process.env, null, 2));
-const domain = process.env.AUTH_URL && "localhost" || "l0158.graffiticode.org";
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
   Checker as BasisChecker,
@@ -15,6 +10,11 @@ import {
   Compiler as BasisCompiler
 } from '@graffiticode/basis';
 
+import LearnositySDK from "learnosity-sdk-nodejs";
+const sdk = new LearnositySDK();
+const key = process.env.LEARNOSITY_KEY;
+const secret = process.env.LEARNOSITY_SECRET;
+const domain = process.env.AUTH_URL && "localhost" || "l0158.graffiticode.org";
 const baseUrl = 'https://data.learnosity.com/v2024.1.LTS';
 const dataApi = buildDataApi({baseUrl, domain});
 const createItems = buildCreateItems({sdk, key, secret, domain, dataApi});

@@ -7,6 +7,10 @@ export const buildCreateQuestions = ({
   domain,
   dataApi
 }) => async (data) => {
+  console.log(
+    "createQuestions()",
+    "data=" + JSON.stringify(data, null, 2),
+  );
   const questions = data.map((question, index) => {
     const questionId = question.id || index;
     const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
@@ -16,6 +20,10 @@ export const buildCreateQuestions = ({
       data: question,
     };
   });
+  console.log(
+    "createQuestions()",
+    "questions=" + JSON.stringify(questions, null, 2),
+  );
   const questionRefs = questions.map(question => question.reference);
   const questionsReq = sdk.init(
     'data',
