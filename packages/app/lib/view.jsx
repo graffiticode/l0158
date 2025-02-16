@@ -23,10 +23,23 @@ export const View = () => {
 
   useEffect(() => {
     if (window.location.search) {
+      // If 'id' is given, it is the raw data of the question and needs to be
+      // signed so it can be rendered. If 'data' is given it contains the signed
+      // request that can be used directly.
       const params = new URLSearchParams(window.location.search);
       setId(params.get("id"));
       const accessToken = params.get("access_token");
       setAccessToken(accessToken);
+      const data = JSON.parse(params.get("data"));
+      if (data) {
+        state.apply({
+          type: "signed",
+          args: {
+            type: data.type,
+            request: data.request,
+          },
+        });
+      }
     }
   }, [window.location.search]);
 
@@ -38,9 +51,13 @@ export const View = () => {
   }, [id]);
 
   const [ state ] = useState(createState({}, (data, { type, args }) => {
-    console.log("L0158 state.apply() type=" + type + " args=" + JSON.stringify(args, null, 2));
+    // console.log(
+    //   "L0158/state.apply()",
+    //   "type=" + type,
+    //   "args=" + JSON.stringify(args, null, 2),
+    // );
     switch (type) {
-    case "compiled":
+    case "signed":
       return {
         ...data,
         ...args,
@@ -67,7 +84,6 @@ export const View = () => {
   );
 
   if (compileResp.data) {
-    console.log("view() compileResp.data=" + JSON.stringify(compileResp.data, null, 2));
     setData(compileResp.data);
     setDoRecompile(false);
     setDoInit(true);
@@ -83,7 +99,7 @@ export const View = () => {
     if (initResp.data) {
       setDoInit(false);
       state.apply({
-        type: "compiled",
+        type: "signed",
         args: {
           type: data.type,
           request: initResp.data,

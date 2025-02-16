@@ -1,10 +1,7 @@
 import "../../index.css";
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react'; React;
 
 export const Form = ({ state }) => {
-  console.log(
-    "Form() state=" + JSON.stringify(state, null, 2)
-  );
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const { type, request } = state.data;
   useEffect(() => {
