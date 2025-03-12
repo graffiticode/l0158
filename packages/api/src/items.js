@@ -1,5 +1,30 @@
 import { v4 as uuid } from "uuid";
 
+const getDynamicContentData = (data) => {
+  if (!data) {
+    return;
+  }
+  let reference = "artcompiler-" + new Date().toISOString().split(":").join("").split(".").join("");
+  let cols;
+  let rows = {};
+  if (data) {
+    data.forEach((d, i) => {
+      if (!cols) {
+        cols = Object.keys(d);
+      }
+      let vals = Object.values(d);
+      rows[reference + "-row-" + i] = {
+        "values": vals,
+        "index": i,
+      };
+    });
+  }
+  return {
+    cols: cols,
+    rows: rows,
+  };
+}
+
 export const buildCreateItems = ({
   sdk,
   key,
@@ -14,6 +39,7 @@ export const buildCreateItems = ({
     "items=" + JSON.stringify(items, null, 2),
   );
   const [ item ] = items;
+  const { templateVariablesRecords } = item;
   const { questionRefs } = item;
   const itemId = questionRefs[0].split("-").slice(2).join("-");
   const itemRef = `artcompiler-${itemId}`;
@@ -21,6 +47,12 @@ export const buildCreateItems = ({
     question => ({
       reference: question.reference
     })
+  );
+  const dynamicContentData = getDynamicContentData(templateVariablesRecords);
+  console.log(
+    "createItems()",
+    "items=" + JSON.stringify(items, null, 2),
+    "dynamicContentData=" + JSON.stringify(dynamicContentData, null, 2),
   );
   const itemsReq = sdk.init(
     'data',
@@ -36,6 +68,7 @@ export const buildCreateItems = ({
         definition: {
           widgets: questions,
         },
+        dynamic_content_data: dynamicContentData,
         questions,
       }],
     },

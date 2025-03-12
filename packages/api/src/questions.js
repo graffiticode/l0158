@@ -1,5 +1,29 @@
 import { v4 as uuid } from "uuid";
 
+const replaceVariableRefs = (str) => {
+  const re = new RegExp("\\{\\{", "g");
+  return str.replace(re, "{{var:");
+}
+
+const isNonNullNonEmptyObject = obj => (
+  typeof obj === "object" &&
+    !Array.isArray(obj) &&
+    obj !== null &&
+    Object.keys(obj).length > 0
+);
+
+const fixVariableRefs = (obj) => (
+  Object.keys(obj).reduce((obj, key) => {
+    const val = obj[key];
+    if (typeof obj[key] === "string") {
+      obj[key] = replaceVariableRefs(val);
+    } else if (isNonNullNonEmptyObject(val)) {
+      obj[key] = fixVariableRefs(val);
+    }
+    return obj;
+  }, obj)
+);
+
 export const buildCreateQuestions = ({
   sdk,
   key,
@@ -11,13 +35,14 @@ export const buildCreateQuestions = ({
     "createQuestions()",
     "data=" + JSON.stringify(data, null, 2),
   );
+  const { templateVariablesRecords } = data[0].data;
   const questions = data.map((question, index) => {
     const questionId = question.id || index;
     const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
     return {
       type: question.type,
       reference: questionRef,
-      data: question,
+      data: fixVariableRefs(question),
     };
   });
   console.log(
@@ -49,6 +74,7 @@ export const buildCreateQuestions = ({
       questions,
       session_id: uuid(),
     },
+    templateVariablesRecords,
     questionRefs,
   };
 };
