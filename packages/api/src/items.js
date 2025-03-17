@@ -34,10 +34,10 @@ export const buildCreateItems = ({
 }) => async ({
   items,
 }) => {
-  console.log(
-    "createItems()",
-    "items=" + JSON.stringify(items, null, 2),
-  );
+  // console.log(
+  //   "createItems()",
+  //   "items=" + JSON.stringify(items, null, 2),
+  // );
   const [ item ] = items;
   const { templateVariablesRecords } = item;
   const { questionRefs } = item;
@@ -49,11 +49,11 @@ export const buildCreateItems = ({
     })
   );
   const dynamicContentData = getDynamicContentData(templateVariablesRecords);
-  console.log(
-    "createItems()",
-    "items=" + JSON.stringify(items, null, 2),
-    "dynamicContentData=" + JSON.stringify(dynamicContentData, null, 2),
-  );
+  // console.log(
+  //   "createItems()",
+  //   "items=" + JSON.stringify(items, null, 2),
+  //   "dynamicContentData=" + JSON.stringify(dynamicContentData, null, 2),
+  // );
   const itemsReq = sdk.init(
     'data',
     {

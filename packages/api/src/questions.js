@@ -7,7 +7,6 @@ const replaceVariableRefs = (str) => {
 
 const isNonNullNonEmptyObject = obj => (
   typeof obj === "object" &&
-    !Array.isArray(obj) &&
     obj !== null &&
     Object.keys(obj).length > 0
 );
@@ -15,6 +14,11 @@ const isNonNullNonEmptyObject = obj => (
 const fixVariableRefs = (obj) => (
   Object.keys(obj).reduce((obj, key) => {
     const val = obj[key];
+    // console.log(
+    //   "fixVariableRefs()",
+    //   "key=" + key,
+    //   "val=" + JSON.stringify(val),
+    // );
     if (typeof obj[key] === "string") {
       obj[key] = replaceVariableRefs(val);
     } else if (isNonNullNonEmptyObject(val)) {
@@ -31,24 +35,32 @@ export const buildCreateQuestions = ({
   domain,
   dataApi
 }) => async (data) => {
-  console.log(
-    "createQuestions()",
-    "data=" + JSON.stringify(data, null, 2),
-  );
-  const { templateVariablesRecords } = data[0].data;
+  // console.log(
+  //   "createQuestions()",
+  //   "data=" + JSON.stringify(data, null, 2),
+  // );
+  // WARNING: Only using the data from the first and only question. If we ever support
+  // more than one question here, this needs to be fixed.
+  const templateVariablesRecords = data[0].data.templateVariablesRecords;
   const questions = data.map((question, index) => {
     const questionId = question.id || index;
-    const questionRef = `artcompiler-l0158-${question.type}-${questionId}`;
+    const reference = `artcompiler-l0158-${question.type}-${questionId}`;
+    const data = fixVariableRefs(question);
+    // console.log(
+    //   "createQuestions()",
+    //   "data=" + JSON.stringify(data, null, 2),
+    // );
     return {
       type: question.type,
-      reference: questionRef,
-      data: fixVariableRefs(question),
+      reference,
+      data,
     };
   });
-  console.log(
-    "createQuestions()",
-    "questions=" + JSON.stringify(questions, null, 2),
-  );
+  // console.log(
+  //   "createQuestions()",
+  //   "questions=" + JSON.stringify(questions, null, 2),
+  //   "templateVariablesRecords=" + JSON.stringify(templateVariablesRecords, null, 2),
+  // );
   const questionRefs = questions.map(question => question.reference);
   const questionsReq = sdk.init(
     'data',
