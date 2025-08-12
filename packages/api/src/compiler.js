@@ -1,6 +1,7 @@
 import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
+import { buildInitAuthor, buildCreateAuthorItem } from "./author.js";
 
 console.log("process.env=" + JSON.stringify(process.env, null, 2));
 /* Copyright (c) 2023, ARTCOMPILER INC */
@@ -21,6 +22,8 @@ const createItems = buildCreateItems({sdk, key, secret, domain, dataApi});
 const initItems = buildInitItems({sdk, key, secret, domain});
 const createQuestions = buildCreateQuestions({sdk, key, secret, domain, dataApi});
 const initQuestions = buildInitQuestions({sdk, key, secret, domain});
+const initAuthor = buildInitAuthor({sdk, key, secret, domain});
+const createAuthorItem = buildCreateAuthorItem({sdk, key, secret, domain, dataApi});
 
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
@@ -50,6 +53,14 @@ export class Checker extends BasisChecker {
       });
     });
   }
+
+  AUTHOR(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [];
+      const val = node;
+      resume(err, val);
+    });
+  }
 }
 
 export class Transformer extends BasisTransformer {
@@ -64,6 +75,10 @@ export class Transformer extends BasisTransformer {
 
   INIT(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
+      console.log(
+        "INIT()",
+        "v0=" + JSON.stringify(v0, null, 2),
+      );
       const data = options?.data || {};
       const err = [];
       const { type } = v0;
@@ -74,6 +89,9 @@ export class Transformer extends BasisTransformer {
         break;
       case "items":
         val = await initItems(v0);
+        break;
+      case "author":
+        val = await initAuthor(v0);
         break;
       }
       resume(err, val);
@@ -94,6 +112,19 @@ export class Transformer extends BasisTransformer {
       const data = options?.data || {};
       const err = [];
       const val = await createQuestions(v0);
+      resume(err, val);
+    });
+  }
+
+  AUTHOR(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const data = options?.data || {};
+      const err = [];
+      console.log(
+        "AUTHOR",
+        "v0=" + JSON.stringify(v0, null, 2),
+      );
+      const val = await createAuthorItem(v0);
       resume(err, val);
     });
   }

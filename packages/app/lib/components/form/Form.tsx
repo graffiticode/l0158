@@ -8,9 +8,9 @@ export const Form = ({ state }) => {
     // Dynamically load Learnosity script if not included in HTML
     const script = document.createElement('script');
     script.src =
-      type === "questions" &&
-        'https://questions.learnosity.com/?latest-lts' ||
-        'https://items.learnosity.com/?latest-lts';
+      type === "questions" ? 'https://questions.learnosity.com/?latest-lts' :
+      type === "author" ? 'https://authorapi.learnosity.com/?latest-lts' :
+      'https://items.learnosity.com/?latest-lts';
     script.async = true;
     script.onload = () => {
       console.log("loaded");
@@ -27,9 +27,9 @@ export const Form = ({ state }) => {
   useEffect(() => {
     if (scriptLoaded) {
       const LearnosityApp =
-            type === "questions" &&
-              (window as any).LearnosityApp ||
-              (window as any).LearnosityItems;
+            type === "questions" ? (window as any).LearnosityApp :
+            type === "author" ? (window as any).LearnosityAuthor :
+            (window as any).LearnosityItems;
       LearnosityApp.init(request, {
         readyListener: () => {
           console.log("ready");
