@@ -41,6 +41,12 @@ export const Form = ({ state }) => {
     }
   }, [scriptLoaded, request]);
   return (
-    <span  id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
+    <>
+      {type === "author" ? (
+        <div id="learnosity-author" />
+      ) : (
+        <span id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
+      )}
+    </>
   );
 }

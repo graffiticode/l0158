@@ -3,7 +3,7 @@
 // Test script for Author API integration
 // Run with: node test/test-author.js
 
-import { buildInitAuthor, buildCreateAuthorItem } from '../src/author.js';
+import { buildInitAuthor, buildCreateAuthor } from '../src/author.js';
 import LearnositySDK from 'learnosity-sdk-nodejs';
 
 // Mock configuration (replace with actual keys in production)
@@ -60,10 +60,10 @@ async function testAuthorInit() {
   console.log('Test 3 - Custom templates:', templateInit ? 'PASS' : 'FAIL');
 }
 
-async function testCreateAuthorItem() {
+async function testCreateAuthor() {
   console.log('\n=== Testing Author Item Creation ===\n');
   
-  const createAuthorItem = buildCreateAuthorItem({ 
+  const createAuthor = buildCreateAuthor({ 
     sdk, 
     key, 
     secret, 
@@ -71,51 +71,48 @@ async function testCreateAuthorItem() {
     dataApi: mockDataApi 
   });
   
-  // Test 1: Create empty item
-  const emptyItem = await createAuthorItem({
-    item: { id: 'test-1' },
-    widgetTypes: ['mcq', 'shorttext']
+  // Test 1: Basic Author creation
+  const basicAuthor = await createAuthor({
+    mode: 'item_edit',
+    reference: 'test-item-1'
   });
-  console.log('Test 1 - Empty item:', emptyItem.type === 'author' ? 'PASS' : 'FAIL');
+  console.log('Test 1 - Basic Author:', basicAuthor.type === 'author' ? 'PASS' : 'FAIL');
   
-  // Test 2: Create item with questions
-  const itemWithQuestions = await createAuthorItem({
-    item: {
-      id: 'test-2',
-      questions: [
-        {
-          type: 'mcq',
-          reference: 'q1',
-          data: {
-            stimulus: 'What is 2 + 2?',
-            options: [
-              { label: 'A', value: '3' },
-              { label: 'B', value: '4' }
-            ]
-          }
+  // Test 2: Author with config
+  const authorWithConfig = await createAuthor({
+    mode: 'item_edit',
+    reference: 'test-item-2',
+    config: {
+      widget_templates: {
+        filter: {
+          widgettype: ['mcq', 'shorttext']
         }
-      ]
-    },
-    widgetTypes: ['mcq'],
-    mode: 'item_edit'
-  });
-  console.log('Test 2 - Item with questions:', 
-    itemWithQuestions.data.reference ? 'PASS' : 'FAIL');
-  
-  // Test 3: Custom widgets and templates
-  const customItem = await createAuthorItem({
-    item: { id: 'test-3' },
-    widgetTypes: ['mcq', 'formula'],
-    customWidgets: [
-      {
-        name: 'Custom MCQ',
-        widgettype: 'mcq'
       }
-    ],
-    mode: 'item_edit'
+    }
   });
-  console.log('Test 3 - Custom widgets:', 
-    customItem.data.customWidgets ? 'PASS' : 'FAIL');
+  console.log('Test 2 - Author with config:', 
+    authorWithConfig.data.reference ? 'PASS' : 'FAIL');
+  
+  // Test 3: Author with user and organisation
+  const fullAuthor = await createAuthor({
+    mode: 'item_list',
+    organisation_id: 123,
+    user: {
+      id: 'user-123',
+      firstname: 'Test',
+      lastname: 'User'
+    },
+    config: {
+      item_list: {
+        toolbar: {
+          add: true,
+          browse: true
+        }
+      }
+    }
+  });
+  console.log('Test 3 - Full Author config:', 
+    fullAuthor.data.user ? 'PASS' : 'FAIL');
 }
 
 async function runTests() {
@@ -124,7 +121,7 @@ async function runTests() {
   
   try {
     await testAuthorInit();
-    await testCreateAuthorItem();
+    await testCreateAuthor();
     
     console.log('\n=====================================');
     console.log('All tests completed!');

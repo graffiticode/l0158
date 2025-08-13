@@ -1,7 +1,7 @@
 import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
-import { buildInitAuthor, buildCreateAuthorItem } from "./author.js";
+import { buildInitAuthor, buildCreateAuthor } from "./author.js";
 
 console.log("process.env=" + JSON.stringify(process.env, null, 2));
 /* Copyright (c) 2023, ARTCOMPILER INC */
@@ -23,7 +23,7 @@ const initItems = buildInitItems({sdk, key, secret, domain});
 const createQuestions = buildCreateQuestions({sdk, key, secret, domain, dataApi});
 const initQuestions = buildInitQuestions({sdk, key, secret, domain});
 const initAuthor = buildInitAuthor({sdk, key, secret, domain});
-const createAuthorItem = buildCreateAuthorItem({sdk, key, secret, domain, dataApi});
+const createAuthor = buildCreateAuthor({sdk, key, secret, domain, dataApi});
 
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
@@ -124,7 +124,7 @@ export class Transformer extends BasisTransformer {
         "AUTHOR",
         "v0=" + JSON.stringify(v0, null, 2),
       );
-      const val = await createAuthorItem(v0);
+      const val = await createAuthor(v0);
       resume(err, val);
     });
   }

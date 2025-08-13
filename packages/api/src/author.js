@@ -112,57 +112,33 @@ export const buildInitAuthor = ({
   return signedRequest;
 };
 
-export const buildCreateAuthorItem = ({
+export const buildCreateAuthor = ({
   sdk,
   key,
   secret,
   domain,
   dataApi
-}) => async ({ data = {}, widgetTypes, customWidgets, mode = "item_edit" }) => {
-  const itemId = data.id || uuid();
-  const itemRef = data.reference || `artcompiler-author-${itemId}`;
-  
-  const questions = data.questions || [];
-  const widgets = questions.map(q => ({
-    reference: q.reference || `q-${uuid()}`,
-    type: q.type,
-    data: q.data
-  }));
-
-  if (widgets.length > 0) {
-    const itemsReq = sdk.init(
-      'data',
-      {
-        consumer_key: key,
-        domain,
-      },
-      secret,
-      {
-        items: [{
-          reference: itemRef,
-          status: "published",
-          definition: {
-            widgets,
-          },
-          questions: widgets.map(w => ({ reference: w.reference })),
-        }],
-      },
-      "set",
-    );
-
-    const itemsResp = await dataApi({
-      route: "/itembank/items",
-      request: itemsReq,
-    });
+}) => async ({ 
+  mode = "item_edit",
+  reference,
+  config = {},
+  organisation_id,
+  user = {
+    id: uuid(),
+    firstname: "Author",
+    lastname: "User"
   }
+}) => {
+  const itemRef = reference || `artcompiler-author-${uuid()}`;
 
   return {
     type: "author",
     data: {
       mode,
       reference: itemRef,
-      widgetTypes,
-      customWidgets,
+      config,
+      organisation_id,
+      user,
     },
   };
 };
