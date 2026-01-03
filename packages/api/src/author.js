@@ -108,7 +108,10 @@ export const buildInitAuthor = ({
     secret,
     requestData
   );
-  
+  console.log(
+    "initAuthor()",
+    "signedRequest=" + JSON.stringify(signedRequest, null, 2),
+  );
   return signedRequest;
 };
 
