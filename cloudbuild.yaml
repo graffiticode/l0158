@@ -32,7 +32,8 @@ steps:
         --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
       - '--region=$_DEPLOY_REGION'
       - '--quiet'
-      - '--set-env-vars=AUTH_URL=$_AUTH_URL'
+      - '--set-env-vars=AUTH_URL=$_AUTH_URL,LEARNOSITY_KEY=$_LEARNOSITY_KEY'
+      - '--set-secrets=LEARNOSITY_SECRET=learnosity-secret:latest'
       - '--allow-unauthenticated'
     id: Deploy
     entrypoint: gcloud
@@ -46,6 +47,7 @@ options:
 substitutions:
   _DEPLOY_REGION: us-central1
   _AUTH_URL: https://auth.graffiticode.org
+  _LEARNOSITY_KEY: UsF4dy1YxZd4JIyq
 
 tags:
   - l0158
