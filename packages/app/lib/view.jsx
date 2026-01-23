@@ -98,6 +98,9 @@ export const View = () => {
   useEffect(() => {
     if (initResp.data) {
       setDoInit(false);
+      console.log(
+        "L0158 View() location.hostname=" + location.hostname,
+      );
       state.apply({
         type: "signed",
         args: {
