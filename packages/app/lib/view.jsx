@@ -43,26 +43,6 @@ export const View = () => {
     }
   }, [window.location.search]);
 
-  // Post onload message when view first renders
-  useEffect(() => {
-    if (targetOrigin) {
-      window.parent.postMessage({ type: "onload", version: state.version, data: state.data }, targetOrigin);
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  useEffect(() => {
-    if (targetOrigin) {
-      window.parent.postMessage(state.data, targetOrigin);
-    }
-  }, [JSON.stringify(state.data)]);
-
-  useEffect(() => {
-    // If `id` changes, then recompile.
-    if (id) {
-      setDoRecompile(true);
-    }
-  }, [id]);
-
   const [ state ] = useState(createState({}, (data, { type, args }) => {
     console.log(
       "L0158/state.apply()",
@@ -86,6 +66,26 @@ export const View = () => {
       return data;
     }
   }));
+
+  // Post onload message when view first renders
+  useEffect(() => {
+    if (targetOrigin) {
+      window.parent.postMessage({ type: "onload", version: state.version, data: state.data }, targetOrigin);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
+
+  useEffect(() => {
+    if (targetOrigin) {
+      window.parent.postMessage(state.data, targetOrigin);
+    }
+  }, [JSON.stringify(state.data)]);
+
+  useEffect(() => {
+    // If `id` changes, then recompile.
+    if (id) {
+      setDoRecompile(true);
+    }
+  }, [id]);
 
   const compileResp = useSWR(
     doRecompile && accessToken && id && {
