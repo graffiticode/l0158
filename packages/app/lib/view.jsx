@@ -14,34 +14,26 @@ function isNonNullNonEmptyObject(obj) {
 }
 
 export const View = () => {
-  const [ id, setId ] = useState();
-  const [ accessToken, setAccessToken ] = useState();
+  const params = new URLSearchParams(window.location.search);
+  const [ id, setId ] = useState(params.get("id"));
+  const [ accessToken, setAccessToken ] = useState(params.get("access_token"));
+  const [ targetOrigin, setTargetOrigin ] = useState(params.get("origin"));
   const [ doRecompile, setDoRecompile ] = useState(false);
   const [ doInit, setDoInit ] = useState(false);
   const [ height, setHeight ] = useState(0);
-  const [ data, setData ] = useState({});
+  const [ data, setData ] = useState(JSON.parse(params.get("data")) || "{}");
 
   useEffect(() => {
-    if (window.location.search) {
-      // If 'id' is given, it is the raw data of the question and needs to be
-      // signed so it can be rendered. If 'data' is given it contains the signed
-      // request that can be used directly.
-      const params = new URLSearchParams(window.location.search);
-      setId(params.get("id"));
-      const accessToken = params.get("access_token");
-      setAccessToken(accessToken);
-      const data = JSON.parse(params.get("data"));
-      if (data) {
-        state.apply({
-          type: "signed",
-          args: {
-            type: data.type,
-            request: data.request,
-          },
-        });
-      }
+    if (isNonNullNonEmptyObject(data)) {
+      state.apply({
+        type: "signed",
+        args: {
+          type: data.type,
+          request: data.request,
+        },
+      });
     }
-  }, [window.location.search]);
+  }, [data]);
 
   const [ state ] = useState(createState({}, (data, { type, args }) => {
     console.log(
