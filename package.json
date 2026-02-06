@@ -14,7 +14,7 @@
     "pack": "npm run -w packages/app pack",
     "gcp:build": "gcloud builds submit --config cloudbuild.yaml --substitutions=COMMIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo latest)",
     "gcp:deploy": "gcloud run deploy l0158 --source . --port 50158 --region us-central1 --platform managed --allow-unauthenticated",
-    "gcp:logs": "gcloud run logs read l0158 --region us-central1"
+    "gcp:logs": "gcloud beta run services logs tail l0158 --region us-central1"
   },
   "devDependencies": {
     "eslint": "^8.44.0",

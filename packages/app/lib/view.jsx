@@ -21,21 +21,14 @@ export const View = () => {
   const [ doRecompile, setDoRecompile ] = useState(false);
   const [ doInit, setDoInit ] = useState(false);
   const [ height, setHeight ] = useState(0);
-  const [ data, setData ] = useState(JSON.parse(params.get("data")) || "{}");
+  const parsedData = JSON.parse(params.get("data")) || {};
+  const [ data, setData ] = useState(parsedData);
 
-  useEffect(() => {
-    if (isNonNullNonEmptyObject(data)) {
-      state.apply({
-        type: "signed",
-        args: {
-          type: data.type,
-          request: data.request,
-        },
-      });
-    }
-  }, [data]);
+  const initialState = isNonNullNonEmptyObject(parsedData)
+    ? { type: parsedData.type, request: parsedData.request }
+    : {};
 
-  const [ state ] = useState(createState({}, (data, { type, args }) => {
+  const [ state ] = useState(createState(initialState, (data, { type, args }) => {
     console.log(
       "L0158/state.apply()",
       "type=" + type,
