@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";

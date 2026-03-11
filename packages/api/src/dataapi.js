@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import fetch from "node-fetch";
 
 export const buildDataApi = ({ baseUrl }) => async ({ route, request }) => {

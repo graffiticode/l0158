@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 import { Form } from './Form';
 
 export default {

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 #!/usr/bin/env node
 
 // Test script for Author API integration
