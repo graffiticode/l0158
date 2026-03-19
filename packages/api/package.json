@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@graffiticode/auth": "^2.1.2",
-    "@graffiticode/basis": "^1.7.2",
+    "@graffiticode/basis": "^1.7.4",
     "cors": "^2.8.5",
     "errorhandler": "^1.5.1",
     "graphql-request": "^6.1.0",
