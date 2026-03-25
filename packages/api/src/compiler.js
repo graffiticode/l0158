@@ -112,6 +112,12 @@ export class Transformer extends BasisTransformer {
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
+      console.log(
+        "ITEMS()",
+        "v0 type=" + typeof v0,
+        "isArray=" + Array.isArray(v0),
+        "plain=" + JSON.stringify(plain, null, 2),
+      );
       const err = [];
       const val = await createItems({items: [plain]});
       resume(err, val);
@@ -121,6 +127,12 @@ export class Transformer extends BasisTransformer {
   QUESTIONS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
+      console.log(
+        "QUESTIONS()",
+        "v0 type=" + typeof v0,
+        "isArray=" + Array.isArray(v0),
+        "plain=" + JSON.stringify(plain, null, 2),
+      );
       const err = [];
       const val = await createQuestions(plain);
       resume(err, val);
