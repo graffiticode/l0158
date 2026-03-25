@@ -31,7 +31,7 @@ const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
 const secret = process.env.LEARNOSITY_SECRET;
 const domain = process.env.NODE_ENV === "production" ? "l0158.graffiticode.org" : "localhost";
-const baseUrl = 'https://data.learnosity.com/v2024.1.LTS';
+const baseUrl = 'https://data.learnosity.com/v2025.2.LTS';
 const dataApi = buildDataApi({baseUrl, domain});
 const createItems = buildCreateItems({sdk, key, secret, domain, dataApi});
 const initItems = buildInitItems({sdk, key, secret, domain});
