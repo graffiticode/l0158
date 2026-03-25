@@ -11,6 +11,21 @@ import {
   Compiler as BasisCompiler
 } from '@graffiticode/basis';
 
+function toPlainObject(val) {
+  if (val !== null && typeof val === 'object' && val._type === 'record' && val._entries instanceof Map) {
+    const obj = {};
+    for (const [k, v] of val._entries) {
+      const name = k.replace(/^(tag|str|num):/, '');
+      obj[name] = toPlainObject(v);
+    }
+    return obj;
+  }
+  if (Array.isArray(val)) {
+    return val.map(toPlainObject);
+  }
+  return val;
+}
+
 import LearnositySDK from "learnosity-sdk-nodejs";
 const sdk = new LearnositySDK();
 const key = process.env.LEARNOSITY_KEY;
@@ -71,23 +86,23 @@ export class Transformer extends BasisTransformer {
 
   INIT(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
+      const plain = toPlainObject(v0);
       console.log(
         "INIT()",
-        "v0=" + JSON.stringify(v0, null, 2),
+        "plain=" + JSON.stringify(plain, null, 2),
       );
-      const data = options?.data || {};
       const err = [];
-      const { type } = v0;
+      const { type } = plain;
       let val;
       switch (type) {
       case "questions":
-        val = await initQuestions(v0);
+        val = await initQuestions(plain);
         break;
       case "items":
-        val = await initItems(v0);
+        val = await initItems(plain);
         break;
       case "author":
-        val = await initAuthor(v0);
+        val = await initAuthor(plain);
         break;
       }
       resume(err, val);
@@ -96,31 +111,31 @@ export class Transformer extends BasisTransformer {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const data = options?.data || {};
+      const plain = toPlainObject(v0);
       const err = [];
-      const val = await createItems({items: [v0]});
+      const val = await createItems({items: [plain]});
       resume(err, val);
     });
   }
 
   QUESTIONS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const data = options?.data || {};
+      const plain = toPlainObject(v0);
       const err = [];
-      const val = await createQuestions(v0);
+      const val = await createQuestions(plain);
       resume(err, val);
     });
   }
 
   AUTHOR(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const data = options?.data || {};
+      const plain = toPlainObject(v0);
       const err = [];
       console.log(
         "AUTHOR",
-        "v0=" + JSON.stringify(v0, null, 2),
+        "plain=" + JSON.stringify(plain, null, 2),
       );
-      const val = await createAuthor(v0);
+      const val = await createAuthor(plain);
       resume(err, val);
     });
   }
