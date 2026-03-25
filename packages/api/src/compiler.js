@@ -4,7 +4,6 @@ import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 import { buildInitAuthor, buildCreateAuthor } from "./author.js";
 
-console.log("process.env=" + JSON.stringify(process.env, null, 2));
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
   Checker as BasisChecker,
@@ -37,21 +36,17 @@ export class Checker extends BasisChecker {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[0], options, async (e0, v0) => {
-        const err = [];
-        const val = node;
-        resume(err, val);
-      });
+      const err = [];
+      const val = node;
+      resume(err, val);
     });
   }
 
   QUESTIONS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[0], options, async (e0, v0) => {
-        const err = [];
-        const val = node;
-        resume(err, val);
-      });
+      const err = [];
+      const val = node;
+      resume(err, val);
     });
   }
 
@@ -126,16 +121,6 @@ export class Transformer extends BasisTransformer {
         "v0=" + JSON.stringify(v0, null, 2),
       );
       const val = await createAuthor(v0);
-      resume(err, val);
-    });
-  }
-
-  HELLO(node, options, resume) {
-    this.visit(node.elts[0], options, async (e0, v0) => {
-      const data = options?.data || {};
-      const err = [];
-      const val = await items({
-      });
       resume(err, val);
     });
   }

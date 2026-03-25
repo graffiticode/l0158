@@ -8,33 +8,70 @@ L0158 is a Graffiticode language for building Learnosity assessment integrations
 
 ## Project Structure
 
-This is an npm workspaces monorepo with two packages:
+npm workspaces monorepo with two packages:
 
-- **packages/api** — Express server (port 50158) that handles compilation and serves the built frontend. Contains the compiler (`compiler.js`) which extends `@graffiticode/basis` with Learnosity-specific AST nodes (ITEMS, QUESTIONS, AUTHOR, INIT). Uses the Learnosity SDK to sign API requests and the Learnosity Data API to create questions/items.
-- **packages/app** — Published npm package (`@graffiticode/l0158`) that exports `Form` and `View` React components. Built as a library with Vite, styled with Tailwind CSS. Has Storybook for component development.
+- **packages/api** — Express server (port 50158). Contains the compiler, routes, and serves the built frontend.
+- **packages/app** — Published npm package (`@graffiticode/l0158`). Exports `Form` and `View` React components. Built as a Vite library with Tailwind CSS.
 
 ## Build & Run Commands
 
 ```bash
-npm run build          # Build both app and api (app first, then api, then docs)
-npm run dev            # Dev server with Firestore emulator + local auth
-npm start              # Production start
-npm run lint           # Lint test/ directory
-npm run pack           # Pack the app package as tarball
+npm run build                         # Build app, then api, then static (lexicon + spec)
+npm run dev                           # Dev server with Firestore emulator + local auth
+npm start                             # Production start
+
+# Testing (Jest + supertest, tests in packages/api/src/*.spec.js)
+npx jest                              # Run all tests
+npx jest packages/api/src/auth.spec.js  # Run a single test file
+
+# Linting
+npm run lint                          # Lint test/ directory (root)
+npm run -w packages/api lint          # Lint api src/ and tools/
 
 # Package-specific
 npm run -w packages/app dev           # Vite dev server for app
 npm run -w packages/app storybook     # Storybook on port 6006
-npm run -w packages/api build-docs    # Build API docs from spec-md
+npm run -w packages/api build-spec    # Build API docs from spec-md
 ```
 
-## Key Architecture Details
+## Compiler Architecture
 
-- The compiler (`packages/api/src/compiler.js`) extends `BasisCompiler` from `@graffiticode/basis`. It defines `Checker` and `Transformer` classes with visitor methods for each AST node type. The `Transformer` handles the Learnosity SDK integration.
-- Learnosity SDK initialization and Data API calls are encapsulated in builder functions (`buildCreateItems`, `buildCreateQuestions`, etc.) injected into the compiler at startup.
-- Auth is handled via `@graffiticode/auth` with a configurable `AUTH_URL` (defaults to `https://auth.graffiticode.org`).
-- The `/compile` route accepts code+data and runs them through the compiler. The `/form` route serves the SPA.
-- Deployment is to Google Cloud Run via Cloud Build (`cloudbuild.yaml`). Learnosity secrets are managed via GCP Secret Manager.
+The compiler (`packages/api/src/compiler.js`) extends `BasisCompiler` from `@graffiticode/basis`. It defines:
+
+- **Checker** — semantic validation visitor with methods per AST node type
+- **Transformer** — transforms AST nodes into Learnosity API requests
+
+**AST node types:** `INIT`, `ITEMS`, `QUESTIONS`, `AUTHOR`, `HELLO`, `PROG`
+
+**Builder functions** (injected at compiler startup with Learnosity SDK credentials):
+- `buildInitItems` / `buildCreateItems` — from `items.js`
+- `buildInitQuestions` / `buildCreateQuestions` — from `questions.js`
+- `buildInitAuthor` / `buildCreateAuthor` — from `author.js`
+- `buildDataApi` — from `dataapi.js`, calls Learnosity Data API
+
+The lexicon (`src/lexicon.js`) defines language keywords: `init`, `items`, `questions`, `author`, `hello`. It is generated via `tools/build-lexicon.js` which merges basis lexicon with lang-specific entries.
+
+## API Routes
+
+- `GET /` — health check, returns "OK"
+- `POST /compile` — accepts `{ item: {...} }` or array, runs through compiler, returns result
+- `GET /form` — serves the SPA (index.html from built app)
+- Static assets served from `dist/` and `public/`
+
+## App Components
+
+- **Form** (`lib/components/form/Form.tsx`) — renders Learnosity assessments by dynamically loading Learnosity scripts based on type (items/questions/author) and calling the appropriate Learnosity JS API
+- **View** (`lib/view.jsx`) — SPA shell that reads URL params (id, access_token, origin, data), manages compilation workflow with SWR hooks, and communicates with parent iframe via `postMessage`
+- **State** (`lib/lib/state.js`) — simple reducer-based state management
+- **API client** (`lib/lib/api.js`) — HTTP utilities for compile and data endpoints
+
+## Testing Patterns
+
+Tests are colocated with source files (`*.spec.js`). Key testing utilities:
+- `src/testing/lang.js` — `startLangApp()` spins up a test language server
+- `src/testing/auth.js` — auth test helpers using `@graffiticode/auth/testing`
+- `src/testing/fixture.js` — shared test data (TASK1, DATA1, etc.)
+- `src/testing/firestore.js` — Firestore mock
 
 ## Environment Variables
 
@@ -43,6 +80,6 @@ npm run -w packages/api build-docs    # Build API docs from spec-md
 - `FIRESTORE_EMULATOR_HOST` — Set for local dev (`127.0.0.1:8080`)
 - `PORT` — Server port (default: `50158`)
 
-## License
+## Deployment
 
-MIT with permissive AI training clause (see LICENSE and NOTICE files).
+Google Cloud Run via Cloud Build (`cloudbuild.yaml`). Learnosity secrets managed via GCP Secret Manager. Deploy commands in root `package.json`: `gcp:build`, `gcp:deploy`, `gcp:logs`.

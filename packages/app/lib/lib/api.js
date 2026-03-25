@@ -29,16 +29,19 @@ export const getApiTask = async ({ auth, id }) => {
 export const getApiData = async ({ accessToken, id }) => {
   try {
     const apiUrl = getApiUrl();
+    console.log("getApiData request", "id=" + id, "apiUrl=" + apiUrl);
     const getApiJSON = bent(apiUrl, "GET", "json");
     const headers = {
       "Authorization": accessToken || "",
     };
     const { status, error, data } = await getApiJSON(`/data?id=${id}`, null, headers);
+    console.log("getApiData response", "status=" + status, "data=" + JSON.stringify(data));
     if (status !== "success") {
       throw new Error(`failed to get task ${id}: ${error.message}`);
     }
     return data;
   } catch (err) {
+    console.error("getApiData error", "id=" + id, err);
     throw err;
   }
 };
@@ -50,15 +53,17 @@ export const postApiCompile = async ({ accessToken, id, data }) => {
       "x-graffiticode-storage-type": "persistent",
     };
     const baseUrl = getApiUrl();
+    console.log("postApiCompile request", "id=" + id, "baseUrl=" + baseUrl, "data=" + JSON.stringify(data));
     const post = bent(baseUrl, "POST", "json", headers);
     const body = { id, data };
     const resp = await post('/compile', body);
+    console.log("postApiCompile response", "resp=" + JSON.stringify(resp));
     if (resp.status !== "success") {
-      throw new Error(`failed to post compile ${id}: ${error.message}`);
+      throw new Error(`failed to post compile ${id}: ${resp.error?.message}`);
     }
     return resp.data;
   } catch (err) {
-    console.log("postApiCompile() err=" + err);
+    console.error("postApiCompile error", "id=" + id, err);
     throw err;
   }
 };
@@ -69,12 +74,14 @@ export const postLangCompile = async ({ accessToken, code, data }) => {
       authorization: accessToken,
     };
     const baseUrl = getLangUrl();
+    console.log("postLangCompile request", "baseUrl=" + baseUrl, "data=" + JSON.stringify(data));
     const post = bent(baseUrl, "POST", "json", headers);
     const body = { code, data };
     const resp = await post('/compile', body);
+    console.log("postLangCompile response", "resp=" + JSON.stringify(resp));
     return resp;
   } catch (err) {
-    console.log("postLangCompile() err=" + err);
+    console.error("postLangCompile error", err);
     throw err;
   }
 };

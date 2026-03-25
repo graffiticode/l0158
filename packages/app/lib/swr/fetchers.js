@@ -94,7 +94,7 @@ export const initRequest = async ({ accessToken, data }) => {
   try {
     return await postLangCompile({accessToken, code, data});
   } catch (err) {
-    console.log(x.stack);
+    console.error("initRequest error", err);
     throw err;
   }
 };

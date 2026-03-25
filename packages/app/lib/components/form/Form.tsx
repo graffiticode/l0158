@@ -32,11 +32,11 @@ export const Form = ({ state }) => {
       'https://items.learnosity.com/?latest-lts';
     script.async = true;
     script.onload = () => {
-      console.log("loaded");
+      console.log("Learnosity script loaded", "type=" + type, "src=" + script.src);
       setScriptLoaded(true);
     };
-    script.onerror = () => {
-      console.log("error");
+    script.onerror = (e) => {
+      console.error("Learnosity script failed to load", "type=" + type, "src=" + script.src, e);
     };
     document.body.appendChild(script);
     return () => {
@@ -49,12 +49,13 @@ export const Form = ({ state }) => {
             type === "questions" ? (window as any).LearnosityApp :
             type === "author" ? (window as any).LearnosityAuthor :
             (window as any).LearnosityItems;
+      console.log("Learnosity init", "type=" + type, "request=" + JSON.stringify(request));
       LearnosityApp.init(request, {
         readyListener: () => {
-          console.log("ready");
+          console.log("Learnosity ready", "type=" + type);
         },
         errorListener(err) {
-          console.log('error', err);
+          console.error("Learnosity error", "type=" + type, err);
         }
       });
     }
