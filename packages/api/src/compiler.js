@@ -3,6 +3,7 @@ import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 import { buildInitAuthor, buildCreateAuthor } from "./author.js";
+import { questionTypeBuilders, attributeFields } from "./question-types.js";
 
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
@@ -51,9 +52,11 @@ export class Checker extends BasisChecker {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const err = [];
-      const val = node;
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
     });
   }
 
@@ -72,6 +75,30 @@ export class Checker extends BasisChecker {
       resume(err, val);
     });
   }
+}
+
+// Generate Checker methods for question types (arity 1)
+for (const name of Object.keys(questionTypeBuilders)) {
+  Checker.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [];
+      const val = node;
+      resume(err, val);
+    });
+  };
+}
+
+// Generate Checker methods for attributes (arity 2)
+for (const name of Object.keys(attributeFields)) {
+  Checker.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
+    });
+  };
 }
 
 export class Transformer extends BasisTransformer {
@@ -111,16 +138,18 @@ export class Transformer extends BasisTransformer {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const plain = toPlainObject(v0);
-      console.log(
-        "ITEMS()",
-        "v0 type=" + typeof v0,
-        "isArray=" + Array.isArray(v0),
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
-      const err = [];
-      const val = await createItems({items: [plain]});
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const plain0 = toPlainObject(v0);
+        const plain1 = toPlainObject(v1);
+        console.log(
+          "ITEMS()",
+          "plain0=" + JSON.stringify(plain0, null, 2),
+          "plain1=" + JSON.stringify(plain1, null, 2),
+        );
+        const err = [].concat(e0 || [], e1 || []);
+        const val = await createItems({items: [{ ...plain1, ...plain0 }]});
+        resume(err, val);
+      });
     });
   }
 
@@ -160,6 +189,32 @@ export class Transformer extends BasisTransformer {
       resume(err, val);
     });
   }
+}
+
+// Generate Transformer methods for question types (arity 1)
+for (const [name, builder] of Object.entries(questionTypeBuilders)) {
+  Transformer.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [];
+      const attrs = toPlainObject(v0);
+      const val = builder(attrs);
+      resume(err, val);
+    });
+  };
+}
+
+// Generate Transformer methods for attributes (arity 2)
+for (const [name, field] of Object.entries(attributeFields)) {
+  Transformer.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const continuation = toPlainObject(v1);
+        const val = { ...continuation, [field]: v0 };
+        resume(err, val);
+      });
+    });
+  };
 }
 
 export const compiler = new BasisCompiler({
