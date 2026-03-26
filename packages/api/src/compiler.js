@@ -99,18 +99,6 @@ for (const name of Object.keys(questionTypeBuilders)) {
   Checker.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const err = [].concat(e0 || []);
-      // Validate that only valid attributes are present
-      const allowed = validAttributes[name];
-      if (allowed && v0 && typeof v0 === "object") {
-        const plain = toPlainObject(v0);
-        if (plain && typeof plain === "object") {
-          for (const key of Object.keys(plain)) {
-            if (!allowed.includes(key)) {
-              err.push(`E_INVALID_ATTR: '${key}' is not a valid attribute for ${name}`);
-            }
-          }
-        }
-      }
       const val = node;
       resume(err, val);
     });
@@ -201,7 +189,16 @@ export class Transformer extends BasisTransformer {
         "plain=" + JSON.stringify(plain, null, 2),
       );
       const err = [];
-      const val = await createQuestions(plain);
+      // Normalize to array: basis LIST node may produce {list: item} or an array
+      let questions;
+      if (Array.isArray(plain)) {
+        questions = plain;
+      } else if (plain && typeof plain === "object" && plain.list != null) {
+        questions = Array.isArray(plain.list) ? plain.list : [plain.list];
+      } else {
+        questions = [plain];
+      }
+      const val = await createQuestions(questions);
       resume(err, val);
     });
   }

@@ -35,4 +35,16 @@ describe("compiler", () => {
     const result = await compile('hello "world"..');
     expect(result).toBe("world");
   });
+
+  test("mcq with empty record produces question json", async () => {
+    const result = await compile('mcq {}..');
+    expect(result.type).toBe("mcq");
+    expect(result.stimulus).toBeDefined();
+  });
+
+  test("items questions [mcq {}] compiles", async () => {
+    const result = await compile('items questions [mcq {}] {v:2}..');
+    console.log("items result:", JSON.stringify(result, null, 2));
+    expect(result).toBeDefined();
+  });
 });
