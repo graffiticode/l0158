@@ -43,9 +43,9 @@ export const buildCreateQuestions = ({
   // WARNING: Only using the data from the first and only question. If we ever support
   // more than one question here, this needs to be fixed.
   const templateVariablesRecords = data[0]?.data?.templateVariablesRecords;
+  const batchId = Date.now().toString(36);
   const questions = data.map((question, index) => {
-    const questionId = question.id || index;
-    const reference = `artcompiler-l0158-${question.type}-${questionId}`;
+    const reference = `artcompiler-l0158-${question.type}-${batchId}-${index}`;
     const data = fixVariableRefs(question);
     // console.log(
     //   "createQuestions()",

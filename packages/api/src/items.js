@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
+function shortId() {
+  return Date.now().toString(36);
+}
+
 const getDynamicContentData = (data) => {
   if (!data) {
     return;
@@ -42,8 +46,7 @@ export const buildCreateItems = ({
   const [ item ] = items;
   const { templateVariablesRecords } = item;
   const { questionRefs } = item;
-  const itemId = questionRefs[0].split("-").slice(2).join("-");
-  const itemRef = `artcompiler-${itemId}`;
+  const itemRef = `artcompiler-l0158-${shortId()}`;
   const questions = item.data.questions.map(
     question => ({
       reference: question.reference
