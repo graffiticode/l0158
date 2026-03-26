@@ -3,7 +3,7 @@ import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 import { buildInitAuthor, buildCreateAuthor } from "./author.js";
-import { questionTypeBuilders, attributeFields } from "./question-types.js";
+import { questionTypeBuilders, attributeFields, validAttributes } from "./question-types.js";
 
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
@@ -77,11 +77,40 @@ export class Checker extends BasisChecker {
   }
 }
 
+function checkValueType(value, expectedType, name) {
+  if (expectedType === "any") return null;
+  if (expectedType === "string" && typeof value !== "string") {
+    return `E_ARG_TYPE: ${name} expects a string`;
+  }
+  if (expectedType === "number" && typeof value !== "number") {
+    return `E_ARG_TYPE: ${name} expects a number`;
+  }
+  if (expectedType === "boolean" && typeof value !== "boolean") {
+    return `E_ARG_TYPE: ${name} expects a boolean`;
+  }
+  if (expectedType === "array" && !Array.isArray(value)) {
+    return `E_ARG_TYPE: ${name} expects an array`;
+  }
+  return null;
+}
+
 // Generate Checker methods for question types (arity 1)
 for (const name of Object.keys(questionTypeBuilders)) {
   Checker.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const err = [];
+      const err = [].concat(e0 || []);
+      // Validate that only valid attributes are present
+      const allowed = validAttributes[name];
+      if (allowed && v0 && typeof v0 === "object") {
+        const plain = toPlainObject(v0);
+        if (plain && typeof plain === "object") {
+          for (const key of Object.keys(plain)) {
+            if (!allowed.includes(key)) {
+              err.push(`E_INVALID_ATTR: '${key}' is not a valid attribute for ${name}`);
+            }
+          }
+        }
+      }
       const val = node;
       resume(err, val);
     });
@@ -89,11 +118,20 @@ for (const name of Object.keys(questionTypeBuilders)) {
 }
 
 // Generate Checker methods for attributes (arity 2)
-for (const name of Object.keys(attributeFields)) {
+for (const [name, meta] of Object.entries(attributeFields)) {
   Checker.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const err = [].concat(e0 || [], e1 || []);
+        // Validate value type
+        const typeErr = checkValueType(v0, meta.valueType, name);
+        if (typeErr) {
+          err.push(typeErr);
+        }
+        // Validate allowed values (enum)
+        if (meta.allowed && typeof v0 === "string" && !meta.allowed.includes(v0)) {
+          err.push(`E_INVALID_VALUE: '${v0}' is not valid for ${name}. Expected one of: ${meta.allowed.join(", ")}`);
+        }
         const val = node;
         resume(err, val);
       });
@@ -204,13 +242,13 @@ for (const [name, builder] of Object.entries(questionTypeBuilders)) {
 }
 
 // Generate Transformer methods for attributes (arity 2)
-for (const [name, field] of Object.entries(attributeFields)) {
+for (const [name, meta] of Object.entries(attributeFields)) {
   Transformer.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const err = [].concat(e0 || [], e1 || []);
         const continuation = toPlainObject(v1);
-        const val = { ...continuation, [field]: v0 };
+        const val = { ...continuation, [meta.field]: v0 };
         resume(err, val);
       });
     });

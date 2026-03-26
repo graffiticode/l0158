@@ -417,22 +417,38 @@ export const questionTypeBuilders = {
   CLASSIFICATION: buildClassification,
 };
 
-// Registry mapping AST names to attribute field names
+// Registry mapping AST names to attribute field names and expected types
+// valueType: "string" | "number" | "boolean" | "array" | "any"
 export const attributeFields = {
-  STIMULUS: "stimulus",
-  OPTIONS: "options",
-  VALID_RESPONSE: "valid_response",
-  INSTANT_FEEDBACK: "instant_feedback",
-  SHUFFLE_OPTIONS: "shuffle_options",
-  MULTIPLE_RESPONSES: "multiple_responses",
-  CASE_SENSITIVE: "case_sensitive",
-  MAX_LENGTH: "max_length",
-  MAX_WORD_COUNT: "max_word_count",
-  PLACEHOLDER: "placeholder",
-  POSSIBLE_RESPONSES: "possible_responses",
-  ROWS: "rows",
-  COLUMNS: "columns",
-  LIST: "list",
-  CATEGORIES: "categories",
-  METHOD: "method",
+  STIMULUS: { field: "stimulus", valueType: "string" },
+  OPTIONS: { field: "options", valueType: "array" },
+  VALID_RESPONSE: { field: "valid_response", valueType: "any" },
+  INSTANT_FEEDBACK: { field: "instant_feedback", valueType: "boolean" },
+  SHUFFLE_OPTIONS: { field: "shuffle_options", valueType: "boolean" },
+  MULTIPLE_RESPONSES: { field: "multiple_responses", valueType: "boolean" },
+  CASE_SENSITIVE: { field: "case_sensitive", valueType: "boolean" },
+  MAX_LENGTH: { field: "max_length", valueType: "number" },
+  MAX_WORD_COUNT: { field: "max_word_count", valueType: "number" },
+  PLACEHOLDER: { field: "placeholder", valueType: "string" },
+  POSSIBLE_RESPONSES: { field: "possible_responses", valueType: "array" },
+  ROWS: { field: "rows", valueType: "array" },
+  COLUMNS: { field: "columns", valueType: "array" },
+  LIST: { field: "list", valueType: "array" },
+  CATEGORIES: { field: "categories", valueType: "array" },
+  METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
+};
+
+// Which attributes are valid for each question type
+export const validAttributes = {
+  MCQ: ["stimulus", "options", "valid_response", "instant_feedback", "shuffle_options", "multiple_responses"],
+  SHORTTEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive", "max_length", "placeholder"],
+  LONGTEXT: ["stimulus", "max_word_count", "placeholder"],
+  PLAINTEXT: ["stimulus", "max_word_count", "placeholder"],
+  CLOZETEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive"],
+  CLOZEASSOCIATION: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
+  CLOZEDROPDOWN: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
+  CLOZEFORMULA: ["stimulus", "valid_response", "instant_feedback", "method"],
+  CHOICEMATRIX: ["stimulus", "rows", "columns", "valid_response", "instant_feedback", "shuffle_options"],
+  ORDERLIST: ["stimulus", "list", "valid_response", "instant_feedback"],
+  CLASSIFICATION: ["stimulus", "categories", "possible_responses", "valid_response", "instant_feedback"],
 };
