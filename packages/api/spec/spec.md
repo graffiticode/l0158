@@ -14,8 +14,11 @@ semantics and base library can be found here:
 | Function | Arity | Signature | Description |
 | :------- | :---: | :-------- | :---------- |
 | `init` | 1 | `<record: record>` | Initializes a Learnosity API session |
-| `items` | 2 | `<value: any, record: record>` | Creates a Learnosity Items API request |
-| `questions` | 1 | `<list: list>` | Creates a Learnosity Questions API request |
+| `items` | 1 | `<record: record>` | Creates a Learnosity Items API request from a record or list of items |
+| `item` | 1 | `<record: record>` | Defines a single item (for use in a list passed to `items`) |
+| `questions` | 2 | `<list: list, continuation: record>` | Chainable attribute: sets the questions for an item |
+| `features` | 2 | `<list: list, continuation: record>` | Chainable attribute: sets the features for an item (placeholder) |
+| `layout` | 2 | `<string: string, continuation: record>` | Chainable attribute: sets the layout template for an item (placeholder) |
 | `author` | 1 | `<record: record>` | Creates a Learnosity Author API request |
 | `hello` | 1 | `<string: string>` | Renders a hello message |
 
@@ -77,9 +80,10 @@ init { "type": "items" }
 
 ### items
 
-Creates a Learnosity Items API request. Takes a value (typically the result
-of `questions`) and a continuation record for additional item attributes.
+Creates a Learnosity Items API request. Accepts either a single item record
+(built from chained attributes) or a list of `item` objects.
 
+Shorthand (single item):
 ```
 items
   questions [
@@ -92,9 +96,29 @@ items
   {}..
 ```
 
+Full form (multiple items):
+```
+items [
+  item questions [mcq {}] {},
+  item questions [shorttext {}] {}
+]..
+```
+
+### item
+
+Defines a single item for use in a list passed to `items`. Takes a record
+of chained attributes (questions, features, layout).
+
+```
+item
+  questions [mcq {}]
+  {}
+```
+
 ### questions
 
-Creates a Learnosity Questions API request from a list of question objects.
+Chainable arity-2 attribute that sets the questions for an item. Takes a
+list of question objects and a continuation.
 
 ```
 questions [
@@ -103,7 +127,27 @@ questions [
     options ["3", "4", "5"]
     valid-response [1]
     {}
-]..
+] {}
+```
+
+### features
+
+Chainable arity-2 attribute that sets the features for an item. Takes a
+list of feature objects and a continuation. (Placeholder — not yet implemented.)
+
+```
+features [
+  { "type": "sharedpassage", "content": "Read the following passage..." }
+] {}
+```
+
+### layout
+
+Chainable arity-2 attribute that sets the HTML layout template for an item.
+Takes a string and a continuation. (Placeholder — not yet implemented.)
+
+```
+layout "<div class='row'><span class='learnosity-response question-q0'></span></div>" {}
 ```
 
 ### author
@@ -265,7 +309,7 @@ classification
 
 ## Program Examples
 
-Multiple choice assessment with Items API:
+Multiple choice assessment (shorthand):
 
 ```
 items
@@ -280,7 +324,7 @@ items
   {}..
 ```
 
-Multiple questions in one assessment:
+Multiple questions in one item:
 
 ```
 items
@@ -303,4 +347,13 @@ Question with all defaults (renders a mock MCQ):
 
 ```
 items questions [mcq {}] {}..
+```
+
+Multiple items (full form):
+
+```
+items [
+  item questions [mcq {}] {},
+  item questions [shorttext {}] {}
+]..
 ```

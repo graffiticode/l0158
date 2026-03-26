@@ -8,10 +8,14 @@ and renders them via a React frontend.
 ## L0158 Specific Guidelines
 
 - Use `items` to create Items API requests for rendering assessments
-- Use `questions` to create Questions API requests with question definitions
+- Use `item` to define individual items when building a list for `items`
+- Use `questions` as a chainable attribute to set questions on an item
+- Use `features` as a chainable attribute to set features on an item (placeholder)
+- Use `layout` as a chainable attribute to set the HTML template for an item (placeholder)
 - Use `author` to create Author API requests for item authoring
 - Use `init` to initialize a Learnosity API session by type
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
+- `items questions [...] {}..` is shorthand for `items [item questions [...] {}]..`
 
 ### Question Type Functions
 
@@ -53,7 +57,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 ## Example Patterns
 
-- Simple MCQ assessment:
+- Simple MCQ assessment (shorthand):
   ```
   items
     questions [
@@ -69,6 +73,14 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 - MCQ with all defaults:
   ```
   items questions [mcq {}] {}..
+  ```
+
+- Multiple items (full form):
+  ```
+  items [
+    item questions [mcq {}] {},
+    item questions [shorttext {}] {}
+  ]..
   ```
 
 - Fill-in-the-blank:
