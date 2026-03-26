@@ -208,7 +208,7 @@ export const lexicon = {
   },
   "list": {
     "tk": 1,
-    "name": "LIST",
+    "name": "ORDER_LIST",
     "cls": "function",
     "length": 2,
     "arity": 2

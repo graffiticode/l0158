@@ -433,7 +433,7 @@ export const attributeFields = {
   POSSIBLE_RESPONSES: { field: "possible_responses", valueType: "array" },
   ROWS: { field: "rows", valueType: "array" },
   COLUMNS: { field: "columns", valueType: "array" },
-  LIST: { field: "list", valueType: "array" },
+  ORDER_LIST: { field: "list", valueType: "array" },
   CATEGORIES: { field: "categories", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
 };

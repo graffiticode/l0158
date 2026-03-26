@@ -47,4 +47,12 @@ describe("compiler", () => {
     console.log("items result:", JSON.stringify(result, null, 2));
     expect(result).toBeDefined();
   });
+
+  test("mcq with chained attributes compiles", async () => {
+    const result = await compile('mcq stimulus "What is the capital of France?" options ["Paris", "London", "Berlin", "Madrid"] valid-response [0] {}..');
+    expect(result.type).toBe("mcq");
+    expect(result.stimulus).toBe("What is the capital of France?");
+    expect(result.options).toHaveLength(4);
+    expect(result.validation.valid_response.value).toEqual(["0"]);
+  }, 10000);
 });

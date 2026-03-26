@@ -77,23 +77,6 @@ export class Checker extends BasisChecker {
   }
 }
 
-function checkValueType(value, expectedType, name) {
-  if (expectedType === "any") return null;
-  if (expectedType === "string" && typeof value !== "string") {
-    return `E_ARG_TYPE: ${name} expects a string`;
-  }
-  if (expectedType === "number" && typeof value !== "number") {
-    return `E_ARG_TYPE: ${name} expects a number`;
-  }
-  if (expectedType === "boolean" && typeof value !== "boolean") {
-    return `E_ARG_TYPE: ${name} expects a boolean`;
-  }
-  if (expectedType === "array" && !Array.isArray(value)) {
-    return `E_ARG_TYPE: ${name} expects an array`;
-  }
-  return null;
-}
-
 // Generate Checker methods for question types (arity 1)
 for (const name of Object.keys(questionTypeBuilders)) {
   Checker.prototype[name] = function(node, options, resume) {
@@ -111,15 +94,6 @@ for (const [name, meta] of Object.entries(attributeFields)) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const err = [].concat(e0 || [], e1 || []);
-        // Validate value type
-        const typeErr = checkValueType(v0, meta.valueType, name);
-        if (typeErr) {
-          err.push(typeErr);
-        }
-        // Validate allowed values (enum)
-        if (meta.allowed && typeof v0 === "string" && !meta.allowed.includes(v0)) {
-          err.push(`E_INVALID_VALUE: '${v0}' is not valid for ${name}. Expected one of: ${meta.allowed.join(", ")}`);
-        }
         const val = node;
         resume(err, val);
       });
