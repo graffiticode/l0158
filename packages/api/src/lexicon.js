@@ -12,15 +12,29 @@ export const lexicon = {
     "tk": 1,
     "name": "ITEMS",
     "cls": "function",
-    "length": 2,
-    "arity": 2
+    "length": 1,
+    "arity": 1
   },
   "questions": {
     "tk": 1,
     "name": "QUESTIONS",
     "cls": "function",
-    "length": 1,
-    "arity": 1
+    "length": 2,
+    "arity": 2
+  },
+  "features": {
+    "tk": 1,
+    "name": "FEATURES",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "layout": {
+    "tk": 1,
+    "name": "LAYOUT",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
   },
   "author": {
     "tk": 1,

@@ -42,10 +42,16 @@ describe("compiler", () => {
     expect(result.stimulus).toBeDefined();
   });
 
-  test("items questions [mcq {}] compiles", async () => {
-    const result = await compile('items questions [mcq {}] {v:2}..');
-    console.log("items result:", JSON.stringify(result, null, 2));
+  test("items questions [mcq {}] {} compiles", async () => {
+    const result = await compile('items questions [mcq {}] {}..');
     expect(result).toBeDefined();
+    expect(result.type).toBe("items");
+  });
+
+  test("items with features and layout compiles", async () => {
+    const result = await compile('items features [] questions [mcq {}] layout "" {}..');
+    expect(result).toBeDefined();
+    expect(result.type).toBe("items");
   });
 
   test("mcq with chained attributes compiles", async () => {

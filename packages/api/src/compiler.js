@@ -52,6 +52,14 @@ export class Checker extends BasisChecker {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [].concat(e0 || []);
+      const val = node;
+      resume(err, val);
+    });
+  }
+
+  QUESTIONS(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const err = [].concat(e0 || [], e1 || []);
         const val = node;
@@ -60,11 +68,23 @@ export class Checker extends BasisChecker {
     });
   }
 
-  QUESTIONS(node, options, resume) {
+  FEATURES(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const err = [];
-      const val = node;
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
+    });
+  }
+
+  LAYOUT(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
     });
   }
 
@@ -138,42 +158,76 @@ export class Transformer extends BasisTransformer {
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[1], options, async (e1, v1) => {
-        const plain0 = toPlainObject(v0);
-        const plain1 = toPlainObject(v1);
-        console.log(
-          "ITEMS()",
-          "plain0=" + JSON.stringify(plain0, null, 2),
-          "plain1=" + JSON.stringify(plain1, null, 2),
-        );
-        const err = [].concat(e0 || [], e1 || []);
-        const val = await createItems({items: [{ ...plain1, ...plain0 }]});
-        resume(err, val);
-      });
+      const plain = toPlainObject(v0);
+      console.log(
+        "ITEMS()",
+        "plain=" + JSON.stringify(plain, null, 2),
+      );
+      const err = [].concat(e0 || []);
+      const val = await createItems({items: [plain]});
+      resume(err, val);
     });
   }
 
   QUESTIONS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const plain = toPlainObject(v0);
-      console.log(
-        "QUESTIONS()",
-        "v0 type=" + typeof v0,
-        "isArray=" + Array.isArray(v0),
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
-      const err = [];
-      // Normalize to array: basis LIST node may produce {list: item} or an array
-      let questions;
-      if (Array.isArray(plain)) {
-        questions = plain;
-      } else if (plain && typeof plain === "object" && plain.list != null) {
-        questions = Array.isArray(plain.list) ? plain.list : [plain.list];
-      } else {
-        questions = [plain];
-      }
-      const val = await createQuestions(questions);
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const plain = toPlainObject(v0);
+        console.log(
+          "QUESTIONS()",
+          "plain=" + JSON.stringify(plain, null, 2),
+        );
+        const err = [].concat(e0 || [], e1 || []);
+        // Normalize to array: basis LIST node may produce {list: item} or an array
+        let questions;
+        if (Array.isArray(plain)) {
+          questions = plain;
+        } else if (plain && typeof plain === "object" && plain.list != null) {
+          questions = Array.isArray(plain.list) ? plain.list : [plain.list];
+        } else {
+          questions = [plain];
+        }
+        const questionsResult = await createQuestions(questions);
+        const continuation = toPlainObject(v1);
+        const val = { ...continuation, ...questionsResult };
+        resume(err, val);
+      });
+    });
+  }
+
+  FEATURES(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const plain = toPlainObject(v0);
+        console.log(
+          "FEATURES()",
+          "plain=" + JSON.stringify(plain, null, 2),
+        );
+        const err = [].concat(e0 || [], e1 || []);
+        // Normalize to array
+        let features;
+        if (Array.isArray(plain)) {
+          features = plain;
+        } else if (plain && typeof plain === "object" && plain.list != null) {
+          features = Array.isArray(plain.list) ? plain.list : [plain.list];
+        } else {
+          features = [plain];
+        }
+        const continuation = toPlainObject(v1);
+        const val = { ...continuation, features };
+        resume(err, val);
+      });
+    });
+  }
+
+  LAYOUT(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const continuation = toPlainObject(v1);
+        const val = { ...continuation, layout: v0 };
+        resume(err, val);
+      });
     });
   }
 
