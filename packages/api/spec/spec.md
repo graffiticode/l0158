@@ -11,13 +11,60 @@ semantics and base library can be found here:
 
 ## Functions
 
-| Function | Signature | Description |
-| :------- | :-------- | :---------- |
-| `init` | `<record: record>` | Initializes a Learnosity API session |
-| `items` | `<record: record>` | Creates a Learnosity Items API request |
-| `questions` | `<record: record>` | Creates a Learnosity Questions API request |
-| `author` | `<record: record>` | Creates a Learnosity Author API request |
-| `hello` | `<string: string>` | Renders a hello message |
+| Function | Arity | Signature | Description |
+| :------- | :---: | :-------- | :---------- |
+| `init` | 1 | `<record: record>` | Initializes a Learnosity API session |
+| `items` | 2 | `<value: any, record: record>` | Creates a Learnosity Items API request |
+| `questions` | 1 | `<list: list>` | Creates a Learnosity Questions API request |
+| `author` | 1 | `<record: record>` | Creates a Learnosity Author API request |
+| `hello` | 1 | `<string: string>` | Renders a hello message |
+
+### Question Type Functions
+
+Each question type function takes a record of attributes (built via chainable
+attribute keywords) and produces a Learnosity question JSON object. Attributes
+not provided are filled with sensible defaults, so `mcq {}` produces a
+complete renderable question.
+
+| Function | Arity | Learnosity Type | Description |
+| :------- | :---: | :-------------- | :---------- |
+| `mcq` | 1 | `mcq` | Multiple choice question |
+| `shorttext` | 1 | `shorttext` | Short typed response |
+| `longtext` | 1 | `longtextV2` | Essay with rich text editor |
+| `plaintext` | 1 | `plaintext` | Essay with plain text |
+| `clozetext` | 1 | `clozetext` | Fill-in-the-blank (typed responses) |
+| `clozeassociation` | 1 | `clozeassociation` | Fill-in-the-blank (drag and drop) |
+| `clozedropdown` | 1 | `clozedropdown` | Fill-in-the-blank (dropdown select) |
+| `clozeformula` | 1 | `clozeformulaV2` | Fill-in-the-blank (math/formula) |
+| `choicematrix` | 1 | `choicematrix` | Grid of options by stems |
+| `orderlist` | 1 | `orderlist` | Drag items into correct order |
+| `classification` | 1 | `classification` | Sort items into categories |
+
+### Attribute Keywords
+
+Attribute keywords are arity-2 functions that chain together to build a record
+of attributes for a question type. The chain terminates with `{}`.
+
+| Keyword | Value Type | Learnosity Field | Used By |
+| :------ | :--------- | :--------------- | :------ |
+| `stimulus` | string | `stimulus` | All types |
+| `options` | string[] | `options` | mcq, choicematrix |
+| `valid-response` | varies | `validation.valid_response.value` | All scored types |
+| `instant-feedback` | boolean | `instant_feedback` | All types |
+| `shuffle-options` | boolean | `shuffle_options` | mcq, choicematrix |
+| `multiple-responses` | boolean | `multiple_responses` | mcq |
+| `case-sensitive` | boolean | `case_sensitive` | shorttext, clozetext |
+| `max-length` | number | `max_length` | shorttext |
+| `max-word-count` | number | `max_word_count` | longtext, plaintext |
+| `placeholder` | string | `placeholder` | longtext, plaintext, shorttext |
+| `possible-responses` | array | `possible_responses` | clozeassociation, clozedropdown, classification |
+| `rows` | string[] | `stems` | choicematrix |
+| `columns` | string[] | `options` | choicematrix |
+| `list` | string[] | `list` | orderlist |
+| `categories` | string[] | `ui_style.column_titles` | classification |
+| `method` | string | `validation method` | clozeformula |
+
+## Function Reference
 
 ### init
 
@@ -30,32 +77,33 @@ init { "type": "items" }
 
 ### items
 
-Creates a Learnosity Items API request from the given item definition record.
+Creates a Learnosity Items API request. Takes a value (typically the result
+of `questions`) and a continuation record for additional item attributes.
 
 ```
-items questions [{
-  "type": "custom",
-  "stimulus": "What color means go?",
-  "valid_response": { "value": "Green", "score": 1 },
-  "js": {
-    "question": "https://l0155.graffiticode.org/question.js",
-    "scorer": "https://l0155.graffiticode.org/scorer.js"
-  },
-  "css": "https://l0155.graffiticode.org/question.css",
-  "instant_feedback": true
-}] {}..
+items
+  questions [
+    mcq
+      stimulus "What is the capital of France?"
+      options ["Paris", "London", "Berlin", "Madrid"]
+      valid-response [0]
+      {}
+  ]
+  {}..
 ```
 
 ### questions
 
-Creates a Learnosity Questions API request from the given question definitions.
+Creates a Learnosity Questions API request from a list of question objects.
 
 ```
-questions [{
-  "type": "custom",
-  "stimulus": "What is 2 + 2?",
-  "valid_response": { "value": "4", "score": 1 }
-}] {}..
+questions [
+  mcq
+    stimulus "What is 2 + 2?"
+    options ["3", "4", "5"]
+    valid-response [1]
+    {}
+]..
 ```
 
 ### author
@@ -71,17 +119,188 @@ author { "mode": "item_edit" }..
 Renders a hello message that includes the given string.
 
 ```
-hello "world"  | returns "hello, world!"
+hello "world"..
+```
+
+### mcq
+
+Creates a multiple choice question. Options are provided as a string array
+and `valid-response` is an array of correct option indices.
+
+```
+mcq
+  stimulus "Which planet is closest to the Sun?"
+  options ["Mercury", "Venus", "Earth", "Mars"]
+  valid-response [0]
+  instant-feedback true
+  {}..
+```
+
+### shorttext
+
+Creates a short text response question.
+
+```
+shorttext
+  stimulus "What is the chemical symbol for water?"
+  valid-response "H2O"
+  case-sensitive false
+  {}..
+```
+
+### longtext
+
+Creates an essay question with a rich text editor. No auto-scoring.
+
+```
+longtext
+  stimulus "Describe the water cycle in your own words."
+  max-word-count 300
+  placeholder "Write your essay here..."
+  {}..
+```
+
+### plaintext
+
+Creates an essay question with a plain text editor. No auto-scoring.
+
+```
+plaintext
+  stimulus "Explain your reasoning."
+  max-word-count 200
+  {}..
+```
+
+### clozetext
+
+Creates a fill-in-the-blank question where students type responses.
+Use `{{response}}` markers in the stimulus for each blank.
+
+```
+clozetext
+  stimulus "The {{response}} is the powerhouse of the cell."
+  valid-response [["mitochondria", "mitochondrion"]]
+  case-sensitive false
+  {}..
+```
+
+### clozeassociation
+
+Creates a fill-in-the-blank question where students drag responses from
+a list of options into blanks.
+
+```
+clozeassociation
+  stimulus "Drag the correct answer: {{response}} is the capital of France."
+  possible-responses ["Paris", "London", "Berlin"]
+  valid-response [["Paris"]]
+  {}..
+```
+
+### clozedropdown
+
+Creates a fill-in-the-blank question with dropdown selects.
+
+```
+clozedropdown
+  stimulus "Select the answer: The sky is {{response}}."
+  possible-responses [["blue", "red", "green"]]
+  valid-response [["blue"]]
+  {}..
+```
+
+### clozeformula
+
+Creates a fill-in-the-blank question for math/formula input.
+The `method` attribute controls how the answer is validated.
+
+```
+clozeformula
+  stimulus "Solve for x: 2x + 4 = 10. x = {{response}}"
+  valid-response ["3"]
+  method "equivLiteral"
+  {}..
+```
+
+Supported methods: `equivLiteral`, `equivSymbolic`, `equivValue`,
+`isSimplified`, `isFactorised`, `isExpanded`, `stringMatch`, `isUnit`.
+
+### choicematrix
+
+Creates a grid question where students select an option for each row.
+
+```
+choicematrix
+  stimulus "Classify each statement as true or false."
+  rows ["The sun is a star", "The moon is a planet"]
+  columns ["True", "False"]
+  valid-response [[0], [1]]
+  {}..
+```
+
+### orderlist
+
+Creates a question where students drag items into the correct order.
+
+```
+orderlist
+  stimulus "Arrange these events in chronological order."
+  list ["World War II", "World War I", "Moon Landing", "Internet"]
+  valid-response [1, 0, 2, 3]
+  {}..
+```
+
+### classification
+
+Creates a question where students sort items into categories.
+
+```
+classification
+  stimulus "Sort the animals into the correct categories."
+  categories ["Mammals", "Reptiles"]
+  possible-responses ["Dog", "Snake", "Cat", "Lizard"]
+  valid-response [[0, 2], [1, 3]]
+  {}..
 ```
 
 ## Program Examples
 
-Create a Learnosity items assessment with a custom question:
+Multiple choice assessment with Items API:
 
 ```
-items questions [{
-  "type": "custom",
-  "stimulus": "What color means go?",
-  "valid_response": { "value": "Green", "score": 1 }
-}] {}..
+items
+  questions [
+    mcq
+      stimulus "What color means go?"
+      options ["Red", "Yellow", "Green"]
+      valid-response [2]
+      instant-feedback true
+      {}
+  ]
+  {}..
+```
+
+Multiple questions in one assessment:
+
+```
+items
+  questions [
+    mcq
+      stimulus "What is 2 + 2?"
+      options ["3", "4", "5"]
+      valid-response [1]
+      {},
+    shorttext
+      stimulus "Spell the word for the number 4."
+      valid-response "four"
+      case-sensitive false
+      {}
+  ]
+  {}..
+```
+
+Question with all defaults (renders a mock MCQ):
+
+```
+items questions [mcq {}] {}..
 ```
