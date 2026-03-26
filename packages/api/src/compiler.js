@@ -58,6 +58,14 @@ export class Checker extends BasisChecker {
     });
   }
 
+  ITEM(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [].concat(e0 || []);
+      const val = node;
+      resume(err, val);
+    });
+  }
+
   QUESTIONS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
@@ -164,7 +172,25 @@ export class Transformer extends BasisTransformer {
         "plain=" + JSON.stringify(plain, null, 2),
       );
       const err = [].concat(e0 || []);
-      const val = await createItems({items: [plain]});
+      // Normalize: accept a list of items or a single item record (shorthand)
+      let items;
+      if (Array.isArray(plain)) {
+        items = plain;
+      } else if (plain && typeof plain === "object" && plain.list != null) {
+        items = Array.isArray(plain.list) ? plain.list : [plain.list];
+      } else {
+        items = [plain];
+      }
+      const val = await createItems({items});
+      resume(err, val);
+    });
+  }
+
+  ITEM(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const plain = toPlainObject(v0);
+      const err = [].concat(e0 || []);
+      const val = plain;
       resume(err, val);
     });
   }

@@ -15,6 +15,13 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
+  "item": {
+    "tk": 1,
+    "name": "ITEM",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
   "questions": {
     "tk": 1,
     "name": "QUESTIONS",
