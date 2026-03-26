@@ -1,5 +1,69 @@
 // SPDX-License-Identifier: MIT
 
+// Default mock data per question type
+const DEFAULTS = {
+  mcq: {
+    stimulus: "Which of the following is correct?",
+    options: ["Option A", "Option B", "Option C", "Option D"],
+    valid_response: [0],
+  },
+  shorttext: {
+    stimulus: "Type your answer below.",
+    valid_response: "answer",
+  },
+  longtext: {
+    stimulus: "Write a detailed response.",
+    max_word_count: 500,
+    placeholder: "Start writing here...",
+  },
+  plaintext: {
+    stimulus: "Write your response in plain text.",
+    max_word_count: 300,
+    placeholder: "Start writing here...",
+  },
+  clozetext: {
+    stimulus: "The {{response}} is the answer.",
+    valid_response: [["answer"]],
+  },
+  clozeassociation: {
+    stimulus: "Drag the correct {{response}} here.",
+    possible_responses: ["correct", "incorrect", "maybe"],
+    valid_response: [["correct"]],
+  },
+  clozedropdown: {
+    stimulus: "Select the correct {{response}}.",
+    possible_responses: [["correct", "incorrect", "maybe"]],
+    valid_response: [["correct"]],
+  },
+  clozeformula: {
+    stimulus: "Solve: {{response}}",
+    valid_response: ["x+1"],
+    method: "equivLiteral",
+  },
+  choicematrix: {
+    stimulus: "Select the correct answer for each row.",
+    rows: ["Statement 1", "Statement 2"],
+    columns: ["True", "False"],
+    valid_response: [[0], [1]],
+  },
+  orderlist: {
+    stimulus: "Arrange the items in the correct order.",
+    list: ["First", "Second", "Third", "Fourth"],
+    valid_response: [0, 1, 2, 3],
+  },
+  classification: {
+    stimulus: "Sort the items into the correct categories.",
+    categories: ["Category A", "Category B"],
+    possible_responses: ["Item 1", "Item 2", "Item 3", "Item 4"],
+    valid_response: [[0, 2], [1, 3]],
+  },
+};
+
+function withDefaults(type, attrs) {
+  const defaults = DEFAULTS[type] || {};
+  return { ...defaults, ...attrs };
+}
+
 export function buildMcq(attrs) {
   const {
     stimulus,
@@ -9,7 +73,7 @@ export function buildMcq(attrs) {
     instant_feedback,
     shuffle_options,
     ...rest
-  } = attrs;
+  } = withDefaults("mcq", attrs);
   const question = {
     type: "mcq",
     stimulus,
@@ -46,7 +110,7 @@ export function buildShorttext(attrs) {
     instant_feedback,
     placeholder,
     ...rest
-  } = attrs;
+  } = withDefaults("shorttext", attrs);
   const question = {
     type: "shorttext",
     stimulus,
@@ -82,7 +146,7 @@ export function buildLongtext(attrs) {
     max_word_count,
     placeholder,
     ...rest
-  } = attrs;
+  } = withDefaults("longtext", attrs);
   const question = {
     type: "longtextV2",
     stimulus,
@@ -103,7 +167,7 @@ export function buildPlaintext(attrs) {
     max_word_count,
     placeholder,
     ...rest
-  } = attrs;
+  } = withDefaults("plaintext", attrs);
   const question = {
     type: "plaintext",
     stimulus,
@@ -125,7 +189,7 @@ export function buildClozetext(attrs) {
     case_sensitive,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("clozetext", attrs);
   const question = {
     type: "clozetext",
     template: stimulus,
@@ -156,7 +220,7 @@ export function buildClozeassociation(attrs) {
     valid_response,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("clozeassociation", attrs);
   const question = {
     type: "clozeassociation",
     template: stimulus,
@@ -185,7 +249,7 @@ export function buildClozedropdown(attrs) {
     valid_response,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("clozedropdown", attrs);
   const question = {
     type: "clozedropdown",
     template: stimulus,
@@ -214,7 +278,7 @@ export function buildClozeformula(attrs) {
     method,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("clozeformula", attrs);
   const mathMethod = method || "equivLiteral";
   const question = {
     type: "clozeformulaV2",
@@ -249,7 +313,7 @@ export function buildChoicematrix(attrs) {
     instant_feedback,
     shuffle_options,
     ...rest
-  } = attrs;
+  } = withDefaults("choicematrix", attrs);
   const question = {
     type: "choicematrix",
     stimulus,
@@ -282,7 +346,7 @@ export function buildOrderlist(attrs) {
     valid_response,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("orderlist", attrs);
   const question = {
     type: "orderlist",
     stimulus,
@@ -312,7 +376,7 @@ export function buildClassification(attrs) {
     valid_response,
     instant_feedback,
     ...rest
-  } = attrs;
+  } = withDefaults("classification", attrs);
   const question = {
     type: "classification",
     stimulus,

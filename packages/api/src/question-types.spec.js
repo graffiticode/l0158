@@ -14,6 +14,90 @@ import {
 } from "./question-types.js";
 
 describe("question-types", () => {
+  describe("defaults", () => {
+    it("should build mcq with defaults from empty attrs", () => {
+      const result = buildMcq({});
+      expect(result.type).toBe("mcq");
+      expect(result.stimulus).toBe("Which of the following is correct?");
+      expect(result.options).toHaveLength(4);
+      expect(result.validation.valid_response.value).toEqual(["0"]);
+    });
+
+    it("should build shorttext with defaults from empty attrs", () => {
+      const result = buildShorttext({});
+      expect(result.type).toBe("shorttext");
+      expect(result.stimulus).toBe("Type your answer below.");
+      expect(result.validation.valid_response.value).toBe("answer");
+    });
+
+    it("should build longtext with defaults from empty attrs", () => {
+      const result = buildLongtext({});
+      expect(result.type).toBe("longtextV2");
+      expect(result.stimulus).toBe("Write a detailed response.");
+      expect(result.max_word_count).toBe(500);
+    });
+
+    it("should build plaintext with defaults from empty attrs", () => {
+      const result = buildPlaintext({});
+      expect(result.type).toBe("plaintext");
+      expect(result.stimulus).toBe("Write your response in plain text.");
+    });
+
+    it("should build clozetext with defaults from empty attrs", () => {
+      const result = buildClozetext({});
+      expect(result.type).toBe("clozetext");
+      expect(result.template).toBe("The {{response}} is the answer.");
+      expect(result.validation.valid_response.value).toEqual([["answer"]]);
+    });
+
+    it("should build clozeassociation with defaults from empty attrs", () => {
+      const result = buildClozeassociation({});
+      expect(result.type).toBe("clozeassociation");
+      expect(result.possible_responses).toEqual(["correct", "incorrect", "maybe"]);
+    });
+
+    it("should build clozedropdown with defaults from empty attrs", () => {
+      const result = buildClozedropdown({});
+      expect(result.type).toBe("clozedropdown");
+      expect(result.possible_responses).toEqual([["correct", "incorrect", "maybe"]]);
+    });
+
+    it("should build clozeformula with defaults from empty attrs", () => {
+      const result = buildClozeformula({});
+      expect(result.type).toBe("clozeformulaV2");
+      expect(result.validation.valid_response.value).toEqual([
+        { method: "equivLiteral", value: "x+1" },
+      ]);
+    });
+
+    it("should build choicematrix with defaults from empty attrs", () => {
+      const result = buildChoicematrix({});
+      expect(result.type).toBe("choicematrix");
+      expect(result.stems).toEqual(["Statement 1", "Statement 2"]);
+      expect(result.options).toEqual(["True", "False"]);
+    });
+
+    it("should build orderlist with defaults from empty attrs", () => {
+      const result = buildOrderlist({});
+      expect(result.type).toBe("orderlist");
+      expect(result.list).toEqual(["First", "Second", "Third", "Fourth"]);
+    });
+
+    it("should build classification with defaults from empty attrs", () => {
+      const result = buildClassification({});
+      expect(result.type).toBe("classification");
+      expect(result.ui_style.column_titles).toEqual(["Category A", "Category B"]);
+      expect(result.possible_responses).toEqual(["Item 1", "Item 2", "Item 3", "Item 4"]);
+    });
+
+    it("should allow partial overrides with defaults filling the rest", () => {
+      const result = buildMcq({ stimulus: "Custom question?" });
+      expect(result.stimulus).toBe("Custom question?");
+      expect(result.options).toHaveLength(4);
+      expect(result.validation.valid_response.value).toEqual(["0"]);
+    });
+  });
+
   describe("buildMcq", () => {
     it("should build mcq with options and validation", () => {
       const result = buildMcq({
