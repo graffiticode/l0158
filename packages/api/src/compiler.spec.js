@@ -42,13 +42,7 @@ describe("compiler", () => {
     expect(result.stimulus).toBeDefined();
   });
 
-  test("items questions [mcq {}] {} compiles (shorthand)", async () => {
-    const result = await compile('items questions [mcq {}] {}..');
-    expect(result).toBeDefined();
-    expect(result.type).toBe("items");
-  });
-
-  test("items [item questions [mcq {}] {}] compiles (full form)", async () => {
+  test("items [item questions [mcq {}] {}] compiles", async () => {
     const result = await compile('items [item questions [mcq {}] {}]..');
     expect(result).toBeDefined();
     expect(result.type).toBe("items");

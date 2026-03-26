@@ -80,27 +80,19 @@ init { "type": "items" }
 
 ### items
 
-Creates a Learnosity Items API request. Accepts either a single item record
-(built from chained attributes) or a list of `item` objects.
+Creates a Learnosity Items API request from a list of `item` objects.
 
-Shorthand (single item):
-```
-items
-  questions [
-    mcq
-      stimulus "What is the capital of France?"
-      options ["Paris", "London", "Berlin", "Madrid"]
-      valid-response [0]
-      {}
-  ]
-  {}..
-```
-
-Full form (multiple items):
 ```
 items [
-  item questions [mcq {}] {},
-  item questions [shorttext {}] {}
+  item
+    questions [
+      mcq
+        stimulus "What is the capital of France?"
+        options ["Paris", "London", "Berlin", "Madrid"]
+        valid-response [0]
+        {}
+    ]
+    {}
 ]..
 ```
 
@@ -309,47 +301,51 @@ classification
 
 ## Program Examples
 
-Multiple choice assessment (shorthand):
+Multiple choice assessment:
 
 ```
-items
-  questions [
-    mcq
-      stimulus "What color means go?"
-      options ["Red", "Yellow", "Green"]
-      valid-response [2]
-      instant-feedback true
-      {}
-  ]
-  {}..
+items [
+  item
+    questions [
+      mcq
+        stimulus "What color means go?"
+        options ["Red", "Yellow", "Green"]
+        valid-response [2]
+        instant-feedback true
+        {}
+    ]
+    {}
+]..
 ```
 
 Multiple questions in one item:
 
 ```
-items
-  questions [
-    mcq
-      stimulus "What is 2 + 2?"
-      options ["3", "4", "5"]
-      valid-response [1]
-      {},
-    shorttext
-      stimulus "Spell the word for the number 4."
-      valid-response "four"
-      case-sensitive false
-      {}
-  ]
-  {}..
+items [
+  item
+    questions [
+      mcq
+        stimulus "What is 2 + 2?"
+        options ["3", "4", "5"]
+        valid-response [1]
+        {},
+      shorttext
+        stimulus "Spell the word for the number 4."
+        valid-response "four"
+        case-sensitive false
+        {}
+    ]
+    {}
+]..
 ```
 
 Question with all defaults (renders a mock MCQ):
 
 ```
-items questions [mcq {}] {}..
+items [item questions [mcq {}] {}]..
 ```
 
-Multiple items (full form):
+Multiple items:
 
 ```
 items [

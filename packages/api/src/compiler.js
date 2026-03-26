@@ -172,7 +172,7 @@ export class Transformer extends BasisTransformer {
         "plain=" + JSON.stringify(plain, null, 2),
       );
       const err = [].concat(e0 || []);
-      // Normalize: accept a list of items or a single item record (shorthand)
+      // Expects a list of item records
       let items;
       if (Array.isArray(plain)) {
         items = plain;

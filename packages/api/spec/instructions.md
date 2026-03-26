@@ -15,7 +15,7 @@ and renders them via a React frontend.
 - Use `author` to create Author API requests for item authoring
 - Use `init` to initialize a Learnosity API session by type
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
-- `items questions [...] {}..` is shorthand for `items [item questions [...] {}]..`
+- `items` always takes a list of `item` objects: `items [item questions [...] {}]..`
 
 ### Question Type Functions
 
@@ -57,25 +57,27 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 ## Example Patterns
 
-- Simple MCQ assessment (shorthand):
+- Simple MCQ assessment:
   ```
-  items
-    questions [
-      mcq
-        stimulus "What color means go?"
-        options ["Red", "Yellow", "Green"]
-        valid-response [2]
-        {}
-    ]
-    {}..
+  items [
+    item
+      questions [
+        mcq
+          stimulus "What color means go?"
+          options ["Red", "Yellow", "Green"]
+          valid-response [2]
+          {}
+      ]
+      {}
+  ]..
   ```
 
 - MCQ with all defaults:
   ```
-  items questions [mcq {}] {}..
+  items [item questions [mcq {}] {}]..
   ```
 
-- Multiple items (full form):
+- Multiple items:
   ```
   items [
     item questions [mcq {}] {},
@@ -85,44 +87,50 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Fill-in-the-blank:
   ```
-  items
-    questions [
-      clozetext
-        stimulus "The {{response}} is the powerhouse of the cell."
-        valid-response [["mitochondria"]]
-        {}
-    ]
-    {}..
+  items [
+    item
+      questions [
+        clozetext
+          stimulus "The {{response}} is the powerhouse of the cell."
+          valid-response [["mitochondria"]]
+          {}
+      ]
+      {}
+  ]..
   ```
 
 - Math question:
   ```
-  items
-    questions [
-      clozeformula
-        stimulus "Solve: x + 3 = 7. x = {{response}}"
-        valid-response ["4"]
-        method "equivLiteral"
-        {}
-    ]
-    {}..
+  items [
+    item
+      questions [
+        clozeformula
+          stimulus "Solve: x + 3 = 7. x = {{response}}"
+          valid-response ["4"]
+          method "equivLiteral"
+          {}
+      ]
+      {}
+  ]..
   ```
 
-- Multiple questions:
+- Multiple questions in one item:
   ```
-  items
-    questions [
-      mcq
-        stimulus "Pick one"
-        options ["A", "B", "C"]
-        valid-response [0]
-        {},
-      shorttext
-        stimulus "Type the answer"
-        valid-response "answer"
-        {}
-    ]
-    {}..
+  items [
+    item
+      questions [
+        mcq
+          stimulus "Pick one"
+          options ["A", "B", "C"]
+          valid-response [0]
+          {},
+        shorttext
+          stimulus "Type the answer"
+          valid-response "answer"
+          {}
+      ]
+      {}
+  ]..
   ```
 
 - Initialize an items session:
