@@ -2,8 +2,9 @@
 import { v4 as uuid } from "uuid";
 
 const replaceVariableRefs = (str) => {
-  const re = new RegExp("\\{\\{", "g");
-  return str.replace(re, "{{var:");
+  // Replace {{...}} with {{var:...}} for template variables,
+  // but skip {{response}} which is a Learnosity cloze placeholder.
+  return str.replace(/\{\{(?!response\}\})/g, "{{var:");
 }
 
 const isNonNullNonEmptyObject = obj => (
