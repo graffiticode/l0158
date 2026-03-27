@@ -247,5 +247,12 @@ export const lexicon = {
     "cls": "function",
     "length": 2,
     "arity": 2
+  },
+  "reference": {
+    "tk": 1,
+    "name": "REFERENCE",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
   }
 }

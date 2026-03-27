@@ -436,6 +436,7 @@ export const attributeFields = {
   ORDER_LIST: { field: "list", valueType: "array" },
   CATEGORIES: { field: "categories", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
+  REFERENCE: { field: "reference", valueType: "string" },
 };
 
 // Which attributes are valid for each question type
