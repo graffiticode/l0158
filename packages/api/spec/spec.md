@@ -66,6 +66,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
+| `id` | string | item bank reference suffix | item |
 
 ## Function Reference
 

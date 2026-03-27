@@ -248,9 +248,9 @@ export const lexicon = {
     "length": 2,
     "arity": 2
   },
-  "reference": {
+  "id": {
     "tk": 1,
-    "name": "REFERENCE",
+    "name": "ID",
     "cls": "function",
     "length": 2,
     "arity": 2

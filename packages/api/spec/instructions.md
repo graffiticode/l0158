@@ -16,7 +16,7 @@ and renders them via a React frontend.
 - Use `init` to initialize a Learnosity API session by type
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
 - `items` always takes a list of `item` objects: `items [item questions [...] {}]..`
-- Always set the `reference` attribute on each `item` to `get-public-var "itemId"` so that the item bank reference is tied to the Graffiticode item ID
+- Always set the `id` attribute on each `item` to `get-public-var "itemId"` so that the item bank reference is tied to the Graffiticode item ID
 
 ### Question Type Functions
 
@@ -62,7 +62,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
   ```
   items [
     item
-      reference get-public-var "itemId"
+      id get-public-var "itemId"
       questions [
         mcq
           stimulus "What color means go?"
@@ -76,14 +76,14 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - MCQ with all defaults:
   ```
-  items [item reference get-public-var "itemId" questions [mcq {}] {}]..
+  items [item id get-public-var "itemId" questions [mcq {}] {}]..
   ```
 
 - Multiple items:
   ```
   items [
-    item reference get-public-var "itemId" questions [mcq {}] {},
-    item reference get-public-var "itemId" questions [shorttext {}] {}
+    item id get-public-var "itemId" questions [mcq {}] {},
+    item id get-public-var "itemId" questions [shorttext {}] {}
   ]..
   ```
 
@@ -91,7 +91,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
   ```
   items [
     item
-      reference get-public-var "itemId"
+      id get-public-var "itemId"
       questions [
         clozetext
           stimulus "The {{response}} is the powerhouse of the cell."
@@ -106,7 +106,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
   ```
   items [
     item
-      reference get-public-var "itemId"
+      id get-public-var "itemId"
       questions [
         clozeformula
           stimulus "Solve: x + 3 = 7. x = {{response}}"
@@ -122,7 +122,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
   ```
   items [
     item
-      reference get-public-var "itemId"
+      id get-public-var "itemId"
       questions [
         mcq
           stimulus "Pick one"

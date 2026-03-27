@@ -44,9 +44,9 @@ export const buildCreateItems = ({
   //   "items=" + JSON.stringify(items, null, 2),
   // );
   const [ item ] = items;
-  const { templateVariablesRecords, reference } = item;
+  const { templateVariablesRecords, id } = item;
   const { questionRefs } = item;
-  const itemRef = reference || `artcompiler-l0158-${shortId()}`;
+  const itemRef = `artcompiler-l0158-${id || shortId()}`;
   const questions = item.data.questions.map(
     question => ({
       reference: question.reference
