@@ -34,7 +34,7 @@ describe("question-types", () => {
       const result = buildLongtext({});
       expect(result.type).toBe("longtextV2");
       expect(result.stimulus).toBe("Write a detailed response.");
-      expect(result.max_word_count).toBe(500);
+      expect(result.max_length).toBe(500);
     });
 
     it("should build plaintext with defaults from empty attrs", () => {
@@ -172,12 +172,12 @@ describe("question-types", () => {
     it("should build longtextV2 without validation", () => {
       const result = buildLongtext({
         stimulus: "Write an essay",
-        max_word_count: 500,
+        max_length: 500,
         placeholder: "Start writing...",
       });
       expect(result.type).toBe("longtextV2");
       expect(result.stimulus).toBe("Write an essay");
-      expect(result.max_word_count).toBe(500);
+      expect(result.max_length).toBe(500);
       expect(result.placeholder).toBe("Start writing...");
       expect(result.validation).toBeUndefined();
     });

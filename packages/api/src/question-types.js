@@ -13,12 +13,12 @@ const DEFAULTS = {
   },
   longtext: {
     stimulus: "Write a detailed response.",
-    max_word_count: 500,
+    max_length: 500,
     placeholder: "Start writing here...",
   },
   plaintext: {
     stimulus: "Write your response in plain text.",
-    max_word_count: 300,
+    max_length: 300,
     placeholder: "Start writing here...",
   },
   clozetext: {
@@ -143,7 +143,7 @@ export function buildShorttext(attrs) {
 export function buildLongtext(attrs) {
   const {
     stimulus,
-    max_word_count,
+    max_length,
     placeholder,
     ...rest
   } = withDefaults("longtext", attrs);
@@ -152,8 +152,8 @@ export function buildLongtext(attrs) {
     stimulus,
     ...rest,
   };
-  if (max_word_count != null) {
-    question.max_word_count = max_word_count;
+  if (max_length != null) {
+    question.max_length = max_length;
   }
   if (placeholder != null) {
     question.placeholder = placeholder;
@@ -164,7 +164,7 @@ export function buildLongtext(attrs) {
 export function buildPlaintext(attrs) {
   const {
     stimulus,
-    max_word_count,
+    max_length,
     placeholder,
     ...rest
   } = withDefaults("plaintext", attrs);
@@ -173,8 +173,8 @@ export function buildPlaintext(attrs) {
     stimulus,
     ...rest,
   };
-  if (max_word_count != null) {
-    question.max_word_count = max_word_count;
+  if (max_length != null) {
+    question.max_length = max_length;
   }
   if (placeholder != null) {
     question.placeholder = placeholder;
@@ -428,7 +428,7 @@ export const attributeFields = {
   MULTIPLE_RESPONSES: { field: "multiple_responses", valueType: "boolean" },
   CASE_SENSITIVE: { field: "case_sensitive", valueType: "boolean" },
   MAX_LENGTH: { field: "max_length", valueType: "number" },
-  MAX_WORD_COUNT: { field: "max_word_count", valueType: "number" },
+  MAX_WORD_COUNT: { field: "max_length", valueType: "number" },
   PLACEHOLDER: { field: "placeholder", valueType: "string" },
   POSSIBLE_RESPONSES: { field: "possible_responses", valueType: "array" },
   ROWS: { field: "rows", valueType: "array" },
@@ -442,8 +442,8 @@ export const attributeFields = {
 export const validAttributes = {
   MCQ: ["stimulus", "options", "valid_response", "instant_feedback", "shuffle_options", "multiple_responses"],
   SHORTTEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive", "max_length", "placeholder"],
-  LONGTEXT: ["stimulus", "max_word_count", "placeholder"],
-  PLAINTEXT: ["stimulus", "max_word_count", "placeholder"],
+  LONGTEXT: ["stimulus", "max_length", "placeholder"],
+  PLAINTEXT: ["stimulus", "max_length", "placeholder"],
   CLOZETEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive"],
   CLOZEASSOCIATION: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
   CLOZEDROPDOWN: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
