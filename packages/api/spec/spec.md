@@ -79,7 +79,7 @@ The `id` attribute chains with `items` or `author` as the continuation.
 
 ```
 learnosity
-  id get-public-var "itemId"
+  id "foobar-123"
   items [
     item
       questions [
@@ -329,7 +329,7 @@ Multiple choice assessment:
 
 ```
 learnosity
-  id get-public-var "itemId"
+  id "foobar-123"
   items [
     item
       questions [
@@ -348,7 +348,7 @@ Multiple questions in one item:
 
 ```
 learnosity
-  id get-public-var "itemId"
+  id "foobar-123"
   items [
     item
       questions [
@@ -370,14 +370,14 @@ learnosity
 Question with all defaults (renders a mock MCQ):
 
 ```
-learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
+learnosity id "foobar-123" items [item questions [mcq {}] {}]..
 ```
 
 Multiple items:
 
 ```
 learnosity
-  id get-public-var "itemId"
+  id "foobar-123"
   items [
     item questions [mcq {}] {},
     item questions [shorttext {}] {}

@@ -1,1 +1,1 @@
-learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
+learnosity id "0158" items [item questions [mcq {}] {}]..
