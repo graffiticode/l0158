@@ -7,6 +7,7 @@ and renders them via a React frontend.
 
 ## L0158 Specific Guidelines
 
+- Wrap all assessments with `learnosity id get-public-var "itemId"` to set the global id used in all generated Learnosity references
 - Use `items` to create Items API requests for rendering assessments
 - Use `item` to define individual items when building a list for `items`
 - Use `questions` as a chainable attribute to set questions on an item
@@ -16,7 +17,6 @@ and renders them via a React frontend.
 - Use `init` to initialize a Learnosity API session by type
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
 - `items` always takes a list of `item` objects: `items [item questions [...] {}]..`
-- Always set the `id` attribute on each `item` to `get-public-var "itemId"` so that the item bank reference is tied to the Graffiticode item ID
 
 ### Question Type Functions
 
@@ -60,82 +60,88 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Simple MCQ assessment:
   ```
-  items [
-    item
-      id get-public-var "itemId"
-      questions [
-        mcq
-          stimulus "What color means go?"
-          options ["Red", "Yellow", "Green"]
-          valid-response [2]
-          {}
-      ]
-      {}
-  ]..
+  learnosity
+    id get-public-var "itemId"
+    items [
+      item
+        questions [
+          mcq
+            stimulus "What color means go?"
+            options ["Red", "Yellow", "Green"]
+            valid-response [2]
+            {}
+        ]
+        {}
+    ]..
   ```
 
 - MCQ with all defaults:
   ```
-  items [item id get-public-var "itemId" questions [mcq {}] {}]..
+  learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
   ```
 
 - Multiple items:
   ```
-  items [
-    item id get-public-var "itemId" questions [mcq {}] {},
-    item id get-public-var "itemId" questions [shorttext {}] {}
-  ]..
+  learnosity
+    id get-public-var "itemId"
+    items [
+      item questions [mcq {}] {},
+      item questions [shorttext {}] {}
+    ]..
   ```
 
 - Fill-in-the-blank:
   ```
-  items [
-    item
-      id get-public-var "itemId"
-      questions [
-        clozetext
-          stimulus "The {{response}} is the powerhouse of the cell."
-          valid-response [["mitochondria"]]
-          {}
-      ]
-      {}
-  ]..
+  learnosity
+    id get-public-var "itemId"
+    items [
+      item
+        questions [
+          clozetext
+            stimulus "The {{response}} is the powerhouse of the cell."
+            valid-response [["mitochondria"]]
+            {}
+        ]
+        {}
+    ]..
   ```
 
 - Math question:
   ```
-  items [
-    item
-      id get-public-var "itemId"
-      questions [
-        clozeformula
-          stimulus "Solve: x + 3 = 7. x = {{response}}"
-          valid-response ["4"]
-          method "equivLiteral"
-          {}
-      ]
-      {}
-  ]..
+  learnosity
+    id get-public-var "itemId"
+    items [
+      item
+        questions [
+          clozeformula
+            stimulus "Solve: x + 3 = 7. x = {{response}}"
+            valid-response ["4"]
+            method "equivLiteral"
+            {}
+        ]
+        {}
+    ]..
   ```
 
 - Multiple questions in one item:
   ```
-  items [
-    item
-      id get-public-var "itemId"
-      questions [
-        mcq
-          stimulus "Pick one"
-          options ["A", "B", "C"]
-          valid-response [0]
-          {},
-        shorttext
-          stimulus "Type the answer"
-          valid-response "answer"
-          {}
-      ]
-      {}
-  ]..
+  learnosity
+    id get-public-var "itemId"
+    items [
+      item
+        questions [
+          mcq
+            stimulus "Pick one"
+            options ["A", "B", "C"]
+            valid-response [0]
+            {},
+          shorttext
+            stimulus "Type the answer"
+            valid-response "answer"
+            {}
+        ]
+        {}
+    ]..
   ```
 
 - Initialize an items session:

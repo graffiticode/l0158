@@ -122,9 +122,10 @@ export const buildCreateAuthor = ({
   secret,
   domain,
   dataApi
-}) => async ({ 
+}) => async ({
   mode = "item_edit",
   reference,
+  id,
   config = {},
   organisation_id,
   user = {
@@ -133,7 +134,7 @@ export const buildCreateAuthor = ({
     lastname: "User"
   }
 }) => {
-  const itemRef = reference || `artcompiler-author-${uuid()}`;
+  const itemRef = reference || `artcompiler-author-${id || uuid()}`;
 
   return {
     type: "author",

@@ -207,7 +207,7 @@ export class Transformer extends BasisTransformer {
       } else {
         items = [plain];
       }
-      const val = await createItems({items});
+      const val = await createItems({items, id: options.id});
       resume(err, val);
     });
   }
@@ -239,7 +239,7 @@ export class Transformer extends BasisTransformer {
         } else {
           questions = [plain];
         }
-        const questionsResult = await createQuestions(questions);
+        const questionsResult = await createQuestions(questions, {id: options.id});
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...questionsResult };
         resume(err, val);
@@ -291,7 +291,7 @@ export class Transformer extends BasisTransformer {
         "AUTHOR",
         "plain=" + JSON.stringify(plain, null, 2),
       );
-      const val = await createAuthor(plain);
+      const val = await createAuthor({...plain, id: options.id});
       resume(err, val);
     });
   }
@@ -331,6 +331,20 @@ for (const [name, meta] of Object.entries(attributeFields)) {
     });
   };
 }
+
+// Override ID to set options.id before visiting continuation,
+// so child transformers (ITEMS, QUESTIONS, AUTHOR) can read it.
+Transformer.prototype.ID = function(node, options, resume) {
+  this.visit(node.elts[0], options, async (e0, v0) => {
+    options.id = v0;
+    this.visit(node.elts[1], options, async (e1, v1) => {
+      const err = [].concat(e0 || [], e1 || []);
+      const continuation = toPlainObject(v1);
+      const val = { ...continuation, id: v0 };
+      resume(err, val);
+    });
+  });
+};
 
 export const compiler = new BasisCompiler({
   langID: '0158',

@@ -13,6 +13,7 @@ semantics and base library can be found here:
 
 | Function | Arity | Signature | Description |
 | :------- | :---: | :-------- | :---------- |
+| `learnosity` | 2 | `<id: string, continuation: record>` | Top-level wrapper that sets a global id used in all generated Learnosity references |
 | `init` | 1 | `<record: record>` | Initializes a Learnosity API session |
 | `items` | 1 | `<record: record>` | Creates a Learnosity Items API request from a record or list of items |
 | `item` | 1 | `<record: record>` | Defines a single item (for use in a list passed to `items`) |
@@ -69,6 +70,28 @@ of attributes for a question type. The chain terminates with `{}`.
 | `id` | string | item bank reference suffix | item |
 
 ## Function Reference
+
+### learnosity
+
+Top-level wrapper that sets a global `id` used as a component of all generated
+Learnosity identifiers (item references, question references, activity id).
+The `id` attribute chains with `items` or `author` as the continuation.
+
+```
+learnosity
+  id get-public-var "itemId"
+  items [
+    item
+      questions [
+        mcq
+          stimulus "What is 2 + 2?"
+          options ["3", "4", "5"]
+          valid-response [1]
+          {}
+      ]
+      {}
+  ]..
+```
 
 ### init
 
@@ -305,52 +328,58 @@ classification
 Multiple choice assessment:
 
 ```
-items [
-  item
-    questions [
-      mcq
-        stimulus "What color means go?"
-        options ["Red", "Yellow", "Green"]
-        valid-response [2]
-        instant-feedback true
-        {}
-    ]
-    {}
-]..
+learnosity
+  id get-public-var "itemId"
+  items [
+    item
+      questions [
+        mcq
+          stimulus "What color means go?"
+          options ["Red", "Yellow", "Green"]
+          valid-response [2]
+          instant-feedback true
+          {}
+      ]
+      {}
+  ]..
 ```
 
 Multiple questions in one item:
 
 ```
-items [
-  item
-    questions [
-      mcq
-        stimulus "What is 2 + 2?"
-        options ["3", "4", "5"]
-        valid-response [1]
-        {},
-      shorttext
-        stimulus "Spell the word for the number 4."
-        valid-response "four"
-        case-sensitive false
-        {}
-    ]
-    {}
-]..
+learnosity
+  id get-public-var "itemId"
+  items [
+    item
+      questions [
+        mcq
+          stimulus "What is 2 + 2?"
+          options ["3", "4", "5"]
+          valid-response [1]
+          {},
+        shorttext
+          stimulus "Spell the word for the number 4."
+          valid-response "four"
+          case-sensitive false
+          {}
+      ]
+      {}
+  ]..
 ```
 
 Question with all defaults (renders a mock MCQ):
 
 ```
-items [item questions [mcq {}] {}]..
+learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
 ```
 
 Multiple items:
 
 ```
-items [
-  item questions [mcq {}] {},
-  item questions [shorttext {}] {}
-]..
+learnosity
+  id get-public-var "itemId"
+  items [
+    item questions [mcq {}] {},
+    item questions [shorttext {}] {}
+  ]..
 ```

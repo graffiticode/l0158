@@ -1,10 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
-function shortId() {
-  return "0";
-}
-
 const getDynamicContentData = (data) => {
   if (!data) {
     return;
@@ -38,16 +34,16 @@ export const buildCreateItems = ({
   dataApi
 }) => async ({
   items,
+  id,
 }) => {
   // console.log(
   //   "createItems()",
   //   "items=" + JSON.stringify(items, null, 2),
   // );
   const [ item ] = items;
-  const { templateVariablesRecords, id } = item;
+  const { templateVariablesRecords } = item;
   const { questionRefs } = item;
-  const type = item.data.questions[0]?.type || "item";
-  const itemRef = `artcompiler-${type}-${id || shortId()}`;
+  const itemRef = `artcompiler-${id || '0'}`;
   const questions = item.data.questions.map(
     question => ({
       reference: question.reference
@@ -89,7 +85,7 @@ export const buildCreateItems = ({
     data: {
       user_id: uuid(),
       session_id: uuid(),
-      activity_id: 'artcompiler-questions-test',
+      activity_id: `artcompiler-${id || '0'}-activity`,
       rendering_type: 'inline',
       type: 'submit_practice',
       state: 'initial',

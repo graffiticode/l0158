@@ -36,7 +36,7 @@ export const buildCreateQuestions = ({
   secret,
   domain,
   dataApi
-}) => async (data) => {
+}) => async (data, {id} = {}) => {
   // console.log(
   //   "createQuestions()",
   //   "data=" + JSON.stringify(data, null, 2),
@@ -44,7 +44,7 @@ export const buildCreateQuestions = ({
   // WARNING: Only using the data from the first and only question. If we ever support
   // more than one question here, this needs to be fixed.
   const templateVariablesRecords = data[0]?.data?.templateVariablesRecords;
-  const batchId = "0";
+  const batchId = id || "0";
   const questions = data.map((question, index) => {
     const reference = `artcompiler-${question.type}-${batchId}-${index}`;
     const data = fixVariableRefs(question);

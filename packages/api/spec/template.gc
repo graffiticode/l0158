@@ -1,1 +1,1 @@
-items [item questions [mcq {}] {}]..
+learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
