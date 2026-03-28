@@ -72,12 +72,12 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
             {}
         ]
         {}
-    ]..
+    ] {}..
   ```
 
 - MCQ with all defaults:
   ```
-  learnosity id get-public-var "itemId" items [item questions [mcq {}] {}]..
+  learnosity id get-public-var "itemId" items [item questions [mcq {}] {}] {}..
   ```
 
 - Multiple items:
@@ -87,7 +87,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
     items [
       item questions [mcq {}] {},
       item questions [shorttext {}] {}
-    ]..
+    ] {}..
   ```
 
 - Fill-in-the-blank:
@@ -103,7 +103,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
             {}
         ]
         {}
-    ]..
+    ] {}..
   ```
 
 - Math question:
@@ -120,7 +120,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
             {}
         ]
         {}
-    ]..
+    ] {}..
   ```
 
 - Multiple questions in one item:
@@ -141,7 +141,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
             {}
         ]
         {}
-    ]..
+    ] {}..
   ```
 
 - Initialize an items session:
