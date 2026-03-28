@@ -50,6 +50,16 @@ export class Checker extends BasisChecker {
     });
   }
 
+  LEARNOSITY(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
+    });
+  }
+
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const err = [].concat(e0 || []);
@@ -161,6 +171,22 @@ export class Transformer extends BasisTransformer {
         break;
       }
       resume(err, val);
+    });
+  }
+
+  LEARNOSITY(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const plain = toPlainObject(v0);
+        const continuation = toPlainObject(v1);
+        console.log(
+          "LEARNOSITY()",
+          "plain=" + JSON.stringify(plain, null, 2),
+        );
+        const err = [].concat(e0 || [], e1 || []);
+        const val = { ...continuation, ...plain };
+        resume(err, val);
+      });
     });
   }
 

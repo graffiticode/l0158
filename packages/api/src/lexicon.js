@@ -8,6 +8,13 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
+  "learnosity": {
+    "tk": 1,
+    "name": "LEARNOSITY",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
   "items": {
     "tk": 1,
     "name": "ITEMS",
