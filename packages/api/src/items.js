@@ -2,7 +2,7 @@
 import { v4 as uuid } from "uuid";
 
 function shortId() {
-  return Date.now().toString(36);
+  return "0";
 }
 
 const getDynamicContentData = (data) => {
