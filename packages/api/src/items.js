@@ -46,7 +46,8 @@ export const buildCreateItems = ({
   const [ item ] = items;
   const { templateVariablesRecords, id } = item;
   const { questionRefs } = item;
-  const itemRef = `artcompiler-l0158-${id || shortId()}`;
+  const type = item.data.questions[0]?.type || "item";
+  const itemRef = `artcompiler-${type}-${id || shortId()}`;
   const questions = item.data.questions.map(
     question => ({
       reference: question.reference

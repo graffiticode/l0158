@@ -46,7 +46,7 @@ export const buildCreateQuestions = ({
   const templateVariablesRecords = data[0]?.data?.templateVariablesRecords;
   const batchId = "0";
   const questions = data.map((question, index) => {
-    const reference = `artcompiler-l0158-${question.type}-${batchId}-${index}`;
+    const reference = `artcompiler-${question.type}-${batchId}-${index}`;
     const data = fixVariableRefs(question);
     // console.log(
     //   "createQuestions()",
