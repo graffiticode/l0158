@@ -234,13 +234,23 @@ plaintext
 ### clozetext
 
 Creates a fill-in-the-blank question where students type responses.
-Use `{{response}}` markers in the stimulus for each blank.
+Use `{{response}}` markers in the stimulus for each blank. The
+`valid-response` is a flat list of strings with one entry per blank.
 
 ```
 clozetext
   stimulus "The {{response}} is the powerhouse of the cell."
-  valid-response ["mitochondria", "mitochondrion"]
+  valid-response ["mitochondria"]
   case-sensitive false
+  {}..
+```
+
+Multiple blanks:
+
+```
+clozetext
+  stimulus "The {{response}} War ended in {{response}}."
+  valid-response ["Civil", "1865"]
   {}..
 ```
 
