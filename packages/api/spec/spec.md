@@ -239,7 +239,7 @@ Use `{{response}}` markers in the stimulus for each blank.
 ```
 clozetext
   stimulus "The {{response}} is the powerhouse of the cell."
-  valid-response [["mitochondria", "mitochondrion"]]
+  valid-response ["mitochondria", "mitochondrion"]
   case-sensitive false
   {}..
 ```
@@ -253,7 +253,7 @@ a list of options into blanks.
 clozeassociation
   stimulus "Drag the correct answer: {{response}} is the capital of France."
   possible-responses ["Paris", "London", "Berlin"]
-  valid-response [["Paris"]]
+  valid-response ["Paris"]
   {}..
 ```
 
@@ -265,7 +265,7 @@ Creates a fill-in-the-blank question with dropdown selects.
 clozedropdown
   stimulus "Select the answer: The sky is {{response}}."
   possible-responses [["blue", "red", "green"]]
-  valid-response [["blue"]]
+  valid-response ["blue"]
   {}..
 ```
 

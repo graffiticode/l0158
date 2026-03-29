@@ -23,17 +23,17 @@ const DEFAULTS = {
   },
   clozetext: {
     stimulus: "The {{response}} is the answer.",
-    valid_response: [["answer"]],
+    valid_response: ["answer"],
   },
   clozeassociation: {
     stimulus: "Drag the correct {{response}} here.",
     possible_responses: ["correct", "incorrect", "maybe"],
-    valid_response: [["correct"]],
+    valid_response: ["correct"],
   },
   clozedropdown: {
     stimulus: "Select the correct {{response}}.",
     possible_responses: [["correct", "incorrect", "maybe"]],
-    valid_response: [["correct"]],
+    valid_response: ["correct"],
   },
   clozeformula: {
     stimulus: "Solve: {{response}}",

@@ -99,7 +99,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
         questions [
           clozetext
             stimulus "The {{response}} is the powerhouse of the cell."
-            valid-response [["mitochondria"]]
+            valid-response ["mitochondria"]
             {}
         ]
         {}
