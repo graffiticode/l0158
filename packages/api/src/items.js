@@ -85,7 +85,7 @@ export const buildCreateItems = ({
     data: {
       user_id: uuid(),
       session_id: uuid(),
-      activity_id: `artcompiler-${id || '0'}-activity`,
+      activity_id: `${id || '0'}`,
       rendering_type: 'inline',
       type: 'submit_practice',
       state: 'initial',

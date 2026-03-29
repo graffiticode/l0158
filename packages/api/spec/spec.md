@@ -67,7 +67,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
-| `id` | string | item bank reference suffix | item |
+| `id` | string | global id used in all generated Learnosity references | learnosity |
 
 ## Function Reference
 
@@ -370,7 +370,7 @@ learnosity
 Question with all defaults (renders a mock MCQ):
 
 ```
-learnosity id "foobar-123" items [item questions [mcq {}] {}]..
+learnosity id "foobar-123" items [item questions [mcq {}] {}] {}..
 ```
 
 Multiple items:

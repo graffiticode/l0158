@@ -334,13 +334,13 @@ for (const [name, meta] of Object.entries(attributeFields)) {
 
 // Override ID to set options.id before visiting continuation,
 // so child transformers (ITEMS, QUESTIONS, AUTHOR) can read it.
+// Don't include id in the output record — it flows via options only.
 Transformer.prototype.ID = function(node, options, resume) {
   this.visit(node.elts[0], options, async (e0, v0) => {
     options.id = v0;
     this.visit(node.elts[1], options, async (e1, v1) => {
       const err = [].concat(e0 || [], e1 || []);
-      const continuation = toPlainObject(v1);
-      const val = { ...continuation, id: v0 };
+      const val = toPlainObject(v1);
       resume(err, val);
     });
   });
