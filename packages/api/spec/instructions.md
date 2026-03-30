@@ -7,7 +7,7 @@ and renders them via a React frontend.
 
 ## L0158 Specific Guidelines
 
-- Wrap all assessments with `learnosity id get-public-var "itemId"` to set the global id used in all generated Learnosity references
+- Start every program with `set-var "lrn-id" get-public-val "itemId" ""` to capture the caller-supplied item ID before any other statements
 - Use `items` to create Items API requests for rendering assessments
 - Use `item` to define individual items when building a list for `items`
 - Use `questions` as a chainable attribute to set questions on an item
@@ -60,8 +60,8 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Simple MCQ assessment:
   ```
+  set-var "lrn-id" get-public-val "itemId" ""
   learnosity
-    id get-public-var "itemId"
     items [
       item
         questions [
@@ -77,13 +77,14 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - MCQ with all defaults:
   ```
-  learnosity id get-public-var "itemId" items [item questions [mcq {}] {}] {}..
+  set-var "lrn-id" get-public-val "itemId" ""
+  learnosity items [item questions [mcq {}] {}] {}..
   ```
 
 - Multiple items:
   ```
+  set-var "lrn-id" get-public-val "itemId" ""
   learnosity
-    id get-public-var "itemId"
     items [
       item questions [mcq {}] {},
       item questions [shorttext {}] {}
@@ -92,8 +93,8 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Fill-in-the-blank:
   ```
+  set-var "lrn-id" get-public-val "itemId" ""
   learnosity
-    id get-public-var "itemId"
     items [
       item
         questions [
@@ -108,8 +109,8 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Math question:
   ```
+  set-var "lrn-id" get-public-val "itemId" ""
   learnosity
-    id get-public-var "itemId"
     items [
       item
         questions [
@@ -125,8 +126,8 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Multiple questions in one item:
   ```
+  set-var "lrn-id" get-public-val "itemId" ""
   learnosity
-    id get-public-var "itemId"
     items [
       item
         questions [
