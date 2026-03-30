@@ -28,8 +28,8 @@ provide a higher-level interface with sensible defaults:
 - `longtext` — Rich text essays (manually scored)
 - `plaintext` — Plain text essays (manually scored)
 - `clozetext` — Fill-in-the-blank with typed responses
-- `clozeassociation` — Fill-in-the-blank with drag and drop
-- `clozedropdown` — Fill-in-the-blank with dropdown select
+- `clozeassociation` — Fill-in-the-blank with drag and drop (use `possible-responses`, not `options`)
+- `clozedropdown` — Fill-in-the-blank with dropdown select (use `possible-responses`, not `options`)
 - `clozeformula` — Fill-in-the-blank with math/formula input
 - `choicematrix` — Grid of options by stems
 - `orderlist` — Drag items into correct order

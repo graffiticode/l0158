@@ -257,7 +257,8 @@ clozetext
 ### clozeassociation
 
 Creates a fill-in-the-blank question where students drag responses from
-a list of options into blanks.
+a pool of options into blanks. Use `possible-responses` (not `options`)
+to provide the draggable choices.
 
 ```
 clozeassociation
@@ -269,7 +270,10 @@ clozeassociation
 
 ### clozedropdown
 
-Creates a fill-in-the-blank question with dropdown selects.
+Creates a fill-in-the-blank question with dropdown selects. Use
+`possible-responses` (not `options`) to provide the dropdown choices.
+Each blank gets its own list of choices, so `possible-responses` is
+a list of lists.
 
 ```
 clozedropdown
