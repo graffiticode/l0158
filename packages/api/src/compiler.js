@@ -207,7 +207,7 @@ export class Transformer extends BasisTransformer {
       } else {
         items = [plain];
       }
-      const val = await createItems({items, id: options.id});
+      const val = await createItems({items, id: options["lrn-id"]});
       resume(err, val);
     });
   }
@@ -239,7 +239,7 @@ export class Transformer extends BasisTransformer {
         } else {
           questions = [plain];
         }
-        const questionsResult = await createQuestions(questions, {id: options.id});
+        const questionsResult = await createQuestions(questions, {id: options["lrn-id"]});
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...questionsResult };
         resume(err, val);
@@ -291,7 +291,7 @@ export class Transformer extends BasisTransformer {
         "AUTHOR",
         "plain=" + JSON.stringify(plain, null, 2),
       );
-      const val = await createAuthor({...plain, id: options.id});
+      const val = await createAuthor({...plain, id: options["lrn-id"]});
       resume(err, val);
     });
   }
@@ -332,7 +332,7 @@ for (const [name, meta] of Object.entries(attributeFields)) {
   };
 }
 
-// Override ID to set options.id before visiting continuation,
+// Override ID to set options["lrn-id"] before visiting continuation,
 // so child transformers (ITEMS, QUESTIONS, AUTHOR) can read it.
 // Don't include id in the output record — it flows via options only.
 Transformer.prototype.ID = function(node, options, resume) {

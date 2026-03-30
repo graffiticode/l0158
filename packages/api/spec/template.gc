@@ -1,1 +1,2 @@
-learnosity id get-public-var "" items [item questions [mcq {}] {}] {}..
+set-var "lrn-id" get-public-val "itemId" ""
+learnosity items [item questions [mcq {}] {}] {}..
