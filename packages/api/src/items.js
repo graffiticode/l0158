@@ -5,7 +5,7 @@ const getDynamicContentData = (data) => {
   if (!data) {
     return;
   }
-  let reference = "artcompiler-" + new Date().toISOString().split(":").join("").split(".").join("");
+  let reference = "graffiticode-" + new Date().toISOString().split(":").join("").split(".").join("");
   let cols;
   let rows = {};
   if (data) {
@@ -43,7 +43,7 @@ export const buildCreateItems = ({
   const [ item ] = items;
   const { templateVariablesRecords } = item;
   const { questionRefs } = item;
-  const itemRef = `artcompiler-${id || '0'}`;
+  const itemRef = `graffiticode-${id || '0'}`;
   const questions = item.data.questions.map(
     question => ({
       reference: question.reference
