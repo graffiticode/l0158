@@ -13,7 +13,7 @@ semantics and base library can be found here:
 
 | Function | Arity | Signature | Description |
 | :------- | :---: | :-------- | :---------- |
-| `learnosity` | 2 | `<id: string, continuation: record>` | Top-level wrapper that sets a global id used in all generated Learnosity references |
+| `learnosity` | 2 | `<record, continuation: record>` | Top-level wrapper for Learnosity API requests |
 | `init` | 1 | `<record: record>` | Initializes a Learnosity API session |
 | `items` | 1 | `<record: record>` | Creates a Learnosity Items API request from a record or list of items |
 | `item` | 1 | `<record: record>` | Defines a single item (for use in a list passed to `items`) |
@@ -67,19 +67,16 @@ of attributes for a question type. The chain terminates with `{}`.
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
-| `id` | string | global id used in all generated Learnosity references | learnosity |
 
 ## Function Reference
 
 ### learnosity
 
-Top-level wrapper that sets a global `id` used as a component of all generated
-Learnosity identifiers (item references, question references, activity id).
-The `id` attribute chains with `items` or `author` as the continuation.
+Top-level wrapper for Learnosity API requests. Takes two arguments: an API
+call (`items` or `author`) and a continuation record.
 
 ```
 learnosity
-  id "foobar-123"
   items [
     item
       questions [
@@ -90,7 +87,7 @@ learnosity
           {}
       ]
       {}
-  ]..
+  ] {}
 ```
 
 ### init
@@ -117,7 +114,7 @@ items [
         {}
     ]
     {}
-]..
+]
 ```
 
 ### item
@@ -171,7 +168,7 @@ layout "<div class='row'><span class='learnosity-response question-q0'></span></
 Creates a Learnosity Author API request from the given configuration record.
 
 ```
-author { "mode": "item_edit" }..
+author { "mode": "item_edit" }
 ```
 
 ### hello
@@ -179,7 +176,7 @@ author { "mode": "item_edit" }..
 Renders a hello message that includes the given string.
 
 ```
-hello "world"..
+hello "world"
 ```
 
 ### mcq
@@ -193,7 +190,7 @@ mcq
   options ["Mercury", "Venus", "Earth", "Mars"]
   valid-response [0]
   instant-feedback true
-  {}..
+  {}
 ```
 
 ### shorttext
@@ -205,7 +202,7 @@ shorttext
   stimulus "What is the chemical symbol for water?"
   valid-response "H2O"
   case-sensitive false
-  {}..
+  {}
 ```
 
 ### longtext
@@ -217,7 +214,7 @@ longtext
   stimulus "Describe the water cycle in your own words."
   max-word-count 300
   placeholder "Write your essay here..."
-  {}..
+  {}
 ```
 
 ### plaintext
@@ -228,7 +225,7 @@ Creates an essay question with a plain text editor. No auto-scoring.
 plaintext
   stimulus "Explain your reasoning."
   max-word-count 200
-  {}..
+  {}
 ```
 
 ### clozetext
@@ -242,7 +239,7 @@ clozetext
   stimulus "The {{response}} is the powerhouse of the cell."
   valid-response ["mitochondria"]
   case-sensitive false
-  {}..
+  {}
 ```
 
 Multiple blanks:
@@ -251,7 +248,7 @@ Multiple blanks:
 clozetext
   stimulus "The {{response}} War ended in {{response}}."
   valid-response ["Civil", "1865"]
-  {}..
+  {}
 ```
 
 ### clozeassociation
@@ -265,7 +262,7 @@ clozeassociation
   stimulus "Drag the correct answer: {{response}} is the capital of France."
   possible-responses ["Paris", "London", "Berlin"]
   valid-response ["Paris"]
-  {}..
+  {}
 ```
 
 ### clozedropdown
@@ -280,7 +277,7 @@ clozedropdown
   stimulus "Select the answer: The sky is {{response}}."
   possible-responses [["blue", "red", "green"]]
   valid-response ["blue"]
-  {}..
+  {}
 ```
 
 ### clozeformula
@@ -293,7 +290,7 @@ clozeformula
   stimulus "Solve for x: 2x + 4 = 10. x = {{response}}"
   valid-response ["3"]
   method "equivLiteral"
-  {}..
+  {}
 ```
 
 Supported methods: `equivLiteral`, `equivSymbolic`, `equivValue`,
@@ -309,7 +306,7 @@ choicematrix
   rows ["The sun is a star", "The moon is a planet"]
   columns ["True", "False"]
   valid-response [[0], [1]]
-  {}..
+  {}
 ```
 
 ### orderlist
@@ -321,7 +318,7 @@ orderlist
   stimulus "Arrange these events in chronological order."
   list ["World War II", "World War I", "Moon Landing", "Internet"]
   valid-response [1, 0, 2, 3]
-  {}..
+  {}
 ```
 
 ### classification
@@ -334,7 +331,7 @@ classification
   categories ["Mammals", "Reptiles"]
   possible-responses ["Dog", "Snake", "Cat", "Lizard"]
   valid-response [[0, 2], [1, 3]]
-  {}..
+  {}
 ```
 
 ## Program Examples
@@ -342,8 +339,8 @@ classification
 Multiple choice assessment:
 
 ```
+set-var "lrn-id" get-val-public "itemId"
 learnosity
-  id "foobar-123"
   items [
     item
       questions [
@@ -355,14 +352,14 @@ learnosity
           {}
       ]
       {}
-  ]..
+  ] {}..
 ```
 
 Multiple questions in one item:
 
 ```
+set-var "lrn-id" get-val-public "itemId"
 learnosity
-  id "foobar-123"
   items [
     item
       questions [
@@ -378,22 +375,23 @@ learnosity
           {}
       ]
       {}
-  ]..
+  ] {}..
 ```
 
 Question with all defaults (renders a mock MCQ):
 
 ```
-learnosity id "foobar-123" items [item questions [mcq {}] {}] {}..
+set-var "lrn-id" get-val-public "itemId"
+learnosity items [item questions [mcq {}] {}] {}..
 ```
 
 Multiple items:
 
 ```
+set-var "lrn-id" get-val-public "itemId"
 learnosity
-  id "foobar-123"
   items [
     item questions [mcq {}] {},
     item questions [shorttext {}] {}
-  ]..
+  ] {}..
 ```
