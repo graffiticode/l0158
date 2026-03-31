@@ -7,7 +7,7 @@ and renders them via a React frontend.
 
 ## L0158 Specific Guidelines
 
-- Start every program with `set-var "lrn-id" get-val-public "itemId"` to capture the caller-supplied item ID before any other statements
+- **IMPORTANT**: Start every program with `set-var "lrn-id" get-val-public "itemId"` to capture the caller-supplied item ID before any other statements. The template defaults `lrn-id` to an empty string — always replace this with `get-val-public "itemId"` in generated programs so the caller-supplied item ID is captured.
 - Use `items` to create Items API requests for rendering assessments
 - Use `item` to define individual items when building a list for `items`
 - Use `questions` as a chainable attribute to set questions on an item
