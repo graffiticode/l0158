@@ -207,6 +207,10 @@ export class Transformer extends BasisTransformer {
       } else {
         items = [plain];
       }
+      if (!options["lrn-id"]) {
+        resume([...err, `Error: set-var "lrn-id" must be called before items`], undefined);
+        return;
+      }
       const val = await createItems({items, id: options["lrn-id"]});
       resume(err, val);
     });
@@ -238,6 +242,10 @@ export class Transformer extends BasisTransformer {
           questions = Array.isArray(plain.list) ? plain.list : [plain.list];
         } else {
           questions = [plain];
+        }
+        if (!options["lrn-id"]) {
+          resume([...err, `Error: set-var "lrn-id" must be called before questions`], undefined);
+          return;
         }
         const questionsResult = await createQuestions(questions, {id: options["lrn-id"]});
         const continuation = toPlainObject(v1);
@@ -291,6 +299,10 @@ export class Transformer extends BasisTransformer {
         "AUTHOR",
         "plain=" + JSON.stringify(plain, null, 2),
       );
+      if (!options["lrn-id"]) {
+        resume([`Error: set-var "lrn-id" must be called before author`], undefined);
+        return;
+      }
       const val = await createAuthor({...plain, id: options["lrn-id"]});
       resume(err, val);
     });
