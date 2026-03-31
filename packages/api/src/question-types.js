@@ -283,6 +283,10 @@ export function buildClozeformula(attrs) {
   const question = {
     type: "clozeformulaV2",
     template: stimulus,
+    is_math: true,
+    ui_style: { type: "block-on-focus-keyboard" },
+    response_containers: [],
+    show_hints_button: true,
     ...rest,
   };
   if (instant_feedback != null) {
@@ -294,10 +298,16 @@ export function buildClozeformula(attrs) {
       scoring_type: "exactMatch",
       valid_response: {
         score: 1,
-        value: values.map(v => ({
+        value: values.map(v => [{
           method: mathMethod,
           value: v,
-        })),
+          options: {
+            ignoreOrder: false,
+            setDecimalSeparator: ".",
+            setThousandsSeparator: [],
+            inverseResult: false,
+          },
+        }]),
       },
     };
   }

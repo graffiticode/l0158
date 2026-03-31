@@ -38,6 +38,107 @@ provide a higher-level interface with sensible defaults:
 Each function takes a record built from chainable attribute keywords.
 All attributes have defaults, so `mcq {}` produces a complete question.
 
+### Question Type Templates
+
+- `mcq` — Multiple choice:
+  ```
+  mcq
+    stimulus "What is 2 + 2?"
+    options ["3", "4", "5"]
+    valid-response [1]
+    {}
+  ```
+
+- `shorttext` — Short typed response:
+  ```
+  shorttext
+    stimulus "What is the capital of France?"
+    valid-response "Paris"
+    {}
+  ```
+
+- `longtext` — Rich text essay (manually scored):
+  ```
+  longtext
+    stimulus "Explain the water cycle."
+    max-length 500
+    placeholder "Start writing here..."
+    {}
+  ```
+
+- `plaintext` — Plain text essay (manually scored):
+  ```
+  plaintext
+    stimulus "Describe your favorite book."
+    max-length 300
+    placeholder "Start writing here..."
+    {}
+  ```
+
+- `clozetext` — Fill-in-the-blank with typed responses:
+  ```
+  clozetext
+    stimulus "The {{response}} is the powerhouse of the cell."
+    valid-response ["mitochondria"]
+    {}
+  ```
+
+- `clozeassociation` — Fill-in-the-blank with drag and drop (use `possible-responses`, not `options`):
+  ```
+  clozeassociation
+    stimulus "Drag the correct {{response}} here."
+    possible-responses ["correct", "incorrect", "maybe"]
+    valid-response ["correct"]
+    {}
+  ```
+
+- `clozedropdown` — Fill-in-the-blank with dropdown select (use `possible-responses`, not `options`; each blank gets its own list):
+  ```
+  clozedropdown
+    stimulus "Select the correct {{response}}."
+    possible-responses [["correct", "incorrect", "maybe"]]
+    valid-response ["correct"]
+    {}
+  ```
+
+- `clozeformula` — Fill-in-the-blank with math/formula input:
+  ```
+  clozeformula
+    stimulus "Solve: x + 3 = 7. x = {{response}}"
+    valid-response ["4"]
+    method "equivLiteral"
+    {}
+  ```
+
+- `choicematrix` — Grid of options by stems:
+  ```
+  choicematrix
+    stimulus "Select the correct answer for each row."
+    rows ["Statement 1", "Statement 2"]
+    columns ["True", "False"]
+    valid-response [[0], [1]]
+    {}
+  ```
+
+- `orderlist` — Drag items into correct order:
+  ```
+  orderlist
+    stimulus "Arrange in order."
+    list ["First", "Second", "Third", "Fourth"]
+    valid-response [0, 1, 2, 3]
+    {}
+  ```
+
+- `classification` — Sort items into categories (use `possible-responses` for the draggable items, `categories` for column headings):
+  ```
+  classification
+    stimulus "Sort the animals"
+    possible-responses ["Dog", "Snake", "Cat", "Lizard"]
+    categories ["Mammals", "Reptiles"]
+    valid-response [[0, 2], [1, 3]]
+    {}
+  ```
+
 ### Attribute Chaining
 
 Attributes are arity-2 functions that chain together, terminated by `{}`:
@@ -48,7 +149,7 @@ mcq
   options ["3", "4", "5"]
   valid-response [1]
   instant-feedback true
-  {}..
+  {}
 ```
 
 Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
