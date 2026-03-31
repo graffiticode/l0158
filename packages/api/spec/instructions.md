@@ -7,7 +7,7 @@ and renders them via a React frontend.
 
 ## L0158 Specific Guidelines
 
-- Start every program with `set-var "lrn-id" get-val-public "itemId" ""` to capture the caller-supplied item ID before any other statements
+- Start every program with `set-var "lrn-id" get-val-public "itemId"` to capture the caller-supplied item ID before any other statements
 - Use `items` to create Items API requests for rendering assessments
 - Use `item` to define individual items when building a list for `items`
 - Use `questions` as a chainable attribute to set questions on an item
@@ -60,7 +60,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Simple MCQ assessment:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity
     items [
       item
@@ -77,13 +77,13 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - MCQ with all defaults:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity items [item questions [mcq {}] {}] {}..
   ```
 
 - Multiple items:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity
     items [
       item questions [mcq {}] {},
@@ -93,7 +93,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Fill-in-the-blank:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity
     items [
       item
@@ -109,7 +109,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Math question:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity
     items [
       item
@@ -126,7 +126,7 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 
 - Multiple questions in one item:
   ```
-  set-var "lrn-id" get-val-public "itemId" ""
+  set-var "lrn-id" get-val-public "itemId"
   learnosity
     items [
       item
