@@ -208,7 +208,7 @@ export class Transformer extends BasisTransformer {
         items = [plain];
       }
       if (!options["lrn-id"]) {
-        resume([...err, `Error: set-var "lrn-id" must be called before items`], undefined);
+        resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
         return;
       }
       const val = await createItems({items, id: options["lrn-id"]});
@@ -244,7 +244,7 @@ export class Transformer extends BasisTransformer {
           questions = [plain];
         }
         if (!options["lrn-id"]) {
-          resume([...err, `Error: set-var "lrn-id" must be called before questions`], undefined);
+          resume(err, {});
           return;
         }
         const questionsResult = await createQuestions(questions, {id: options["lrn-id"]});
@@ -300,7 +300,7 @@ export class Transformer extends BasisTransformer {
         "plain=" + JSON.stringify(plain, null, 2),
       );
       if (!options["lrn-id"]) {
-        resume([`Error: set-var "lrn-id" must be called before author`], undefined);
+        resume([`Error: set-var "lrn-id" must be set to a non-empty string before author is called.`], undefined);
         return;
       }
       const val = await createAuthor({...plain, id: options["lrn-id"]});

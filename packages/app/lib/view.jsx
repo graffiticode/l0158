@@ -83,9 +83,13 @@ export const View = () => {
   );
 
   if (compileResp.data) {
-    setData(compileResp.data);
     setDoRecompile(false);
-    setDoInit(true);
+    if (Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0) {
+      state.apply({ type: "signed", args: compileResp.data });
+    } else {
+      setData(compileResp.data);
+      setDoInit(true);
+    }
   }
 
   const initResp = useSWR(
