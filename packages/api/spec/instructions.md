@@ -17,6 +17,7 @@ and renders them via a React frontend.
 - Use `init` to initialize a Learnosity API session by type
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
 - `items` always takes a list of `item` objects: `items [item questions [...] {}]..`
+- When an assessment has multiple questions, place all questions in the same `item` rather than creating separate items: `items [item questions [mcq {}, shorttext {}] {}]..`
 
 ### Question Type Functions
 
