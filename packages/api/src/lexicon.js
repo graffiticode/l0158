@@ -12,15 +12,15 @@ export const lexicon = {
     "tk": 1,
     "name": "LEARNOSITY",
     "cls": "function",
-    "length": 2,
-    "arity": 2
+    "length": 1,
+    "arity": 1
   },
   "items": {
     "tk": 1,
     "name": "ITEMS",
     "cls": "function",
-    "length": 1,
-    "arity": 1
+    "length": 2,
+    "arity": 2
   },
   "item": {
     "tk": 1,

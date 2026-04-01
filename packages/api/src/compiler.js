@@ -52,19 +52,19 @@ export class Checker extends BasisChecker {
 
   LEARNOSITY(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[1], options, async (e1, v1) => {
-        const err = [].concat(e0 || [], e1 || []);
-        const val = node;
-        resume(err, val);
-      });
+      const err = [].concat(e0 || []);
+      const val = node;
+      resume(err, val);
     });
   }
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const err = [].concat(e0 || []);
-      const val = node;
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
     });
   }
 
@@ -176,43 +176,44 @@ export class Transformer extends BasisTransformer {
 
   LEARNOSITY(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[1], options, async (e1, v1) => {
-        const plain = toPlainObject(v0);
-        const continuation = toPlainObject(v1);
-        console.log(
-          "LEARNOSITY()",
-          "plain=" + JSON.stringify(plain, null, 2),
-        );
-        const err = [].concat(e0 || [], e1 || []);
-        const val = { ...continuation, ...plain };
-        resume(err, val);
-      });
+      const plain = toPlainObject(v0);
+      console.log(
+        "LEARNOSITY()",
+        "plain=" + JSON.stringify(plain, null, 2),
+      );
+      const err = [].concat(e0 || []);
+      const val = plain;
+      resume(err, val);
     });
   }
 
   ITEMS(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const plain = toPlainObject(v0);
-      console.log(
-        "ITEMS()",
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
-      const err = [].concat(e0 || []);
-      // Expects a list of item records
-      let items;
-      if (Array.isArray(plain)) {
-        items = plain;
-      } else if (plain && typeof plain === "object" && plain.list != null) {
-        items = Array.isArray(plain.list) ? plain.list : [plain.list];
-      } else {
-        items = [plain];
-      }
-      if (!options["lrn-id"]) {
-        resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
-        return;
-      }
-      const val = await createItems({items, id: options["lrn-id"]});
-      resume(err, val);
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const plain = toPlainObject(v0);
+        console.log(
+          "ITEMS()",
+          "plain=" + JSON.stringify(plain, null, 2),
+        );
+        const err = [].concat(e0 || [], e1 || []);
+        // Expects a list of item records
+        let items;
+        if (Array.isArray(plain)) {
+          items = plain;
+        } else if (plain && typeof plain === "object" && plain.list != null) {
+          items = Array.isArray(plain.list) ? plain.list : [plain.list];
+        } else {
+          items = [plain];
+        }
+        if (!options["lrn-id"]) {
+          resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
+          return;
+        }
+        const itemsResult = await createItems({items, id: options["lrn-id"]});
+        const continuation = toPlainObject(v1);
+        const val = { ...continuation, ...itemsResult };
+        resume(err, val);
+      });
     });
   }
 
