@@ -53,19 +53,6 @@ export const View = () => {
     }
   }));
 
-  // Post onload message when view first renders
-  useEffect(() => {
-    if (targetOrigin) {
-      window.parent.postMessage({ type: "onload", version: state.version, data: state.data }, targetOrigin);
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
-
-  useEffect(() => {
-    if (targetOrigin) {
-      window.parent.postMessage(state.data, targetOrigin);
-    }
-  }, [JSON.stringify(state.data)]);
-
   useEffect(() => {
     // If `id` changes, then recompile.
     if (id) {
@@ -116,7 +103,7 @@ export const View = () => {
 
   return (
     isNonNullNonEmptyObject(state.data) &&
-      <Form state={state} /> ||
+      <Form state={state} targetOrigin={targetOrigin} /> ||
       <div />
   );
 }

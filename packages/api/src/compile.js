@@ -7,7 +7,7 @@ export async function compile({ auth, authToken, code, data, config }) {
     "data=" + JSON.stringify(data, null, 2),
   );
   if (!code || !data) {
-    return res.status(400).send();
+    throw new Error('Missing required parameters: code and data');
   }
   return await new Promise((resolve, reject) =>
     compiler.compile(code, data, config, (err, data) => {

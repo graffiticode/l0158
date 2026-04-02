@@ -17,7 +17,7 @@ function renderErrors(errors: { message: string; from: number; to: number }[]) {
   );
 }
 
-export const Form = ({ state }) => {
+export const Form = ({ state, targetOrigin }) => {
   if (Array.isArray(state.data?.errors) && state.data.errors.length > 0) {
     return renderErrors(state.data.errors);
   }
@@ -53,6 +53,9 @@ export const Form = ({ state }) => {
       LearnosityApp.init(request, {
         readyListener: () => {
           console.log("Learnosity ready", "type=" + type);
+          if (targetOrigin) {
+            window.parent.postMessage({ type: "onload", data: state.data }, targetOrigin);
+          }
         },
         errorListener(err) {
           console.error("Learnosity error", "type=" + type, err);
