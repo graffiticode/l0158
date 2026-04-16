@@ -1,0 +1,49 @@
+{
+  "id": "0158",
+  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, and classification items. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
+  "supported_item_types": [
+    "mcq",
+    "shorttext",
+    "longtext",
+    "plaintext",
+    "clozetext",
+    "clozeassociation",
+    "clozedropdown",
+    "clozeformula",
+    "choicematrix",
+    "orderlist",
+    "classification"
+  ],
+  "example_prompts": [
+    {
+      "prompt": "Create a 4-option MCQ on the function of mitochondria. One correct answer. Distractors should match common misconceptions. Tag with NGSS MS-LS1-2. Difficulty: medium.",
+      "produces": "mcq",
+      "notes": "Names the item type explicitly, specifies distractor intent, and tags the standard — removes three rounds of guessing for the backend."
+    },
+    {
+      "prompt": "Write a cloze item with three dropdowns about the stages of mitosis in order: prophase, metaphase, anaphase. Show the stem above a sentence with blanks.",
+      "produces": "clozedropdown",
+      "notes": "Specifies interaction count (three dropdowns) up front so the backend does not have to infer the blank count from the sentence."
+    },
+    {
+      "prompt": "Short-text item asking students to define 'allele' in one sentence. Exact match on 'a variant of a gene'.",
+      "produces": "shorttext",
+      "notes": "Exact-match scoring is the default, but stating it lets the backend skip rubric inference; a single canonical answer prevents ambiguous grading."
+    },
+    {
+      "prompt": "Solve for x: 2x + 3 = 11. Show the stem, and accept any expression equivalent to 4 as the answer.",
+      "produces": "clozeformula",
+      "notes": "Says 'equivalent to' explicitly — triggers equivalence scoring rather than string match, which matters for math answers."
+    },
+    {
+      "prompt": "Order these historical events from earliest to latest: signing of the Magna Carta, fall of Constantinople, American Declaration of Independence, French Revolution.",
+      "produces": "orderlist",
+      "notes": "Names the ordering criterion (earliest to latest) — otherwise the backend has to guess whether it is chronology, alphabet, or magnitude."
+    },
+    {
+      "prompt": "Classification item: sort these animals into 'Mammals' and 'Reptiles' — dog, snake, cat, lizard.",
+      "produces": "classification",
+      "notes": "Provides the category labels and the items in one sentence; the backend creates the bucket mapping without guessing taxonomy."
+    }
+  ]
+}
