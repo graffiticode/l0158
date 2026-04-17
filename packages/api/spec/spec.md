@@ -71,18 +71,18 @@ of attributes for a question type. The chain terminates with `{}`.
 
 #### Metadata Inner Keywords
 
-Inside a `metadata` chain, these arity-2 keywords translate to Learnosity
-metadata fields. The outer `metadata` block is a chain terminated by `{}`,
-just like a question record.
+Inside a `metadata` chain, these arity-2 keywords carry item- and
+question-level metadata. The outer `metadata` block is a chain terminated
+by `{}`, just like a question record.
 
-| Keyword | Value Type | Target | Notes |
-| :------ | :--------- | :----- | :---- |
-| `tags` | string[] (`"type:value"`) | `item.tags` object keyed by tag type | Item-level. Splits on first colon. Tag values are strings. |
-| `difficulty` | string or number | `item.tags["Difficulty"]` | Item-level. Tags are the Author Site filter axis; the settings-pane "Difficulty level" spinner is a separate `item.adaptive.difficulty` field used only for Rasch-model adaptive sessions. |
-| `dok` | number (1–4) | `item.tags["DOK"]` | Item-level. Integers are stringified to satisfy the tag-value string requirement. |
-| `notes` | string | `metadata.note` | Both levels. Free-form, not a filter facet. |
-| `distractor-rationale` | string[] or string | `metadata.distractor_rationale_response_level` (list) or `metadata.distractor_rationale` (string) | Question-level. List length should match `options` length. |
-| `acknowledgements` | string | `metadata.acknowledgements` | Question-level. |
+| Keyword | Value Type | Level | Notes |
+| :------ | :--------- | :---- | :---- |
+| `tags` | string[] (`"type:value"`) | item | Splits on first colon. Tag values are strings. |
+| `difficulty` | string or number | item | Faceted in the Author Site filter rail. |
+| `dok` | number (1–4) | item | Faceted in the Author Site filter rail. |
+| `notes` | string | both | Free-form, not a filter facet. |
+| `distractor-rationale` | string[] or string | question | Per-option rationale (list) or whole-question rationale (string). List length should match `options` length. |
+| `acknowledgements` | string | question | Attribution. |
 
 ## Function Reference
 

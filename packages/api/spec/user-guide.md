@@ -65,7 +65,7 @@ You usually do not need to think about which level is which — describe what yo
 - *"Write a cloze item with three dropdowns about the stages of mitosis in order: prophase, metaphase, anaphase. Show the stem above a sentence with blanks."* → `clozedropdown`
 - *"Short-text item asking students to define 'allele' in one sentence. Exact match on 'a variant of a gene'."* → `shorttext`
 - *"Given this passage about photosynthesis, write three related MCQs sharing the passage as a stimulus. Each should target a different depth-of-knowledge level."* → three `mcq` items grouped under one stimulus
-- *"Create an MCQ on the function of mitochondria with four options. Distractors should match common misconceptions, and add a one-line rationale per distractor. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* → `mcq` with item-level NGSS/difficulty/DOK and question-level `distractor_rationale_response_level`
+- *"Create an MCQ on the function of mitochondria with four options. Distractors should match common misconceptions, and add a one-line rationale per distractor. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* → `mcq` with item-level NGSS/difficulty/DOK tags and question-level per-option rationale
 - *"Update item-id <X>: change the stem to be shorter and clearer, but keep all the existing tags and rationale."* → preserves both metadata blocks; only the stem changes
 
 ## Out of Scope

@@ -48,7 +48,7 @@
     {
       "prompt": "Create a 4-option MCQ on the function of mitochondria. Distractors should match common organelle misconceptions, and add a one-line rationale per distractor explaining the misconception. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2.",
       "produces": "mcq",
-      "notes": "Exercises both item-level metadata (NGSS/difficulty/DOK lands on the item record so the Author Site filters on it) and question-level metadata (distractor_rationale_response_level lands on the question so the Author Site review pane shows the teaching intent per option)."
+      "notes": "Exercises both item-level metadata (NGSS, difficulty, DOK — faceted in the Author Site filter rail) and question-level metadata (per-option distractor rationale shown in the Author Site review pane)."
     }
   ]
 }
