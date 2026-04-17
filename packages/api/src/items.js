@@ -4,8 +4,10 @@ import { v4 as uuid } from "uuid";
 // Translate a DSL item-level metadata block into the Learnosity item record
 // fields `tags` (object keyed by tag type) and `metadata`. Tag strings use the
 // first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1" becomes
-// type "Common Core" with value "Math:6.NS.A.1". DOK is conventionally
-// surfaced as a tag so the Author Site filters on it.
+// type "Common Core" with value "Math:6.NS.A.1". Difficulty and DOK are
+// surfaced as tags so the Author Site filter panel and item-details pane
+// render them — the Items API has no canonical top-level difficulty/dok
+// field on `item.metadata`, so values placed there are silently dropped.
 export function translateItemMetadata(metadata) {
   if (metadata == null || typeof metadata !== "object") {
     return { tags: undefined, metadata: undefined };
@@ -26,6 +28,8 @@ export function translateItemMetadata(metadata) {
         if (colon < 0) continue;
         pushTag(tag.slice(0, colon), tag.slice(colon + 1));
       }
+    } else if (key === "difficulty") {
+      pushTag("Difficulty", value);
     } else if (key === "dok") {
       pushTag("DOK", value);
     } else if (key === "notes") {
