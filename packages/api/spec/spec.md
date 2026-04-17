@@ -77,10 +77,10 @@ just like a question record.
 
 | Keyword | Value Type | Target | Notes |
 | :------ | :--------- | :----- | :---- |
-| `tags` | string[] (`"type:value"`) | `item.tags` object keyed by tag type | Item-level. Splits on first colon. |
-| `difficulty` | string or number | `item.tags["Difficulty"]` | Item-level. Emitted as a tag so the Author Site filter panel renders it. The Items API field that backs the settings "Difficulty level" spinner is not yet confirmed — TBD pending docs access or a live probe. |
-| `dok` | number (1–4) | `item.tags["DOK"]` | Item-level. Conventionally surfaced as a tag. |
-| `notes` | string | `metadata.note` | Both levels. |
+| `tags` | string[] (`"type:value"`) | `item.tags` object keyed by tag type | Item-level. Splits on first colon. Tag values are strings. |
+| `difficulty` | string or number | `item.tags["Difficulty"]` | Item-level. Tags are the Author Site filter axis; the settings-pane "Difficulty level" spinner is a separate `item.adaptive.difficulty` field used only for Rasch-model adaptive sessions. |
+| `dok` | number (1–4) | `item.tags["DOK"]` | Item-level. Integers are stringified to satisfy the tag-value string requirement. |
+| `notes` | string | `metadata.note` | Both levels. Free-form, not a filter facet. |
 | `distractor-rationale` | string[] or string | `metadata.distractor_rationale_response_level` (list) or `metadata.distractor_rationale` (string) | Question-level. List length should match `options` length. |
 | `acknowledgements` | string | `metadata.acknowledgements` | Question-level. |
 

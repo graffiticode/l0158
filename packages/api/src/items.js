@@ -2,13 +2,20 @@
 import { v4 as uuid } from "uuid";
 
 // Translate a DSL item-level metadata block into the Learnosity item record
-// fields `tags` (object keyed by tag type) and `metadata`. Tag strings use the
-// first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1" becomes
-// type "Common Core" with value "Math:6.NS.A.1". Difficulty and DOK are
-// surfaced as tags so the Author Site filter panel renders them. The Items
-// API field that backs the settings "Difficulty level" spinner is not yet
-// confirmed — candidates are item.adaptive.difficulty and a top-level
-// item.difficulty — so for now only the tag form is emitted.
+// fields `tags` (object keyed by tag type) and `metadata`. Tag strings use
+// the first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1"
+// becomes type "Common Core" with value "Math:6.NS.A.1".
+//
+// Everything faceted (difficulty, DOK, standards) goes into `tags` because
+// that is the Author Site filter axis — the left-rail filter panel enumerates
+// tag types, not metadata keys. Free-form fields (notes, acknowledgements)
+// go into `metadata`. The settings-pane "Difficulty level" spinner backs
+// item.adaptive.difficulty (a Rasch-model calibration used only by adaptive
+// sessions) and is intentionally not populated from this block.
+//
+// Tag type names follow Learnosity's sample-data convention: title-case for
+// words ("Difficulty") and caps for acronyms ("DOK"). Tag values are strings
+// (integers are stringified).
 export function translateItemMetadata(metadata) {
   if (metadata == null || typeof metadata !== "object") {
     return { tags: undefined, metadata: undefined };

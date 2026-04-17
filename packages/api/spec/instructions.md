@@ -160,7 +160,10 @@ inner attribute keywords are recognized:
   Learnosity tag type and value (e.g., `"NGSS:MS-LS1-2"` becomes tag type
   `NGSS` with value `MS-LS1-2`).
 - `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5.
-  Emitted as a `tags["Difficulty"]` tag for Author Site filtering.
+  Emitted as a `tags["Difficulty"]` tag so the Author Site filter rail can
+  facet on it. (The settings-pane "Difficulty level" spinner backs a
+  separate `item.adaptive.difficulty` field used only for Rasch-model
+  adaptive assessments; it is not set from this block.)
 - `dok` — integer 1–4 for Webb's Depth of Knowledge.
 - `notes` — author-facing note attached to the item.
 
@@ -248,13 +251,21 @@ items [
 
 #### Conventions
 
+- **Faceted fields go to tags, free-form fields go to metadata.** The Author
+  Site's item-bank filter rail enumerates tag types, not metadata keys, so
+  `difficulty`, `dok`, and `tags` all land in `item.tags` (keyed by tag
+  type: `Difficulty`, `DOK`, and the publisher-chosen types from the tag
+  strings). Fields like `notes` are free-form and land in `item.metadata`.
+- **Tag type naming follows Learnosity's sample-data convention** — title-case
+  for words (`Difficulty`) and caps for acronyms (`DOK`). Publishers can
+  rename these in their Author Site configuration; match their convention
+  or the filter facets will not find the items.
+- **Tag values are strings.** Integers in the DSL (e.g., `dok 2`) are
+  stringified to `"2"` before emitting.
 - **Tag values with a literal colon** (e.g., `"Common Core:Math:6.NS.A.1"`)
   split on the first colon only, so that example becomes type `Common Core`
   with value `Math:6.NS.A.1`.
 - **Distractor-rationale list length** should match the number of options.
-- **Use item-level metadata for searchable fields** (tags, difficulty, DOK).
-  The Author Site only filters on item-level tags. Tags placed on a question
-  are silently invisible to search.
 - **Use question-level metadata for per-interaction fields**
   (`distractor-rationale`, `acknowledgements`, question `notes`). These
   travel with the question if it is reused in a different item.
