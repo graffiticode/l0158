@@ -22,9 +22,32 @@ describe("translateItemMetadata", () => {
     expect(result.metadata).toBeUndefined();
   });
 
-  it("surfaces difficulty as tags[\"Difficulty\"]", () => {
+  it("surfaces difficulty as both tags[\"Difficulty\"] and metadata.difficulty integer", () => {
     const result = translateItemMetadata({ difficulty: "medium" });
     expect(result.tags).toEqual({ Difficulty: ["medium"] });
+    expect(result.metadata).toEqual({ difficulty: 3 });
+  });
+
+  it("maps easy/medium/hard to 1/3/5", () => {
+    expect(translateItemMetadata({ difficulty: "easy" }).metadata.difficulty).toBe(1);
+    expect(translateItemMetadata({ difficulty: "medium" }).metadata.difficulty).toBe(3);
+    expect(translateItemMetadata({ difficulty: "hard" }).metadata.difficulty).toBe(5);
+  });
+
+  it("passes numeric difficulty through to metadata.difficulty", () => {
+    const result = translateItemMetadata({ difficulty: 4 });
+    expect(result.tags).toEqual({ Difficulty: ["4"] });
+    expect(result.metadata).toEqual({ difficulty: 4 });
+  });
+
+  it("parses digit-string difficulty into integer", () => {
+    const result = translateItemMetadata({ difficulty: "2" });
+    expect(result.metadata).toEqual({ difficulty: 2 });
+  });
+
+  it("tags unrecognized difficulty strings but omits metadata.difficulty", () => {
+    const result = translateItemMetadata({ difficulty: "spicy" });
+    expect(result.tags).toEqual({ Difficulty: ["spicy"] });
     expect(result.metadata).toBeUndefined();
   });
 
@@ -52,6 +75,6 @@ describe("translateItemMetadata", () => {
       Difficulty: ["medium"],
       DOK: ["2"],
     });
-    expect(result.metadata).toEqual({ note: "variant A" });
+    expect(result.metadata).toEqual({ difficulty: 3, note: "variant A" });
   });
 });

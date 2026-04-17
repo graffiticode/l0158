@@ -159,7 +159,10 @@ inner attribute keywords are recognized:
 - `tags` — list of `"key:value"` strings; each splits on the first `:` into a
   Learnosity tag type and value (e.g., `"NGSS:MS-LS1-2"` becomes tag type
   `NGSS` with value `MS-LS1-2`).
-- `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5.
+- `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5. Prose
+  labels map to integers (easy=1, medium=3, hard=5); the integer fills the
+  Author Site "Difficulty level" spinner and the original value is also
+  retained as a searchable tag.
 - `dok` — integer 1–4 for Webb's Depth of Knowledge.
 - `notes` — author-facing note attached to the item.
 
