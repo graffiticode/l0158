@@ -261,5 +261,55 @@ export const lexicon = {
     "cls": "function",
     "length": 2,
     "arity": 2
+  },
+  // Metadata keywords (arity 2)
+  "metadata": {
+    "tk": 1,
+    "name": "METADATA",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "tags": {
+    "tk": 1,
+    "name": "TAGS",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "difficulty": {
+    "tk": 1,
+    "name": "DIFFICULTY",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "dok": {
+    "tk": 1,
+    "name": "DOK",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "notes": {
+    "tk": 1,
+    "name": "NOTES",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "distractor-rationale": {
+    "tk": 1,
+    "name": "DISTRACTOR_RATIONALE",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "acknowledgements": {
+    "tk": 1,
+    "name": "ACKNOWLEDGEMENTS",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
   }
 }

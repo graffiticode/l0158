@@ -11,6 +11,7 @@ import {
   buildChoicematrix,
   buildOrderlist,
   buildClassification,
+  translateQuestionMetadata,
 } from "./question-types.js";
 
 describe("question-types", () => {
@@ -308,6 +309,102 @@ describe("question-types", () => {
       expect(result.ui_style.column_titles).toEqual(["Mammals", "Reptiles"]);
       expect(result.possible_responses).toEqual(["Dog", "Snake", "Cat", "Lizard"]);
       expect(result.validation.valid_response.value).toEqual([[0, 2], [1, 3]]);
+    });
+  });
+
+  describe("metadata", () => {
+    it("maps list-form distractor_rationale to distractor_rationale_response_level", () => {
+      const result = buildMcq({
+        stimulus: "Q?",
+        options: ["A", "B", "C", "D"],
+        valid_response: [0],
+        metadata: {
+          distractor_rationale: ["a1", "a2", "a3", "a4"],
+        },
+      });
+      expect(result.metadata).toEqual({
+        distractor_rationale_response_level: ["a1", "a2", "a3", "a4"],
+      });
+    });
+
+    it("maps string-form distractor_rationale to distractor_rationale", () => {
+      const result = buildMcq({
+        stimulus: "Q?",
+        options: ["A", "B"],
+        valid_response: [0],
+        metadata: {
+          distractor_rationale: "whole-question rationale",
+        },
+      });
+      expect(result.metadata).toEqual({
+        distractor_rationale: "whole-question rationale",
+      });
+    });
+
+    it("renames notes to note and passes acknowledgements through", () => {
+      const result = buildMcq({
+        stimulus: "Q?",
+        options: ["A", "B"],
+        valid_response: [0],
+        metadata: {
+          notes: "author note",
+          acknowledgements: "Image: Louvre",
+        },
+      });
+      expect(result.metadata).toEqual({
+        note: "author note",
+        acknowledgements: "Image: Louvre",
+      });
+    });
+
+    it("does not add a metadata field when no metadata is passed (mcq)", () => {
+      const result = buildMcq({
+        stimulus: "Q?",
+        options: ["A", "B"],
+        valid_response: [0],
+      });
+      expect(result).not.toHaveProperty("metadata");
+    });
+
+    it("does not add a metadata field when no metadata is passed (shorttext)", () => {
+      const result = buildShorttext({
+        stimulus: "Q?",
+        valid_response: "x",
+      });
+      expect(result).not.toHaveProperty("metadata");
+    });
+
+    it("does not add a metadata field when metadata is an empty object", () => {
+      const result = buildMcq({
+        stimulus: "Q?",
+        options: ["A", "B"],
+        valid_response: [0],
+        metadata: {},
+      });
+      expect(result).not.toHaveProperty("metadata");
+    });
+  });
+
+  describe("translateQuestionMetadata", () => {
+    it("returns undefined for null/undefined input", () => {
+      expect(translateQuestionMetadata(null)).toBeUndefined();
+      expect(translateQuestionMetadata(undefined)).toBeUndefined();
+    });
+
+    it("returns undefined for empty object", () => {
+      expect(translateQuestionMetadata({})).toBeUndefined();
+    });
+
+    it("translates all supported fields", () => {
+      expect(translateQuestionMetadata({
+        distractor_rationale: ["one", "two"],
+        notes: "n",
+        acknowledgements: "a",
+      })).toEqual({
+        distractor_rationale_response_level: ["one", "two"],
+        note: "n",
+        acknowledgements: "a",
+      });
     });
   });
 });

@@ -55,4 +55,47 @@ describe("compiler", () => {
     expect(result.options).toHaveLength(4);
     expect(result.validation.valid_response.value).toEqual(["0"]);
   }, 10000);
+
+  test("mcq with question-level metadata translates field names", async () => {
+    const src = `mcq
+      stimulus "Which organelle produces ATP?"
+      options ["mitochondria" "nucleus" "ribosome" "cell membrane"]
+      valid-response [0]
+      metadata
+        distractor-rationale ["Correct." "That's the DNA organelle." "That's where proteins are built." "That's the boundary layer."]
+        notes "Targets organelle confusions."
+        acknowledgements "Adapted from Smith 2019."
+        {}
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("mcq");
+    expect(result.metadata).toEqual({
+      distractor_rationale_response_level: [
+        "Correct.",
+        "That's the DNA organelle.",
+        "That's where proteins are built.",
+        "That's the boundary layer.",
+      ],
+      note: "Targets organelle confusions.",
+      acknowledgements: "Adapted from Smith 2019.",
+    });
+  }, 10000);
+
+  test("item with item-level metadata compiles to plain object with metadata field", async () => {
+    const src = `item
+      metadata
+        tags ["NGSS:MS-LS1-2" "topic:cellular-respiration"]
+        difficulty "medium"
+        dok 2
+        notes "Organelle set variant A."
+        {}
+      {}..`;
+    const result = await compile(src);
+    expect(result.metadata).toEqual({
+      tags: ["NGSS:MS-LS1-2", "topic:cellular-respiration"],
+      difficulty: "medium",
+      dok: 2,
+      notes: "Organelle set variant A.",
+    });
+  }, 10000);
 });

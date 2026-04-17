@@ -11,6 +11,8 @@ When composing a request, name the item type explicitly ("multiple choice", "clo
 
 In scope: item authoring, item-level metadata, item-level accessibility hints (alt text, reading level), variant generation. Out of scope: activity-level assembly, delivery configuration, learner-side analytics, and host-app embedding — those belong downstream of this language and are handled by the Learnosity Items/Activities APIs or by the host app that renders the compiled JSON.
 
+Item-level metadata (tags, difficulty, DOK) and question-level metadata (per-distractor rationale, acknowledgements) are supported via a `metadata` block at the relevant level — describe tags, difficulty, and per-option rationale in plain English and L0158 attaches them to the right level automatically.
+
 ## Item Types
 
 L0158 emits one of the following interactions per question. Use the English cue when you know what you want — it removes ambiguity for the backend.
@@ -41,9 +43,21 @@ Say this to get that:
 - **Rubric** — triggers manual-scoring mode on `longtext` / `plaintext`. Describe point values per criterion.
 - **Exact match / partial credit** — picks the scoring model; default is exact match.
 - **Shared stimulus** — a passage, image, or diagram attached once to a group of items. Describe it once at the top of the request.
-- **Tags / standards** — NGSS, CCSS, Bloom's level, difficulty — mention them by their conventional names and L0158 will attach them as metadata.
+- **Tags / standards** — NGSS, CCSS, Bloom's level — mention them by their conventional names (e.g., "NGSS MS-LS1-2", "CCSS 6.NS.A.1") and L0158 attaches them at the item level so the Learnosity Author Site can filter on them.
+- **Difficulty / DOK** — describe difficulty in plain English ("medium", "hard") or numerically (1–5); for Depth of Knowledge use the integer 1–4. Both attach at the item level.
+- **Distractor rationale** — for MCQ, ask for "a one-line rationale per distractor" or "explain why each wrong answer is wrong". L0158 attaches these at the question level so the Author Site review pane shows the teaching intent alongside the item.
 - **Instant feedback** — turns on immediate per-response feedback in the interaction.
 - **Shuffle options** — randomizes option order at render time.
+
+## Metadata
+
+L0158 attaches metadata at two levels.
+
+**Item-level metadata** is what the Learnosity Author Site indexes for search and filtering. Standards tags (NGSS, CCSS, custom taxonomies), difficulty, and DOK go here. Mention them in the prompt and L0158 attaches them to the item record.
+
+**Question-level metadata** travels with the individual interaction if it is reused. The headline field is per-distractor rationale on MCQ — when you ask for "a one-line rationale per distractor", L0158 emits these as question-level metadata that the Author Site shows in the review pane.
+
+You usually do not need to think about which level is which — describe what you want in plain English and L0158 places the metadata at the level that makes it useful. Example: *"Create a 4-option MCQ on the function of mitochondria. Distractors should match common misconceptions, and add a one-line rationale per distractor explaining the misconception. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* — produces an item with NGSS/difficulty/DOK at the item level and per-option rationale at the question level.
 
 ## Example Prompts
 
@@ -51,6 +65,8 @@ Say this to get that:
 - *"Write a cloze item with three dropdowns about the stages of mitosis in order: prophase, metaphase, anaphase. Show the stem above a sentence with blanks."* → `clozedropdown`
 - *"Short-text item asking students to define 'allele' in one sentence. Exact match on 'a variant of a gene'."* → `shorttext`
 - *"Given this passage about photosynthesis, write three related MCQs sharing the passage as a stimulus. Each should target a different depth-of-knowledge level."* → three `mcq` items grouped under one stimulus
+- *"Create an MCQ on the function of mitochondria with four options. Distractors should match common misconceptions, and add a one-line rationale per distractor. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* → `mcq` with item-level NGSS/difficulty/DOK and question-level `distractor_rationale_response_level`
+- *"Update item-id <X>: change the stem to be shorter and clearer, but keep all the existing tags and rationale."* → preserves both metadata blocks; only the stem changes
 
 ## Out of Scope
 

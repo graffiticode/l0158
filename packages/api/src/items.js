@@ -1,6 +1,45 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
+// Translate a DSL item-level metadata block into the Learnosity item record
+// fields `tags` (object keyed by tag type) and `metadata`. Tag strings use the
+// first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1" becomes
+// type "Common Core" with value "Math:6.NS.A.1". DOK is conventionally
+// surfaced as a tag so the Author Site filters on it.
+export function translateItemMetadata(metadata) {
+  if (metadata == null || typeof metadata !== "object") {
+    return { tags: undefined, metadata: undefined };
+  }
+  const tags = {};
+  const meta = {};
+  const pushTag = (type, value) => {
+    if (!tags[type]) tags[type] = [];
+    tags[type].push(String(value));
+  };
+  for (const [key, value] of Object.entries(metadata)) {
+    if (value == null) continue;
+    if (key === "tags") {
+      if (!Array.isArray(value)) continue;
+      for (const tag of value) {
+        if (typeof tag !== "string") continue;
+        const colon = tag.indexOf(":");
+        if (colon < 0) continue;
+        pushTag(tag.slice(0, colon), tag.slice(colon + 1));
+      }
+    } else if (key === "dok") {
+      pushTag("DOK", value);
+    } else if (key === "notes") {
+      meta.note = value;
+    } else {
+      meta[key] = value;
+    }
+  }
+  return {
+    tags: Object.keys(tags).length > 0 ? tags : undefined,
+    metadata: Object.keys(meta).length > 0 ? meta : undefined,
+  };
+}
+
 const getDynamicContentData = (data) => {
   if (!data) {
     return;
@@ -50,11 +89,18 @@ export const buildCreateItems = ({
     })
   );
   const dynamicContentData = getDynamicContentData(templateVariablesRecords);
-  // console.log(
-  //   "createItems()",
-  //   "items=" + JSON.stringify(items, null, 2),
-  //   "dynamicContentData=" + JSON.stringify(dynamicContentData, null, 2),
-  // );
+  const { tags, metadata } = translateItemMetadata(item.metadata);
+  const itemRecord = {
+    reference: itemRef,
+    status: "published",
+    definition: {
+      widgets: questions,
+    },
+    dynamic_content_data: dynamicContentData,
+    questions,
+  };
+  if (tags !== undefined) itemRecord.tags = tags;
+  if (metadata !== undefined) itemRecord.metadata = metadata;
   const itemsReq = sdk.init(
     'data',
     {
@@ -63,15 +109,7 @@ export const buildCreateItems = ({
     },
     secret,
     {
-      items: [{
-        reference: itemRef,
-        status: "published",
-        definition: {
-          widgets: questions,
-        },
-        dynamic_content_data: dynamicContentData,
-        questions,
-      }],
+      items: [itemRecord],
     },
     "set",
   );

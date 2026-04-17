@@ -140,6 +140,124 @@ All attributes have defaults, so `mcq {}` produces a complete question.
     {}
   ```
 
+### Metadata
+
+L0158 supports a `metadata` block at two levels: on `item` (for fields the
+Learnosity Author Site indexes for search) and on each question constructor
+(for fields that travel with the interaction). Both are optional and can
+appear independently — items without metadata work exactly as before.
+
+The `metadata` block is itself a chained record built from inner attribute
+keywords terminated by `{}`, the same pattern as a question record. There is
+no record-literal syntax to learn.
+
+#### Item-level metadata
+
+Place a `metadata` block alongside `questions` inside an `item` chain. These
+inner attribute keywords are recognized:
+
+- `tags` — list of `"key:value"` strings; each splits on the first `:` into a
+  Learnosity tag type and value (e.g., `"NGSS:MS-LS1-2"` becomes tag type
+  `NGSS` with value `MS-LS1-2`).
+- `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5.
+- `dok` — integer 1–4 for Webb's Depth of Knowledge.
+- `notes` — author-facing note attached to the item.
+
+```
+items [
+  item
+    metadata
+      tags ["NGSS:MS-LS1-2" "topic:cellular-respiration"]
+      difficulty "medium"
+      dok 2
+      notes "Variant A of the organelle misconception set"
+      {}
+    questions [
+      mcq
+        stimulus "What is the primary function of the mitochondria?"
+        options [
+          "To produce energy (ATP) through cellular respiration"
+          "To control what enters and exits the cell"
+          "To build proteins using genetic instructions"
+          "To store and protect the cell's DNA"
+        ]
+        valid-response [0]
+        {}
+    ]
+    {}
+]..
+```
+
+#### Question-level metadata
+
+Place a `metadata` block inside any question constructor's chain, alongside
+`stimulus`, `options`, etc. These inner attribute keywords are recognized:
+
+- `distractor-rationale` — list of strings, one per option (preferred) or a
+  single string for whole-question rationale.
+- `acknowledgements` — attribution string.
+- `notes` — author-facing note attached to the question (distinct from the
+  item-level note).
+
+```
+mcq
+  stimulus "What is the primary function of the mitochondria?"
+  options [
+    "To produce energy (ATP) through cellular respiration"
+    "To control what enters and exits the cell"
+    "To build proteins using genetic instructions"
+    "To store and protect the cell's DNA"
+  ]
+  valid-response [0]
+  metadata
+    distractor-rationale [
+      "Correct — ATP production via cellular respiration."
+      "That's the role of the cell membrane."
+      "That's the role of ribosomes."
+      "That's the role of the nucleus."
+    ]
+    notes "Targets the three most common organelle confusions."
+    {}
+  {}
+```
+
+#### Both levels in one item
+
+```
+items [
+  item
+    metadata
+      tags ["NGSS:MS-LS1-2"]
+      difficulty "medium"
+      dok 2
+      {}
+    questions [
+      mcq
+        stimulus "..."
+        options [...]
+        valid-response [0]
+        metadata
+          distractor-rationale ["..." "..." "..." "..."]
+          {}
+        {}
+    ]
+    {}
+]..
+```
+
+#### Conventions
+
+- **Tag values with a literal colon** (e.g., `"Common Core:Math:6.NS.A.1"`)
+  split on the first colon only, so that example becomes type `Common Core`
+  with value `Math:6.NS.A.1`.
+- **Distractor-rationale list length** should match the number of options.
+- **Use item-level metadata for searchable fields** (tags, difficulty, DOK).
+  The Author Site only filters on item-level tags. Tags placed on a question
+  are silently invisible to search.
+- **Use question-level metadata for per-interaction fields**
+  (`distractor-rationale`, `acknowledgements`, question `notes`). These
+  travel with the question if it is reused in a different item.
+
 ### Attribute Chaining
 
 Attributes are arity-2 functions that chain together, terminated by `{}`:

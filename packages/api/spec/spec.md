@@ -67,6 +67,22 @@ of attributes for a question type. The chain terminates with `{}`.
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
+| `metadata` | record | `metadata` / `tags` | item, all question types |
+
+#### Metadata Inner Keywords
+
+Inside a `metadata` chain, these arity-2 keywords translate to Learnosity
+metadata fields. The outer `metadata` block is a chain terminated by `{}`,
+just like a question record.
+
+| Keyword | Value Type | Target | Notes |
+| :------ | :--------- | :----- | :---- |
+| `tags` | string[] (`"type:value"`) | `item.tags` object keyed by tag type | Item-level. Splits on first colon. |
+| `difficulty` | string or number | `item.metadata.difficulty` | Item-level. |
+| `dok` | number (1–4) | `item.tags["DOK"]` | Item-level. Conventionally surfaced as a tag. |
+| `notes` | string | `metadata.note` | Both levels. |
+| `distractor-rationale` | string[] or string | `metadata.distractor_rationale_response_level` (list) or `metadata.distractor_rationale` (string) | Question-level. List length should match `options` length. |
+| `acknowledgements` | string | `metadata.acknowledgements` | Question-level. |
 
 ## Function Reference
 

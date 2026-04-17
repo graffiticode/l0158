@@ -64,6 +64,39 @@ function withDefaults(type, attrs) {
   return { ...defaults, ...attrs };
 }
 
+// Translate a DSL metadata block into a Learnosity question-level metadata object.
+// Returns undefined when there is nothing to attach, so no-metadata programs
+// produce byte-identical output to pre-feature behavior.
+export function translateQuestionMetadata(metadata) {
+  if (metadata == null || typeof metadata !== "object") {
+    return undefined;
+  }
+  const out = {};
+  for (const [key, value] of Object.entries(metadata)) {
+    if (value == null) continue;
+    if (key === "distractor_rationale") {
+      if (Array.isArray(value)) {
+        out.distractor_rationale_response_level = value;
+      } else {
+        out.distractor_rationale = value;
+      }
+    } else if (key === "notes") {
+      out.note = value;
+    } else {
+      out[key] = value;
+    }
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
+function attachQuestionMetadata(question, metadata) {
+  const translated = translateQuestionMetadata(metadata);
+  if (translated !== undefined) {
+    question.metadata = translated;
+  }
+  return question;
+}
+
 export function buildMcq(attrs) {
   const {
     stimulus,
@@ -72,6 +105,7 @@ export function buildMcq(attrs) {
     multiple_responses,
     instant_feedback,
     shuffle_options,
+    metadata,
     ...rest
   } = withDefaults("mcq", attrs);
   const question = {
@@ -98,7 +132,7 @@ export function buildMcq(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildShorttext(attrs) {
@@ -109,6 +143,7 @@ export function buildShorttext(attrs) {
     case_sensitive,
     instant_feedback,
     placeholder,
+    metadata,
     ...rest
   } = withDefaults("shorttext", attrs);
   const question = {
@@ -137,7 +172,7 @@ export function buildShorttext(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildLongtext(attrs) {
@@ -145,6 +180,7 @@ export function buildLongtext(attrs) {
     stimulus,
     max_length,
     placeholder,
+    metadata,
     ...rest
   } = withDefaults("longtext", attrs);
   const question = {
@@ -158,7 +194,7 @@ export function buildLongtext(attrs) {
   if (placeholder != null) {
     question.placeholder = placeholder;
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildPlaintext(attrs) {
@@ -166,6 +202,7 @@ export function buildPlaintext(attrs) {
     stimulus,
     max_length,
     placeholder,
+    metadata,
     ...rest
   } = withDefaults("plaintext", attrs);
   const question = {
@@ -179,7 +216,7 @@ export function buildPlaintext(attrs) {
   if (placeholder != null) {
     question.placeholder = placeholder;
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildClozetext(attrs) {
@@ -188,6 +225,7 @@ export function buildClozetext(attrs) {
     valid_response,
     case_sensitive,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("clozetext", attrs);
   const question = {
@@ -210,7 +248,7 @@ export function buildClozetext(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildClozeassociation(attrs) {
@@ -219,6 +257,7 @@ export function buildClozeassociation(attrs) {
     possible_responses,
     valid_response,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("clozeassociation", attrs);
   const question = {
@@ -239,7 +278,7 @@ export function buildClozeassociation(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildClozedropdown(attrs) {
@@ -248,6 +287,7 @@ export function buildClozedropdown(attrs) {
     possible_responses,
     valid_response,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("clozedropdown", attrs);
   const question = {
@@ -268,7 +308,7 @@ export function buildClozedropdown(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildClozeformula(attrs) {
@@ -277,6 +317,7 @@ export function buildClozeformula(attrs) {
     valid_response,
     method,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("clozeformula", attrs);
   const mathMethod = method || "equivLiteral";
@@ -311,7 +352,7 @@ export function buildClozeformula(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildChoicematrix(attrs) {
@@ -322,6 +363,7 @@ export function buildChoicematrix(attrs) {
     valid_response,
     instant_feedback,
     shuffle_options,
+    metadata,
     ...rest
   } = withDefaults("choicematrix", attrs);
   const question = {
@@ -346,7 +388,7 @@ export function buildChoicematrix(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildOrderlist(attrs) {
@@ -355,6 +397,7 @@ export function buildOrderlist(attrs) {
     list,
     valid_response,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("orderlist", attrs);
   const question = {
@@ -375,7 +418,7 @@ export function buildOrderlist(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 export function buildClassification(attrs) {
@@ -385,6 +428,7 @@ export function buildClassification(attrs) {
     possible_responses,
     valid_response,
     instant_feedback,
+    metadata,
     ...rest
   } = withDefaults("classification", attrs);
   const question = {
@@ -409,7 +453,7 @@ export function buildClassification(attrs) {
       },
     };
   }
-  return question;
+  return attachQuestionMetadata(question, metadata);
 }
 
 // Registry mapping AST names to builders
@@ -447,19 +491,26 @@ export const attributeFields = {
   CATEGORIES: { field: "categories", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
+  METADATA: { field: "metadata", valueType: "any" },
+  TAGS: { field: "tags", valueType: "array" },
+  DIFFICULTY: { field: "difficulty", valueType: "any" },
+  DOK: { field: "dok", valueType: "number" },
+  NOTES: { field: "notes", valueType: "string" },
+  DISTRACTOR_RATIONALE: { field: "distractor_rationale", valueType: "any" },
+  ACKNOWLEDGEMENTS: { field: "acknowledgements", valueType: "string" },
 };
 
 // Which attributes are valid for each question type
 export const validAttributes = {
-  MCQ: ["stimulus", "options", "valid_response", "instant_feedback", "shuffle_options", "multiple_responses"],
-  SHORTTEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive", "max_length", "placeholder"],
-  LONGTEXT: ["stimulus", "max_length", "placeholder"],
-  PLAINTEXT: ["stimulus", "max_length", "placeholder"],
-  CLOZETEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive"],
-  CLOZEASSOCIATION: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
-  CLOZEDROPDOWN: ["stimulus", "possible_responses", "valid_response", "instant_feedback"],
-  CLOZEFORMULA: ["stimulus", "valid_response", "instant_feedback", "method"],
-  CHOICEMATRIX: ["stimulus", "rows", "columns", "valid_response", "instant_feedback", "shuffle_options"],
-  ORDERLIST: ["stimulus", "list", "valid_response", "instant_feedback"],
-  CLASSIFICATION: ["stimulus", "categories", "possible_responses", "valid_response", "instant_feedback"],
+  MCQ: ["stimulus", "options", "valid_response", "instant_feedback", "shuffle_options", "multiple_responses", "metadata"],
+  SHORTTEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive", "max_length", "placeholder", "metadata"],
+  LONGTEXT: ["stimulus", "max_length", "placeholder", "metadata"],
+  PLAINTEXT: ["stimulus", "max_length", "placeholder", "metadata"],
+  CLOZETEXT: ["stimulus", "valid_response", "instant_feedback", "case_sensitive", "metadata"],
+  CLOZEASSOCIATION: ["stimulus", "possible_responses", "valid_response", "instant_feedback", "metadata"],
+  CLOZEDROPDOWN: ["stimulus", "possible_responses", "valid_response", "instant_feedback", "metadata"],
+  CLOZEFORMULA: ["stimulus", "valid_response", "instant_feedback", "method", "metadata"],
+  CHOICEMATRIX: ["stimulus", "rows", "columns", "valid_response", "instant_feedback", "shuffle_options", "metadata"],
+  ORDERLIST: ["stimulus", "list", "valid_response", "instant_feedback", "metadata"],
+  CLASSIFICATION: ["stimulus", "categories", "possible_responses", "valid_response", "instant_feedback", "metadata"],
 };
