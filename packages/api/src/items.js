@@ -1,38 +1,14 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
-// Map prose difficulty labels to the 1-5 integer scale that the Author Site
-// "Difficulty level" spinner and adaptive-assessment logic expect.
-const DIFFICULTY_WORD_TO_INT = {
-  easy: 1,
-  medium: 3,
-  hard: 5,
-};
-
-function coerceDifficulty(value) {
-  if (typeof value === "number" && Number.isFinite(value)) {
-    return Math.round(value);
-  }
-  if (typeof value === "string") {
-    const normalized = value.toLowerCase().trim();
-    if (DIFFICULTY_WORD_TO_INT[normalized] !== undefined) {
-      return DIFFICULTY_WORD_TO_INT[normalized];
-    }
-    if (/^-?\d+$/.test(normalized)) {
-      return parseInt(normalized, 10);
-    }
-  }
-  return undefined;
-}
-
 // Translate a DSL item-level metadata block into the Learnosity item record
 // fields `tags` (object keyed by tag type) and `metadata`. Tag strings use the
 // first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1" becomes
-// type "Common Core" with value "Math:6.NS.A.1". Difficulty is emitted BOTH as
-// an integer on `item.metadata.difficulty` (fills the settings "Difficulty
-// level" spinner and drives adaptive-assessment scoring) AND as a tag on
-// `item.tags["Difficulty"]` (drives Author Site filters). DOK is a tag only;
-// the Items API has no canonical metadata.dok field.
+// type "Common Core" with value "Math:6.NS.A.1". Difficulty and DOK are
+// surfaced as tags so the Author Site filter panel renders them. The Items
+// API field that backs the settings "Difficulty level" spinner is not yet
+// confirmed — candidates are item.adaptive.difficulty and a top-level
+// item.difficulty — so for now only the tag form is emitted.
 export function translateItemMetadata(metadata) {
   if (metadata == null || typeof metadata !== "object") {
     return { tags: undefined, metadata: undefined };
@@ -55,10 +31,6 @@ export function translateItemMetadata(metadata) {
       }
     } else if (key === "difficulty") {
       pushTag("Difficulty", value);
-      const numeric = coerceDifficulty(value);
-      if (numeric !== undefined) {
-        meta.difficulty = numeric;
-      }
     } else if (key === "dok") {
       pushTag("DOK", value);
     } else if (key === "notes") {

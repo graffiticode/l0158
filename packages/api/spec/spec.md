@@ -78,7 +78,7 @@ just like a question record.
 | Keyword | Value Type | Target | Notes |
 | :------ | :--------- | :----- | :---- |
 | `tags` | string[] (`"type:value"`) | `item.tags` object keyed by tag type | Item-level. Splits on first colon. |
-| `difficulty` | string or number | `item.metadata.difficulty` (integer 1–5) + `item.tags["Difficulty"]` | Item-level. Prose labels map to integers (easy=1, medium=3, hard=5); numeric values and digit strings pass through. The integer fills the settings "Difficulty level" spinner and drives adaptive-assessment scoring; the tag drives Author Site filters. |
+| `difficulty` | string or number | `item.tags["Difficulty"]` | Item-level. Emitted as a tag so the Author Site filter panel renders it. The Items API field that backs the settings "Difficulty level" spinner is not yet confirmed — TBD pending docs access or a live probe. |
 | `dok` | number (1–4) | `item.tags["DOK"]` | Item-level. Conventionally surfaced as a tag. |
 | `notes` | string | `metadata.note` | Both levels. |
 | `distractor-rationale` | string[] or string | `metadata.distractor_rationale_response_level` (list) or `metadata.distractor_rationale` (string) | Question-level. List length should match `options` length. |
