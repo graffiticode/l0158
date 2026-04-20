@@ -312,5 +312,26 @@ export const lexicon = {
     "cls": "function",
     "length": 1,
     "arity": 1
+  },
+  "description": {
+    "tk": 1,
+    "name": "DESCRIPTION",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
+  "source": {
+    "tk": 1,
+    "name": "SOURCE",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
+  "difficulty-level": {
+    "tk": 1,
+    "name": "DIFFICULTY_LEVEL",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
   }
 }

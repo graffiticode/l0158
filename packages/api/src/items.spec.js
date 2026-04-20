@@ -2,13 +2,22 @@
 import { translateItemMetadata } from "./items.js";
 
 describe("translateItemMetadata", () => {
+  const emptyResult = {
+    tags: undefined,
+    note: undefined,
+    description: undefined,
+    source: undefined,
+    adaptive: undefined,
+    metadata: undefined,
+  };
+
   it("returns undefined fields for null/undefined input", () => {
-    expect(translateItemMetadata(null)).toEqual({ tags: undefined, note: undefined, metadata: undefined });
-    expect(translateItemMetadata(undefined)).toEqual({ tags: undefined, note: undefined, metadata: undefined });
+    expect(translateItemMetadata(null)).toEqual(emptyResult);
+    expect(translateItemMetadata(undefined)).toEqual(emptyResult);
   });
 
   it("returns undefined fields for empty list", () => {
-    expect(translateItemMetadata([])).toEqual({ tags: undefined, note: undefined, metadata: undefined });
+    expect(translateItemMetadata([])).toEqual(emptyResult);
   });
 
   it("merges a tags record with array values verbatim", () => {
@@ -61,6 +70,27 @@ describe("translateItemMetadata", () => {
     ]);
     expect(result.tags).toBeUndefined();
     expect(result.metadata).toEqual({ acknowledgements: "Adapted from Smith 2019" });
+  });
+
+  it("places description on the top-level description field", () => {
+    const result = translateItemMetadata([
+      { kind: "description", value: "A short overview." },
+    ]);
+    expect(result.description).toBe("A short overview.");
+  });
+
+  it("places source on the top-level source field", () => {
+    const result = translateItemMetadata([
+      { kind: "source", value: "NASA Mars Program" },
+    ]);
+    expect(result.source).toBe("NASA Mars Program");
+  });
+
+  it("wraps difficulty_level as adaptive.difficulty integer", () => {
+    const result = translateItemMetadata([
+      { kind: "difficulty_level", value: 3 },
+    ]);
+    expect(result.adaptive).toEqual({ difficulty: 3 });
   });
 
   it("handles combined tags, difficulty, dok, and notes", () => {

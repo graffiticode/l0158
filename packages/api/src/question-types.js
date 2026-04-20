@@ -504,6 +504,9 @@ export const metadataMembers = {
   NOTES: { kind: "notes" },
   DISTRACTOR_RATIONALE: { kind: "distractor_rationale" },
   ACKNOWLEDGEMENTS: { kind: "acknowledgements" },
+  DESCRIPTION: { kind: "description" },
+  SOURCE: { kind: "source" },
+  DIFFICULTY_LEVEL: { kind: "difficulty_level" },
 };
 
 // Which attributes are valid for each question type

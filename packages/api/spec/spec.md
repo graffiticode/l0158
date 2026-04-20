@@ -82,6 +82,9 @@ output.
 | `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
 | `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
 | `notes` | string | item | Free-form author note emitted as the item's top-level `note` field, which backs the Notes field on the Author Site item details page. |
+| `description` | string | item | Emitted as the item's top-level `description` field (Author Site item details page Description). |
+| `source` | string | item | Emitted as the item's top-level `source` field (Author Site item details page Source). |
+| `difficulty-level` | integer | item | Emitted as `adaptive.difficulty` — the integer Rasch calibration backing the Author Site item details page Difficulty level spinner. Distinct from the `difficulty` tag (which is a text label like "medium"). |
 | `distractor-rationale` | string or string[] | question | Emitted as `metadata.distractor_rationale`. A list is joined into a numbered multi-line string (`"1. ...\n2. ..."`) so the Author Site's single Distractor Rationale field shows per-option intent. |
 | `acknowledgements` | string | question | Attribution. |
 

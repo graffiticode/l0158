@@ -1,24 +1,25 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
-// Translate a DSL item-level metadata list into the Learnosity item record
-// fields `tags`, top-level `note`, and `metadata`.
+// Translate a DSL item-level metadata list into the Learnosity item record's
+// faceted `tags`, `metadata` bag, and top-level scalar fields (`note`,
+// `description`, `source`, `adaptive.difficulty`).
 //
 // Input is an array of tagged entries produced by the arity-1 member
 // constructors in the DSL: `{ kind, value }` where kind is one of
-// "tags" | "difficulty" | "dok" | "notes" | "acknowledgements".
+// "tags" | "difficulty" | "dok" | "notes" | "acknowledgements" |
+// "description" | "source" | "difficulty_level".
 //
 // Everything faceted (difficulty, DOK, standards) goes into `tags` because
 // that is the Author Site filter axis — the left-rail filter panel enumerates
-// tag types, not metadata keys. The settings-pane "Difficulty level" spinner
-// backs item.adaptive.difficulty (a Rasch-model calibration used only by
-// adaptive sessions) and is intentionally not populated from this block.
+// tag types, not metadata keys.
 //
-// `notes` goes to the Learnosity item's top-level `note` (singular) field,
-// which is what the item details page's Notes field reads from. The nested
-// `metadata.notes` bag exists but is not what that UI field binds to.
-// `acknowledgements` goes to `metadata.acknowledgements`, which the item
-// details page does render from.
+// Item details page fields bind to specific Learnosity locations:
+//   notes            → item.note (top-level, singular)
+//   description      → item.description (top-level)
+//   source           → item.source (top-level)
+//   difficulty-level → item.adaptive.difficulty (integer Rasch calibration)
+//   acknowledgements → item.metadata.acknowledgements (nested bag)
 //
 // Tag type names follow Learnosity's sample-data convention: title-case for
 // words ("Difficulty") and caps for acronyms ("DOK"). Tag values are strings
@@ -26,12 +27,23 @@ import { v4 as uuid } from "uuid";
 // a string or an array of strings — a bare string is treated as a single-
 // element array for authoring convenience.
 export function translateItemMetadata(entries) {
+  const empty = {
+    tags: undefined,
+    note: undefined,
+    description: undefined,
+    source: undefined,
+    adaptive: undefined,
+    metadata: undefined,
+  };
   if (!Array.isArray(entries)) {
-    return { tags: undefined, note: undefined, metadata: undefined };
+    return empty;
   }
   const tags = {};
   const meta = {};
   let note;
+  let description;
+  let source;
+  let difficultyLevel;
   const pushTag = (type, value) => {
     if (!tags[type]) tags[type] = [];
     tags[type].push(String(value));
@@ -53,6 +65,12 @@ export function translateItemMetadata(entries) {
       pushTag("DOK", value);
     } else if (kind === "notes") {
       note = value;
+    } else if (kind === "description") {
+      description = value;
+    } else if (kind === "source") {
+      source = value;
+    } else if (kind === "difficulty_level") {
+      difficultyLevel = value;
     } else if (kind === "acknowledgements") {
       meta.acknowledgements = value;
     }
@@ -60,6 +78,9 @@ export function translateItemMetadata(entries) {
   return {
     tags: Object.keys(tags).length > 0 ? tags : undefined,
     note,
+    description,
+    source,
+    adaptive: difficultyLevel !== undefined ? { difficulty: difficultyLevel } : undefined,
     metadata: Object.keys(meta).length > 0 ? meta : undefined,
   };
 }
@@ -113,7 +134,7 @@ export const buildCreateItems = ({
     })
   );
   const dynamicContentData = getDynamicContentData(templateVariablesRecords);
-  const { tags, note, metadata } = translateItemMetadata(item.metadata);
+  const { tags, note, description, source, adaptive, metadata } = translateItemMetadata(item.metadata);
   const itemRecord = {
     reference: itemRef,
     status: "published",
@@ -125,6 +146,9 @@ export const buildCreateItems = ({
   };
   if (tags !== undefined) itemRecord.tags = tags;
   if (note !== undefined) itemRecord.note = note;
+  if (description !== undefined) itemRecord.description = description;
+  if (source !== undefined) itemRecord.source = source;
+  if (adaptive !== undefined) itemRecord.adaptive = adaptive;
   if (metadata !== undefined) itemRecord.metadata = metadata;
   const itemsReq = sdk.init(
     'data',

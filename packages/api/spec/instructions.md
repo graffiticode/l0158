@@ -168,6 +168,15 @@ list members are recognized:
 - `notes` — author-facing note attached to the item. Emitted as the
   item's top-level `note` field (what the Author Site item details
   page's Notes field reads from).
+- `description` — short item description. Emitted as the item's
+  top-level `description` field (Description field on the item details
+  page).
+- `source` — source/attribution string. Emitted as the item's top-level
+  `source` field (Source field on the item details page).
+- `difficulty-level` — integer Rasch calibration for adaptive sessions.
+  Emitted as `adaptive.difficulty`, backing the Difficulty level spinner
+  on the item details page. Distinct from the `difficulty` tag above,
+  which is a text label (e.g. `"medium"`) used for filtering.
 - `acknowledgements` — attribution string. Emitted as
   `metadata.acknowledgements`.
 
