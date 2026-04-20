@@ -7,12 +7,13 @@ import { v4 as uuid } from "uuid";
 //
 // Input is an array of tagged entries produced by the arity-1 member
 // constructors in the DSL: `{ kind, value }` where kind is one of
-// "tags" | "difficulty" | "dok" | "notes" | "acknowledgements" |
+// "tags" | "notes" | "acknowledgements" |
 // "description" | "source" | "difficulty_level".
 //
-// Everything faceted (difficulty, DOK, standards) goes into `tags` because
-// that is the Author Site filter axis — the left-rail filter panel enumerates
-// tag types, not metadata keys.
+// Faceted conventions like Difficulty, DOK, and standards have no
+// dedicated Learnosity fields — authors put them in the `tags` record
+// (e.g. `tags { Difficulty: "medium", DOK: 2 }`) and the Author Site
+// filter rail surfaces them automatically.
 //
 // Item details page fields bind to specific Learnosity locations:
 //   notes            → item.note (top-level, singular)
@@ -22,7 +23,7 @@ import { v4 as uuid } from "uuid";
 //   acknowledgements → item.metadata.acknowledgements (nested bag)
 //
 // Tag type names follow Learnosity's sample-data convention: title-case for
-// words ("Difficulty") and caps for acronyms ("DOK"). Tag values are strings
+// words ("Difficulty") and caps for acronyms. Tag values are strings
 // (integers are stringified). `tags` entries accept a record whose values are
 // a string or an array of strings — a bare string is treated as a single-
 // element array for authoring convenience.
@@ -59,10 +60,6 @@ export function translateItemMetadata(entries) {
         const values = Array.isArray(raw) ? raw : [raw];
         for (const v of values) pushTag(type, v);
       }
-    } else if (kind === "difficulty") {
-      pushTag("Difficulty", value);
-    } else if (kind === "dok") {
-      pushTag("DOK", value);
     } else if (kind === "notes") {
       note = value;
     } else if (kind === "description") {

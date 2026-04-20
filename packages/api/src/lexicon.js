@@ -278,20 +278,6 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
-  "difficulty": {
-    "tk": 1,
-    "name": "DIFFICULTY",
-    "cls": "function",
-    "length": 1,
-    "arity": 1
-  },
-  "dok": {
-    "tk": 1,
-    "name": "DOK",
-    "cls": "function",
-    "length": 1,
-    "arity": 1
-  },
   "notes": {
     "tk": 1,
     "name": "NOTES",

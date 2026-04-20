@@ -499,8 +499,6 @@ export const attributeFields = {
 // items.js and question-types.js can dispatch on kind.
 export const metadataMembers = {
   TAGS: { kind: "tags" },
-  DIFFICULTY: { kind: "difficulty" },
-  DOK: { kind: "dok" },
   NOTES: { kind: "notes" },
   DISTRACTOR_RATIONALE: { kind: "distractor_rationale" },
   ACKNOWLEDGEMENTS: { kind: "acknowledgements" },

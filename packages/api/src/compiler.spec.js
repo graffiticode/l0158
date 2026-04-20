@@ -83,17 +83,13 @@ describe("compiler", () => {
   test("item-level metadata compiles to a list of tagged entries", async () => {
     const src = `item
       metadata [
-        tags { NGSS: ["MS-LS1-2"], "Common Core": "Math:6.NS.A.1" }
-        difficulty "medium"
-        dok 2
+        tags { NGSS: ["MS-LS1-2"], Difficulty: "medium", DOK: "2", "Common Core": "Math:6.NS.A.1" }
         notes "Organelle set variant A."
       ]
       {}..`;
     const result = await compile(src);
     expect(result.metadata).toEqual([
-      { kind: "tags", value: { NGSS: ["MS-LS1-2"], "Common Core": "Math:6.NS.A.1" } },
-      { kind: "difficulty", value: "medium" },
-      { kind: "dok", value: 2 },
+      { kind: "tags", value: { NGSS: ["MS-LS1-2"], Difficulty: "medium", DOK: "2", "Common Core": "Math:6.NS.A.1" } },
       { kind: "notes", value: "Organelle set variant A." },
     ]);
   }, 10000);

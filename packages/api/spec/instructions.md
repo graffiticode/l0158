@@ -148,23 +148,22 @@ Learnosity Author Site indexes for search) and on each question constructor
 appear independently — items without metadata work exactly as before.
 
 `metadata` takes a list whose members are arity-1 constructor calls
-(`tags`, `difficulty`, `dok`, `notes`, `acknowledgements`,
-`distractor-rationale`). Each member tags its payload with a kind so the
-compiler can route faceted fields to `tags` and free-form fields to
-`metadata` in the Learnosity output.
+(`tags`, `notes`, `acknowledgements`, `distractor-rationale`,
+`description`, `source`, `difficulty-level`). Each member tags its
+payload with a kind so the compiler can route faceted fields to `tags`
+and free-form fields to `metadata` in the Learnosity output.
 
 #### Item-level metadata
 
 Place a `metadata` block alongside `questions` inside an `item` chain. These
 list members are recognized:
 
-- `tags` — record mapping tag type to value, where each value is a string or
-  an array of strings (a bare string is normalized to a single-element
-  array). Example: `tags { NGSS: "MS-LS1-2", "Common Core": ["Math:6.NS.A.1"] }`.
-- `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5.
-  Emitted as `tags["Difficulty"]`; faceted in the Author Site filter rail.
-- `dok` — integer 1–4 for Webb's Depth of Knowledge. Emitted as
-  `tags["DOK"]`; faceted in the Author Site filter rail.
+- `tags` — record mapping tag type to value, where each value is a string
+  or an array of strings (a bare string is normalized to a single-element
+  array). Faceted conventions like `Difficulty` and `DOK` go here (e.g.
+  `tags { Difficulty: "medium", DOK: 2 }`) because Learnosity has no
+  dedicated fields for them. Example:
+  `tags { NGSS: "MS-LS1-2", "Common Core": ["Math:6.NS.A.1"] }`.
 - `notes` — author-facing note attached to the item. Emitted as the
   item's top-level `note` field (what the Author Site item details
   page's Notes field reads from).
@@ -175,7 +174,7 @@ list members are recognized:
   `source` field (Source field on the item details page).
 - `difficulty-level` — integer Rasch calibration for adaptive sessions.
   Emitted as `adaptive.difficulty`, backing the Difficulty level spinner
-  on the item details page. Distinct from the `difficulty` tag above,
+  on the item details page. Distinct from the faceted `Difficulty` tag,
   which is a text label (e.g. `"medium"`) used for filtering.
 - `acknowledgements` — attribution string. Emitted as
   `metadata.acknowledgements`.
@@ -184,9 +183,7 @@ list members are recognized:
 items [
   item
     metadata [
-      tags { NGSS: "MS-LS1-2", topic: "cellular-respiration" }
-      difficulty "medium"
-      dok 2
+      tags { NGSS: "MS-LS1-2", Difficulty: "medium", DOK: 2, topic: "cellular-respiration" }
       notes "Variant A of the organelle misconception set"
     ]
     questions [
@@ -244,9 +241,7 @@ mcq
 items [
   item
     metadata [
-      tags { NGSS: "MS-LS1-2" }
-      difficulty "medium"
-      dok 2
+      tags { NGSS: "MS-LS1-2", Difficulty: "medium", DOK: 2 }
     ]
     questions [
       mcq
@@ -268,8 +263,8 @@ items [
   pass an array (e.g., `tags { NGSS: ["MS-LS1-2", "MS-LS1-6"] }`); for a
   single value, a bare string is accepted for readability.
 - **Distractor-rationale list length** should match the number of options.
-- **Use item-level metadata for faceted fields** (`tags`, `difficulty`,
-  `dok`) — these drive Author Site search and filtering.
+- **Use item-level `tags` for faceted fields** (standards, Difficulty,
+  DOK, subject, etc.) — these drive Author Site search and filtering.
 - **Use question-level metadata for per-interaction fields**
   (`distractor-rationale`, `acknowledgements`, question `notes`). These
   travel with the question if it is reused in a different item.

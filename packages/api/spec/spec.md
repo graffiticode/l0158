@@ -78,9 +78,7 @@ output.
 
 | Keyword | Value Type | Level | Notes |
 | :------ | :--------- | :---- | :---- |
-| `tags` | record `{ Type: string \| string[] }` | item | Each record value is a string or array of strings. Bare strings are normalized to a single-element array. |
-| `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
-| `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
+| `tags` | record `{ Type: string \| string[] }` | item | Each record value is a string or array of strings. Bare strings are normalized to a single-element array. Faceted-only conventions like `Difficulty` and `DOK` are written here directly (e.g. `tags { Difficulty: "medium", DOK: 2 }`) — there are no dedicated Learnosity fields for them. |
 | `notes` | string | item | Free-form author note emitted as the item's top-level `note` field, which backs the Notes field on the Author Site item details page. |
 | `description` | string | item | Emitted as the item's top-level `description` field (Author Site item details page Description). |
 | `source` | string | item | Emitted as the item's top-level `source` field (Author Site item details page Source). |
