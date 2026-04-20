@@ -341,7 +341,7 @@ describe("question-types", () => {
       });
     });
 
-    it("passes acknowledgements through and ignores notes at question level", () => {
+    it("passes acknowledgements through", () => {
       const result = buildMcq({
         stimulus: "Q?",
         options: ["A", "B"],
@@ -404,7 +404,7 @@ describe("question-types", () => {
       });
     });
 
-    it("ignores unrecognized kinds (and notes, which questions don't support)", () => {
+    it("ignores unrecognized kinds", () => {
       expect(translateQuestionMetadata([
         { kind: "tags", value: { NGSS: ["MS-LS1-2"] } },
         { kind: "notes", value: "n" },

@@ -81,7 +81,7 @@ output.
 | `tags` | record `{ Type: string \| string[] }` | item | Each record value is a string or array of strings. Bare strings are normalized to a single-element array. |
 | `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
 | `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
-| `notes` | string | item | Free-form author note emitted as item `metadata.notes`. Learnosity questions have no notes field, so a `notes` entry in a question-level `metadata` block is silently ignored. |
+| `notes` | string | item | Free-form author note emitted as item `metadata.notes`. |
 | `distractor-rationale` | string[] or string | question | Per-option rationale (list) or whole-question rationale (string). List length should match `options` length. |
 | `acknowledgements` | string | question | Attribution. |
 

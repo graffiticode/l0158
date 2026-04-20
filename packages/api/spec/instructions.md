@@ -204,10 +204,6 @@ Place a `metadata` block inside any question constructor's chain, alongside
   single string for whole-question rationale.
 - `acknowledgements` — attribution string.
 
-Learnosity questions have no notes field — `notes` belongs on the item,
-not the question, and a `notes` entry inside a question-level `metadata`
-block is silently ignored.
-
 ```
 mcq
   stimulus "What is the primary function of the mitochondria?"
