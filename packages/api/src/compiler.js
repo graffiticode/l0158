@@ -3,7 +3,7 @@ import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
 import { buildInitAuthor, buildCreateAuthor } from "./author.js";
-import { questionTypeBuilders, attributeFields, validAttributes } from "./question-types.js";
+import { questionTypeBuilders, attributeFields, metadataMembers, validAttributes } from "./question-types.js";
 
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
@@ -135,6 +135,19 @@ for (const [name, meta] of Object.entries(attributeFields)) {
         const val = node;
         resume(err, val);
       });
+    });
+  };
+}
+
+// Generate Checker methods for metadata member constructors (arity 1).
+// Value-shape validation happens in the translators — the Checker just
+// walks the child expression.
+for (const name of Object.keys(metadataMembers)) {
+  Checker.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [].concat(e0 || []);
+      const val = node;
+      resume(err, val);
     });
   };
 }
@@ -338,9 +351,35 @@ for (const [name, meta] of Object.entries(attributeFields)) {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const err = [].concat(e0 || [], e1 || []);
         const continuation = toPlainObject(v1);
-        const val = { ...continuation, [meta.field]: v0 };
+        let fieldValue = toPlainObject(v0);
+        // METADATA's value is a list of tagged-entry records ({kind, value}).
+        // basis LIST nodes surface as {list: x} or a raw array — normalize.
+        if (name === "METADATA") {
+          if (Array.isArray(fieldValue)) {
+            // already a list
+          } else if (fieldValue && typeof fieldValue === "object" && fieldValue.list != null) {
+            fieldValue = Array.isArray(fieldValue.list) ? fieldValue.list : [fieldValue.list];
+          } else if (fieldValue != null) {
+            fieldValue = [fieldValue];
+          } else {
+            fieldValue = [];
+          }
+        }
+        const val = { ...continuation, [meta.field]: fieldValue };
         resume(err, val);
       });
+    });
+  };
+}
+
+// Generate Transformer methods for metadata member constructors (arity 1).
+// Each returns a tagged-entry record that appears inside the metadata list.
+for (const [name, meta] of Object.entries(metadataMembers)) {
+  Transformer.prototype[name] = function(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      const err = [].concat(e0 || []);
+      const val = { kind: meta.kind, value: toPlainObject(v0) };
+      resume(err, val);
     });
   };
 }

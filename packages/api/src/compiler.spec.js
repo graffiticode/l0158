@@ -61,11 +61,11 @@ describe("compiler", () => {
       stimulus "Which organelle produces ATP?"
       options ["mitochondria" "nucleus" "ribosome" "cell membrane"]
       valid-response [0]
-      metadata
+      metadata [
         distractor-rationale ["Correct." "That's the DNA organelle." "That's where proteins are built." "That's the boundary layer."]
         notes "Targets organelle confusions."
         acknowledgements "Adapted from Smith 2019."
-        {}
+      ]
       {}..`;
     const result = await compile(src);
     expect(result.type).toBe("mcq");
@@ -81,21 +81,21 @@ describe("compiler", () => {
     });
   }, 10000);
 
-  test("item with item-level metadata compiles to plain object with metadata field", async () => {
+  test("item-level metadata compiles to a list of tagged entries", async () => {
     const src = `item
-      metadata
-        tags ["NGSS:MS-LS1-2" "topic:cellular-respiration"]
+      metadata [
+        tags { NGSS: ["MS-LS1-2"], "Common Core": "Math:6.NS.A.1" }
         difficulty "medium"
         dok 2
         notes "Organelle set variant A."
-        {}
+      ]
       {}..`;
     const result = await compile(src);
-    expect(result.metadata).toEqual({
-      tags: ["NGSS:MS-LS1-2", "topic:cellular-respiration"],
-      difficulty: "medium",
-      dok: 2,
-      notes: "Organelle set variant A.",
-    });
+    expect(result.metadata).toEqual([
+      { kind: "tags", value: { NGSS: ["MS-LS1-2"], "Common Core": "Math:6.NS.A.1" } },
+      { kind: "difficulty", value: "medium" },
+      { kind: "dok", value: 2 },
+      { kind: "notes", value: "Organelle set variant A." },
+    ]);
   }, 10000);
 });

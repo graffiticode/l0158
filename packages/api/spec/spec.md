@@ -67,20 +67,21 @@ of attributes for a question type. The chain terminates with `{}`.
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
-| `metadata` | record | `metadata` / `tags` | item, all question types |
+| `metadata` | list | `metadata` / `tags` | item, all question types |
 
-#### Metadata Inner Keywords
+#### Metadata Member Constructors
 
-Inside a `metadata` chain, these arity-2 keywords carry item- and
-question-level metadata. The outer `metadata` block is a chain terminated
-by `{}`, just like a question record.
+The `metadata` keyword takes a list whose members are arity-1 constructor
+calls. Each member tags its payload with a `kind`, so the compiler can route
+faceted fields to `tags` and free-form fields to `metadata` in the Learnosity
+output.
 
 | Keyword | Value Type | Level | Notes |
 | :------ | :--------- | :---- | :---- |
-| `tags` | string[] (`"type:value"`) | item | Splits on first colon. Tag values are strings. |
-| `difficulty` | string or number | item | Faceted in the Author Site filter rail. |
-| `dok` | number (1–4) | item | Faceted in the Author Site filter rail. |
-| `notes` | string | both | Free-form, not a filter facet. |
+| `tags` | record `{ Type: string \| string[] }` | item | Each record value is a string or array of strings. Bare strings are normalized to a single-element array. |
+| `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
+| `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
+| `notes` | string | both | Free-form, not a filter facet (emitted as `metadata.note`). |
 | `distractor-rationale` | string[] or string | question | Per-option rationale (list) or whole-question rationale (string). List length should match `options` length. |
 | `acknowledgements` | string | question | Attribution. |
 

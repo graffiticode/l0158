@@ -318,9 +318,9 @@ describe("question-types", () => {
         stimulus: "Q?",
         options: ["A", "B", "C", "D"],
         valid_response: [0],
-        metadata: {
-          distractor_rationale: ["a1", "a2", "a3", "a4"],
-        },
+        metadata: [
+          { kind: "distractor_rationale", value: ["a1", "a2", "a3", "a4"] },
+        ],
       });
       expect(result.metadata).toEqual({
         distractor_rationale_response_level: ["a1", "a2", "a3", "a4"],
@@ -332,9 +332,9 @@ describe("question-types", () => {
         stimulus: "Q?",
         options: ["A", "B"],
         valid_response: [0],
-        metadata: {
-          distractor_rationale: "whole-question rationale",
-        },
+        metadata: [
+          { kind: "distractor_rationale", value: "whole-question rationale" },
+        ],
       });
       expect(result.metadata).toEqual({
         distractor_rationale: "whole-question rationale",
@@ -346,10 +346,10 @@ describe("question-types", () => {
         stimulus: "Q?",
         options: ["A", "B"],
         valid_response: [0],
-        metadata: {
-          notes: "author note",
-          acknowledgements: "Image: Louvre",
-        },
+        metadata: [
+          { kind: "notes", value: "author note" },
+          { kind: "acknowledgements", value: "Image: Louvre" },
+        ],
       });
       expect(result.metadata).toEqual({
         note: "author note",
@@ -374,12 +374,12 @@ describe("question-types", () => {
       expect(result).not.toHaveProperty("metadata");
     });
 
-    it("does not add a metadata field when metadata is an empty object", () => {
+    it("does not add a metadata field when metadata is an empty list", () => {
       const result = buildMcq({
         stimulus: "Q?",
         options: ["A", "B"],
         valid_response: [0],
-        metadata: {},
+        metadata: [],
       });
       expect(result).not.toHaveProperty("metadata");
     });
@@ -391,20 +391,27 @@ describe("question-types", () => {
       expect(translateQuestionMetadata(undefined)).toBeUndefined();
     });
 
-    it("returns undefined for empty object", () => {
-      expect(translateQuestionMetadata({})).toBeUndefined();
+    it("returns undefined for empty list", () => {
+      expect(translateQuestionMetadata([])).toBeUndefined();
     });
 
     it("translates all supported fields", () => {
-      expect(translateQuestionMetadata({
-        distractor_rationale: ["one", "two"],
-        notes: "n",
-        acknowledgements: "a",
-      })).toEqual({
+      expect(translateQuestionMetadata([
+        { kind: "distractor_rationale", value: ["one", "two"] },
+        { kind: "notes", value: "n" },
+        { kind: "acknowledgements", value: "a" },
+      ])).toEqual({
         distractor_rationale_response_level: ["one", "two"],
         note: "n",
         acknowledgements: "a",
       });
+    });
+
+    it("ignores unrecognized kinds", () => {
+      expect(translateQuestionMetadata([
+        { kind: "tags", value: { NGSS: ["MS-LS1-2"] } },
+        { kind: "notes", value: "n" },
+      ])).toEqual({ note: "n" });
     });
   });
 });

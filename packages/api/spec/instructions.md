@@ -147,32 +147,38 @@ Learnosity Author Site indexes for search) and on each question constructor
 (for fields that travel with the interaction). Both are optional and can
 appear independently — items without metadata work exactly as before.
 
-The `metadata` block is itself a chained record built from inner attribute
-keywords terminated by `{}`, the same pattern as a question record. There is
-no record-literal syntax to learn.
+`metadata` takes a list whose members are arity-1 constructor calls
+(`tags`, `difficulty`, `dok`, `notes`, `acknowledgements`,
+`distractor-rationale`). Each member tags its payload with a kind so the
+compiler can route faceted fields to `tags` and free-form fields to
+`metadata` in the Learnosity output.
 
 #### Item-level metadata
 
 Place a `metadata` block alongside `questions` inside an `item` chain. These
-inner attribute keywords are recognized:
+list members are recognized:
 
-- `tags` — list of `"key:value"` strings; each splits on the first `:` into a
-  Learnosity tag type and value (e.g., `"NGSS:MS-LS1-2"` becomes tag type
-  `NGSS` with value `MS-LS1-2`).
+- `tags` — record mapping tag type to value, where each value is a string or
+  an array of strings (a bare string is normalized to a single-element
+  array). Example: `tags { NGSS: "MS-LS1-2", "Common Core": ["Math:6.NS.A.1"] }`.
 - `difficulty` — string (`"easy"`, `"medium"`, `"hard"`) or integer 1–5.
-  Faceted in the Author Site filter rail.
-- `dok` — integer 1–4 for Webb's Depth of Knowledge.
-- `notes` — author-facing note attached to the item.
+  Emitted as `tags["Difficulty"]`; faceted in the Author Site filter rail.
+- `dok` — integer 1–4 for Webb's Depth of Knowledge. Emitted as
+  `tags["DOK"]`; faceted in the Author Site filter rail.
+- `notes` — author-facing note attached to the item. Emitted as
+  `metadata.note`.
+- `acknowledgements` — attribution string. Emitted as
+  `metadata.acknowledgements`.
 
 ```
 items [
   item
-    metadata
-      tags ["NGSS:MS-LS1-2" "topic:cellular-respiration"]
+    metadata [
+      tags { NGSS: "MS-LS1-2", topic: "cellular-respiration" }
       difficulty "medium"
       dok 2
       notes "Variant A of the organelle misconception set"
-      {}
+    ]
     questions [
       mcq
         stimulus "What is the primary function of the mitochondria?"
@@ -192,7 +198,7 @@ items [
 #### Question-level metadata
 
 Place a `metadata` block inside any question constructor's chain, alongside
-`stimulus`, `options`, etc. These inner attribute keywords are recognized:
+`stimulus`, `options`, etc. These list members are recognized:
 
 - `distractor-rationale` — list of strings, one per option (preferred) or a
   single string for whole-question rationale.
@@ -210,7 +216,7 @@ mcq
     "To store and protect the cell's DNA"
   ]
   valid-response [0]
-  metadata
+  metadata [
     distractor-rationale [
       "Correct — ATP production via cellular respiration."
       "That's the role of the cell membrane."
@@ -218,7 +224,7 @@ mcq
       "That's the role of the nucleus."
     ]
     notes "Targets the three most common organelle confusions."
-    {}
+  ]
   {}
 ```
 
@@ -227,19 +233,19 @@ mcq
 ```
 items [
   item
-    metadata
-      tags ["NGSS:MS-LS1-2"]
+    metadata [
+      tags { NGSS: "MS-LS1-2" }
       difficulty "medium"
       dok 2
-      {}
+    ]
     questions [
       mcq
         stimulus "..."
         options [...]
         valid-response [0]
-        metadata
+        metadata [
           distractor-rationale ["..." "..." "..." "..."]
-          {}
+        ]
         {}
     ]
     {}
@@ -248,9 +254,9 @@ items [
 
 #### Conventions
 
-- **Tag values with a literal colon** (e.g., `"Common Core:Math:6.NS.A.1"`)
-  split on the first colon only, so that example becomes type `Common Core`
-  with value `Math:6.NS.A.1`.
+- **Tag values** are plain strings. When one tag type has multiple values,
+  pass an array (e.g., `tags { NGSS: ["MS-LS1-2", "MS-LS1-6"] }`); for a
+  single value, a bare string is accepted for readability.
 - **Distractor-rationale list length** should match the number of options.
 - **Use item-level metadata for faceted fields** (`tags`, `difficulty`,
   `dok`) — these drive Author Site search and filtering.

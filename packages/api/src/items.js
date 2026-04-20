@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
 
-// Translate a DSL item-level metadata block into the Learnosity item record
-// fields `tags` (object keyed by tag type) and `metadata`. Tag strings use
-// the first ":" as the type/value separator, so "Common Core:Math:6.NS.A.1"
-// becomes type "Common Core" with value "Math:6.NS.A.1".
+// Translate a DSL item-level metadata list into the Learnosity item record
+// fields `tags` (object keyed by tag type) and `metadata`.
+//
+// Input is an array of tagged entries produced by the arity-1 member
+// constructors in the DSL: `{ kind, value }` where kind is one of
+// "tags" | "difficulty" | "dok" | "notes" | "acknowledgements".
 //
 // Everything faceted (difficulty, DOK, standards) goes into `tags` because
 // that is the Author Site filter axis — the left-rail filter panel enumerates
@@ -15,9 +17,11 @@ import { v4 as uuid } from "uuid";
 //
 // Tag type names follow Learnosity's sample-data convention: title-case for
 // words ("Difficulty") and caps for acronyms ("DOK"). Tag values are strings
-// (integers are stringified).
-export function translateItemMetadata(metadata) {
-  if (metadata == null || typeof metadata !== "object") {
+// (integers are stringified). `tags` entries accept a record whose values are
+// a string or an array of strings — a bare string is treated as a single-
+// element array for authoring convenience.
+export function translateItemMetadata(entries) {
+  if (!Array.isArray(entries)) {
     return { tags: undefined, metadata: undefined };
   }
   const tags = {};
@@ -26,24 +30,25 @@ export function translateItemMetadata(metadata) {
     if (!tags[type]) tags[type] = [];
     tags[type].push(String(value));
   };
-  for (const [key, value] of Object.entries(metadata)) {
+  for (const entry of entries) {
+    if (entry == null || typeof entry !== "object") continue;
+    const { kind, value } = entry;
     if (value == null) continue;
-    if (key === "tags") {
-      if (!Array.isArray(value)) continue;
-      for (const tag of value) {
-        if (typeof tag !== "string") continue;
-        const colon = tag.indexOf(":");
-        if (colon < 0) continue;
-        pushTag(tag.slice(0, colon), tag.slice(colon + 1));
+    if (kind === "tags") {
+      if (value == null || typeof value !== "object") continue;
+      for (const [type, raw] of Object.entries(value)) {
+        if (raw == null) continue;
+        const values = Array.isArray(raw) ? raw : [raw];
+        for (const v of values) pushTag(type, v);
       }
-    } else if (key === "difficulty") {
+    } else if (kind === "difficulty") {
       pushTag("Difficulty", value);
-    } else if (key === "dok") {
+    } else if (kind === "dok") {
       pushTag("DOK", value);
-    } else if (key === "notes") {
+    } else if (kind === "notes") {
       meta.note = value;
-    } else {
-      meta[key] = value;
+    } else if (kind === "acknowledgements") {
+      meta.acknowledgements = value;
     }
   }
   return {

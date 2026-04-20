@@ -64,26 +64,30 @@ function withDefaults(type, attrs) {
   return { ...defaults, ...attrs };
 }
 
-// Translate a DSL metadata block into a Learnosity question-level metadata object.
+// Translate a DSL question-level metadata list into a Learnosity question
+// metadata object. Input is an array of tagged entries ({kind, value}) where
+// kind is one of "notes" | "acknowledgements" | "distractor_rationale".
 // Returns undefined when there is nothing to attach, so no-metadata programs
 // produce byte-identical output to pre-feature behavior.
-export function translateQuestionMetadata(metadata) {
-  if (metadata == null || typeof metadata !== "object") {
+export function translateQuestionMetadata(entries) {
+  if (!Array.isArray(entries)) {
     return undefined;
   }
   const out = {};
-  for (const [key, value] of Object.entries(metadata)) {
+  for (const entry of entries) {
+    if (entry == null || typeof entry !== "object") continue;
+    const { kind, value } = entry;
     if (value == null) continue;
-    if (key === "distractor_rationale") {
+    if (kind === "distractor_rationale") {
       if (Array.isArray(value)) {
         out.distractor_rationale_response_level = value;
       } else {
         out.distractor_rationale = value;
       }
-    } else if (key === "notes") {
+    } else if (kind === "notes") {
       out.note = value;
-    } else {
-      out[key] = value;
+    } else if (kind === "acknowledgements") {
+      out.acknowledgements = value;
     }
   }
   return Object.keys(out).length > 0 ? out : undefined;
@@ -491,13 +495,19 @@ export const attributeFields = {
   CATEGORIES: { field: "categories", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
-  METADATA: { field: "metadata", valueType: "any" },
-  TAGS: { field: "tags", valueType: "array" },
-  DIFFICULTY: { field: "difficulty", valueType: "any" },
-  DOK: { field: "dok", valueType: "number" },
-  NOTES: { field: "notes", valueType: "string" },
-  DISTRACTOR_RATIONALE: { field: "distractor_rationale", valueType: "any" },
-  ACKNOWLEDGEMENTS: { field: "acknowledgements", valueType: "string" },
+  METADATA: { field: "metadata", valueType: "array" },
+};
+
+// Metadata member constructors (arity 1). Each maps a DSL keyword to the
+// `kind` string attached to its tagged-entry output, so the translators in
+// items.js and question-types.js can dispatch on kind.
+export const metadataMembers = {
+  TAGS: { kind: "tags" },
+  DIFFICULTY: { kind: "difficulty" },
+  DOK: { kind: "dok" },
+  NOTES: { kind: "notes" },
+  DISTRACTOR_RATIONALE: { kind: "distractor_rationale" },
+  ACKNOWLEDGEMENTS: { kind: "acknowledgements" },
 };
 
 // Which attributes are valid for each question type
