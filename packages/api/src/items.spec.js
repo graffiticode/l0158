@@ -48,10 +48,10 @@ describe("translateItemMetadata", () => {
     expect(result.metadata).toBeUndefined();
   });
 
-  it("renames notes to note and places it on metadata", () => {
+  it("places notes on metadata.notes", () => {
     const result = translateItemMetadata([{ kind: "notes", value: "item note" }]);
     expect(result.tags).toBeUndefined();
-    expect(result.metadata).toEqual({ note: "item note" });
+    expect(result.metadata).toEqual({ notes: "item note" });
   });
 
   it("passes acknowledgements through to metadata", () => {
@@ -74,6 +74,6 @@ describe("translateItemMetadata", () => {
       Difficulty: ["medium"],
       DOK: ["2"],
     });
-    expect(result.metadata).toEqual({ note: "variant A" });
+    expect(result.metadata).toEqual({ notes: "variant A" });
   });
 });

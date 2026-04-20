@@ -46,7 +46,7 @@ export function translateItemMetadata(entries) {
     } else if (kind === "dok") {
       pushTag("DOK", value);
     } else if (kind === "notes") {
-      meta.note = value;
+      meta.notes = value;
     } else if (kind === "acknowledgements") {
       meta.acknowledgements = value;
     }

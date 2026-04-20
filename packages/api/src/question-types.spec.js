@@ -341,7 +341,7 @@ describe("question-types", () => {
       });
     });
 
-    it("renames notes to note and passes acknowledgements through", () => {
+    it("passes acknowledgements through and ignores notes at question level", () => {
       const result = buildMcq({
         stimulus: "Q?",
         options: ["A", "B"],
@@ -352,7 +352,6 @@ describe("question-types", () => {
         ],
       });
       expect(result.metadata).toEqual({
-        note: "author note",
         acknowledgements: "Image: Louvre",
       });
     });
@@ -398,20 +397,19 @@ describe("question-types", () => {
     it("translates all supported fields", () => {
       expect(translateQuestionMetadata([
         { kind: "distractor_rationale", value: ["one", "two"] },
-        { kind: "notes", value: "n" },
         { kind: "acknowledgements", value: "a" },
       ])).toEqual({
         distractor_rationale_response_level: ["one", "two"],
-        note: "n",
         acknowledgements: "a",
       });
     });
 
-    it("ignores unrecognized kinds", () => {
+    it("ignores unrecognized kinds (and notes, which questions don't support)", () => {
       expect(translateQuestionMetadata([
         { kind: "tags", value: { NGSS: ["MS-LS1-2"] } },
         { kind: "notes", value: "n" },
-      ])).toEqual({ note: "n" });
+        { kind: "acknowledgements", value: "a" },
+      ])).toEqual({ acknowledgements: "a" });
     });
   });
 });

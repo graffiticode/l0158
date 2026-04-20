@@ -166,7 +166,7 @@ list members are recognized:
 - `dok` — integer 1–4 for Webb's Depth of Knowledge. Emitted as
   `tags["DOK"]`; faceted in the Author Site filter rail.
 - `notes` — author-facing note attached to the item. Emitted as
-  `metadata.note`.
+  `metadata.notes`.
 - `acknowledgements` — attribution string. Emitted as
   `metadata.acknowledgements`.
 
@@ -203,8 +203,10 @@ Place a `metadata` block inside any question constructor's chain, alongside
 - `distractor-rationale` — list of strings, one per option (preferred) or a
   single string for whole-question rationale.
 - `acknowledgements` — attribution string.
-- `notes` — author-facing note attached to the question (distinct from the
-  item-level note).
+
+Learnosity questions have no notes field — `notes` belongs on the item,
+not the question, and a `notes` entry inside a question-level `metadata`
+block is silently ignored.
 
 ```
 mcq

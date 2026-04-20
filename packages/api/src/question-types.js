@@ -66,9 +66,13 @@ function withDefaults(type, attrs) {
 
 // Translate a DSL question-level metadata list into a Learnosity question
 // metadata object. Input is an array of tagged entries ({kind, value}) where
-// kind is one of "notes" | "acknowledgements" | "distractor_rationale".
+// kind is one of "acknowledgements" | "distractor_rationale".
 // Returns undefined when there is nothing to attach, so no-metadata programs
 // produce byte-identical output to pre-feature behavior.
+//
+// Learnosity question metadata has no note/notes field — author notes live
+// on the item, not the question. A `notes` entry at the question level is
+// silently ignored rather than emitted under a phantom field.
 export function translateQuestionMetadata(entries) {
   if (!Array.isArray(entries)) {
     return undefined;
@@ -84,8 +88,6 @@ export function translateQuestionMetadata(entries) {
       } else {
         out.distractor_rationale = value;
       }
-    } else if (kind === "notes") {
-      out.note = value;
     } else if (kind === "acknowledgements") {
       out.acknowledgements = value;
     }

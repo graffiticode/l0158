@@ -76,7 +76,6 @@ describe("compiler", () => {
         "That's where proteins are built.",
         "That's the boundary layer.",
       ],
-      note: "Targets organelle confusions.",
       acknowledgements: "Adapted from Smith 2019.",
     });
   }, 10000);
