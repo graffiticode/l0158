@@ -3,12 +3,12 @@ import { translateItemMetadata } from "./items.js";
 
 describe("translateItemMetadata", () => {
   it("returns undefined fields for null/undefined input", () => {
-    expect(translateItemMetadata(null)).toEqual({ tags: undefined, metadata: undefined });
-    expect(translateItemMetadata(undefined)).toEqual({ tags: undefined, metadata: undefined });
+    expect(translateItemMetadata(null)).toEqual({ tags: undefined, note: undefined, metadata: undefined });
+    expect(translateItemMetadata(undefined)).toEqual({ tags: undefined, note: undefined, metadata: undefined });
   });
 
   it("returns undefined fields for empty list", () => {
-    expect(translateItemMetadata([])).toEqual({ tags: undefined, metadata: undefined });
+    expect(translateItemMetadata([])).toEqual({ tags: undefined, note: undefined, metadata: undefined });
   });
 
   it("merges a tags record with array values verbatim", () => {
@@ -48,10 +48,11 @@ describe("translateItemMetadata", () => {
     expect(result.metadata).toBeUndefined();
   });
 
-  it("places notes on metadata.notes", () => {
+  it("places notes on the top-level note field", () => {
     const result = translateItemMetadata([{ kind: "notes", value: "item note" }]);
     expect(result.tags).toBeUndefined();
-    expect(result.metadata).toEqual({ notes: "item note" });
+    expect(result.note).toBe("item note");
+    expect(result.metadata).toBeUndefined();
   });
 
   it("passes acknowledgements through to metadata", () => {
@@ -74,6 +75,7 @@ describe("translateItemMetadata", () => {
       Difficulty: ["medium"],
       DOK: ["2"],
     });
-    expect(result.metadata).toEqual({ notes: "variant A" });
+    expect(result.note).toBe("variant A");
+    expect(result.metadata).toBeUndefined();
   });
 });

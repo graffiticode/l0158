@@ -81,7 +81,7 @@ output.
 | `tags` | record `{ Type: string \| string[] }` | item | Each record value is a string or array of strings. Bare strings are normalized to a single-element array. |
 | `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
 | `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
-| `notes` | string | item | Free-form author note emitted as item `metadata.notes`. |
+| `notes` | string | item | Free-form author note emitted as the item's top-level `note` field, which backs the Notes field on the Author Site item details page. |
 | `distractor-rationale` | string or string[] | question | Emitted as `metadata.distractor_rationale`. A list is joined into a numbered multi-line string (`"1. ...\n2. ..."`) so the Author Site's single Distractor Rationale field shows per-option intent. |
 | `acknowledgements` | string | question | Attribution. |
 

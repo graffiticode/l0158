@@ -2,7 +2,7 @@
 import { v4 as uuid } from "uuid";
 
 // Translate a DSL item-level metadata list into the Learnosity item record
-// fields `tags` (object keyed by tag type) and `metadata`.
+// fields `tags`, top-level `note`, and `metadata`.
 //
 // Input is an array of tagged entries produced by the arity-1 member
 // constructors in the DSL: `{ kind, value }` where kind is one of
@@ -10,10 +10,15 @@ import { v4 as uuid } from "uuid";
 //
 // Everything faceted (difficulty, DOK, standards) goes into `tags` because
 // that is the Author Site filter axis — the left-rail filter panel enumerates
-// tag types, not metadata keys. Free-form fields (notes, acknowledgements)
-// go into `metadata`. The settings-pane "Difficulty level" spinner backs
-// item.adaptive.difficulty (a Rasch-model calibration used only by adaptive
-// sessions) and is intentionally not populated from this block.
+// tag types, not metadata keys. The settings-pane "Difficulty level" spinner
+// backs item.adaptive.difficulty (a Rasch-model calibration used only by
+// adaptive sessions) and is intentionally not populated from this block.
+//
+// `notes` goes to the Learnosity item's top-level `note` (singular) field,
+// which is what the item details page's Notes field reads from. The nested
+// `metadata.notes` bag exists but is not what that UI field binds to.
+// `acknowledgements` goes to `metadata.acknowledgements`, which the item
+// details page does render from.
 //
 // Tag type names follow Learnosity's sample-data convention: title-case for
 // words ("Difficulty") and caps for acronyms ("DOK"). Tag values are strings
@@ -22,10 +27,11 @@ import { v4 as uuid } from "uuid";
 // element array for authoring convenience.
 export function translateItemMetadata(entries) {
   if (!Array.isArray(entries)) {
-    return { tags: undefined, metadata: undefined };
+    return { tags: undefined, note: undefined, metadata: undefined };
   }
   const tags = {};
   const meta = {};
+  let note;
   const pushTag = (type, value) => {
     if (!tags[type]) tags[type] = [];
     tags[type].push(String(value));
@@ -46,13 +52,14 @@ export function translateItemMetadata(entries) {
     } else if (kind === "dok") {
       pushTag("DOK", value);
     } else if (kind === "notes") {
-      meta.notes = value;
+      note = value;
     } else if (kind === "acknowledgements") {
       meta.acknowledgements = value;
     }
   }
   return {
     tags: Object.keys(tags).length > 0 ? tags : undefined,
+    note,
     metadata: Object.keys(meta).length > 0 ? meta : undefined,
   };
 }
@@ -106,7 +113,7 @@ export const buildCreateItems = ({
     })
   );
   const dynamicContentData = getDynamicContentData(templateVariablesRecords);
-  const { tags, metadata } = translateItemMetadata(item.metadata);
+  const { tags, note, metadata } = translateItemMetadata(item.metadata);
   const itemRecord = {
     reference: itemRef,
     status: "published",
@@ -117,6 +124,7 @@ export const buildCreateItems = ({
     questions,
   };
   if (tags !== undefined) itemRecord.tags = tags;
+  if (note !== undefined) itemRecord.note = note;
   if (metadata !== undefined) itemRecord.metadata = metadata;
   const itemsReq = sdk.init(
     'data',

@@ -165,8 +165,9 @@ list members are recognized:
   Emitted as `tags["Difficulty"]`; faceted in the Author Site filter rail.
 - `dok` — integer 1–4 for Webb's Depth of Knowledge. Emitted as
   `tags["DOK"]`; faceted in the Author Site filter rail.
-- `notes` — author-facing note attached to the item. Emitted as
-  `metadata.notes`.
+- `notes` — author-facing note attached to the item. Emitted as the
+  item's top-level `note` field (what the Author Site item details
+  page's Notes field reads from).
 - `acknowledgements` — attribution string. Emitted as
   `metadata.acknowledgements`.
 
