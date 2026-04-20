@@ -200,8 +200,10 @@ items [
 Place a `metadata` block inside any question constructor's chain, alongside
 `stimulus`, `options`, etc. These list members are recognized:
 
-- `distractor-rationale` — list of strings, one per option (preferred) or a
-  single string for whole-question rationale.
+- `distractor-rationale` — a string, or a list of strings (one per option).
+  A list is joined into a numbered multi-line string (`"1. ...\n2. ..."`)
+  so the Author Site's single Distractor Rationale field displays the
+  per-option intent in place.
 - `acknowledgements` — attribution string.
 
 ```

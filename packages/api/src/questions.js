@@ -58,10 +58,6 @@ export const buildCreateQuestions = ({
       data,
     };
   });
-  console.log(
-    "createQuestions() outbound payload",
-    JSON.stringify({ questions }, null, 2),
-  );
   const questionRefs = questions.map(question => question.reference);
   const questionsReq = sdk.init(
     'data',
@@ -79,10 +75,6 @@ export const buildCreateQuestions = ({
     route: "/itembank/questions",
     request: questionsReq,
   });
-  console.log(
-    "createQuestions() Learnosity response",
-    JSON.stringify(questionsResp, null, 2),
-  );
   return {
     type: "questions",
     data: {

@@ -70,12 +70,12 @@ describe("compiler", () => {
     const result = await compile(src);
     expect(result.type).toBe("mcq");
     expect(result.metadata).toEqual({
-      distractor_rationale_response_level: [
-        "Correct.",
-        "That's the DNA organelle.",
-        "That's where proteins are built.",
-        "That's the boundary layer.",
-      ],
+      distractor_rationale: [
+        "1. Correct.",
+        "2. That's the DNA organelle.",
+        "3. That's where proteins are built.",
+        "4. That's the boundary layer.",
+      ].join("\n"),
       acknowledgements: "Adapted from Smith 2019.",
     });
   }, 10000);

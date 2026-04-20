@@ -82,7 +82,7 @@ output.
 | `difficulty` | string or number | item | Faceted in the Author Site filter rail (emitted as `tags["Difficulty"]`). |
 | `dok` | number (1–4) | item | Faceted in the Author Site filter rail (emitted as `tags["DOK"]`). |
 | `notes` | string | item | Free-form author note emitted as item `metadata.notes`. |
-| `distractor-rationale` | string[] or string | question | Per-option rationale (list) or whole-question rationale (string). List length should match `options` length. |
+| `distractor-rationale` | string or string[] | question | Emitted as `metadata.distractor_rationale`. A list is joined into a numbered multi-line string (`"1. ...\n2. ..."`) so the Author Site's single Distractor Rationale field shows per-option intent. |
 | `acknowledgements` | string | question | Attribution. |
 
 ## Function Reference

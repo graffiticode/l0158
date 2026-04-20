@@ -313,7 +313,7 @@ describe("question-types", () => {
   });
 
   describe("metadata", () => {
-    it("maps list-form distractor_rationale to distractor_rationale_response_level", () => {
+    it("joins list-form distractor_rationale into a single distractor_rationale string", () => {
       const result = buildMcq({
         stimulus: "Q?",
         options: ["A", "B", "C", "D"],
@@ -323,7 +323,7 @@ describe("question-types", () => {
         ],
       });
       expect(result.metadata).toEqual({
-        distractor_rationale_response_level: ["a1", "a2", "a3", "a4"],
+        distractor_rationale: "1. a1\n2. a2\n3. a3\n4. a4",
       });
     });
 
@@ -399,7 +399,7 @@ describe("question-types", () => {
         { kind: "distractor_rationale", value: ["one", "two"] },
         { kind: "acknowledgements", value: "a" },
       ])).toEqual({
-        distractor_rationale_response_level: ["one", "two"],
+        distractor_rationale: "1. one\n2. two",
         acknowledgements: "a",
       });
     });

@@ -79,11 +79,9 @@ export function translateQuestionMetadata(entries) {
     const { kind, value } = entry;
     if (value == null) continue;
     if (kind === "distractor_rationale") {
-      if (Array.isArray(value)) {
-        out.distractor_rationale_response_level = value;
-      } else {
-        out.distractor_rationale = value;
-      }
+      out.distractor_rationale = Array.isArray(value)
+        ? value.map((v, i) => `${i + 1}. ${v}`).join("\n")
+        : value;
     } else if (kind === "acknowledgements") {
       out.acknowledgements = value;
     }
