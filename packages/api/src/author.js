@@ -7,10 +7,6 @@ export const buildInitAuthor = ({
   secret,
   domain,
 }) => async ({ data, mode = "item_edit", widgetTypes, customWidgets }) => {
-  console.log(
-    "buildInitAuthor()",
-    "data=" + JSON.stringify(data, null, 2),
-  );
   const user_id = uuid();
   const consumer = {
     consumer_key: key,
@@ -108,10 +104,6 @@ export const buildInitAuthor = ({
     consumer,
     secret,
     requestData
-  );
-  console.log(
-    "initAuthor()",
-    "signedRequest=" + JSON.stringify(signedRequest, null, 2),
   );
   return signedRequest;
 };

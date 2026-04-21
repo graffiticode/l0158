@@ -262,6 +262,13 @@ export const lexicon = {
     "length": 2,
     "arity": 2
   },
+  "save-to-itembank": {
+    "tk": 1,
+    "name": "SAVE_TO_ITEMBANK",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
   // Metadata container (arity 2) — value is a list of member constructors
   "metadata": {
     "tk": 1,

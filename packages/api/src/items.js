@@ -116,30 +116,22 @@ export const buildCreateItems = ({
 }) => async ({
   items,
   id,
+  saveToItembank = false,
 }) => {
-  // console.log(
-  //   "createItems()",
-  //   "items=" + JSON.stringify(items, null, 2),
-  // );
   const [ item ] = items;
   const { templateVariablesRecords } = item;
-  const { questionRefs } = item;
   const itemRef = `graffiticode-${id || '0'}`;
-  const questions = item.data.questions.map(
-    question => ({
-      reference: question.reference
-    })
-  );
+  const questionRecords = item.data.questions;
+  const questionWidgets = questionRecords.map(q => ({ reference: q.reference }));
   const dynamicContentData = getDynamicContentData(templateVariablesRecords);
   const { tags, note, description, source, adaptive, metadata } = translateItemMetadata(item.metadata);
   const itemRecord = {
     reference: itemRef,
-    status: "published",
     definition: {
-      widgets: questions,
+      widgets: questionWidgets,
     },
     dynamic_content_data: dynamicContentData,
-    questions,
+    questions: questionWidgets,
   };
   if (tags !== undefined) itemRecord.tags = tags;
   if (note !== undefined) itemRecord.note = note;
@@ -147,45 +139,47 @@ export const buildCreateItems = ({
   if (source !== undefined) itemRecord.source = source;
   if (adaptive !== undefined) itemRecord.adaptive = adaptive;
   if (metadata !== undefined) itemRecord.metadata = metadata;
-  const itemsReq = sdk.init(
-    'data',
-    {
-      consumer_key: key,
-      domain,
-    },
-    secret,
-    {
-      items: [itemRecord],
-    },
-    "set",
-  );
-  const itemsResp = await dataApi({
-    route: "/itembank/items",
-    request: itemsReq,
-  });
-  // TODO check for success or failure.
-  return {
-    type: "items",
-    data: {
-      user_id: uuid(),
-      session_id: uuid(),
-      activity_id: `${id || '0'}`,
-      rendering_type: 'inline',
-      type: 'submit_practice',
-      state: 'initial',
-      name: "Test",
-      items: [{
-        id: "item-1",
-        reference: itemRef,
-      }],
-      config: {
-        questions_api_init_options: {
-          // renderSaveButton: true,
-          // renderSubmitButton: true,
-        },
+
+  if (saveToItembank) {
+    // Saved items always land as drafts. Publishing is an Author Site
+    // concern — the Learnosity item bank UX toggles `status: "published"`.
+    itemRecord.status = "unpublished";
+    const itemsReq = sdk.init(
+      'data',
+      {
+        consumer_key: key,
+        domain,
       },
-    },
+      secret,
+      {
+        items: [itemRecord],
+      },
+      "set",
+    );
+    await dataApi({
+      route: "/itembank/items",
+      request: itemsReq,
+    });
+  }
+
+  // Rendering always goes through Questions API with inline question data.
+  // The item bank write (above) is for listing/search only — it doesn't
+  // affect the preview, and Items API can't render unpublished items anyway.
+  // When item-level features (shared stimulus, layout) land, published items
+  // will need to route through Items API from the bank to preserve fidelity.
+  const inlineQuestions = questionRecords.map(q => ({
+    response_id: q.reference,
+    type: q.type,
+    ...q.data,
+  }));
+  const data = {
+    id: `${id || '0'}`,
+    name: "Test",
+    questions: inlineQuestions,
+    session_id: uuid(),
   };
+  if (dynamicContentData) data.dynamic_content_data = dynamicContentData;
+  return { type: "questions", data };
 };
 
 export const buildInitItems = ({

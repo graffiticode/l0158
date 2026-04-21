@@ -48,6 +48,7 @@ Say this to get that:
 - **Distractor rationale** — for MCQ, ask for "a one-line rationale per distractor" or "explain why each wrong answer is wrong". L0158 attaches these at the question level so the Author Site review pane shows the teaching intent alongside the item.
 - **Instant feedback** — turns on immediate per-response feedback in the interaction.
 - **Shuffle options** — randomizes option order at render time.
+- **Save to the item bank** — by default an item renders as a preview and is *not* written to the Learnosity item bank. Say "save to the item bank" (or equivalent) to persist it; it lands as `status: unpublished` (draft). Publishing is done from the Learnosity Author Site UI, not from the DSL.
 
 ## Metadata
 

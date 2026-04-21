@@ -287,6 +287,40 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 `max-word-count`, `placeholder`, `possible-responses`, `rows`, `columns`,
 `list`, `categories`, `method`.
 
+### Save to Item Bank vs. Preview
+
+By default, `items [...]` produces a **preview**: the item and its questions
+render inline through Questions API without being written to the Learnosity
+item bank. This is the right default for AI-authored items — the human can
+eyeball the preview before deciding to persist.
+
+Chain `save-to-itembank true` onto the items continuation to persist the
+item and its questions to the Learnosity item bank. Saved items always land
+as `status: "unpublished"` (draft); publishing is done from the Learnosity
+Author Site UI, not from the DSL.
+
+Prompts that should trigger `save-to-itembank true`:
+
+- "save it to the item bank" / "write to the bank" / "persist it" → include
+  `save-to-itembank true`
+- No such phrasing → preview-only; omit the attribute.
+
+Example — save as draft:
+
+```
+set-var "lrn-id" get-val-public "itemId"
+learnosity
+  items [
+    item
+      questions [mcq stimulus "Which planet is closest to the Sun?"
+        options ["Mercury", "Venus", "Earth", "Mars"]
+        valid-response [0] {}]
+      {}
+  ]
+  save-to-itembank true
+  {}..
+```
+
 ## Example Patterns
 
 - Simple MCQ assessment:

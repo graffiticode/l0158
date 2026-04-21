@@ -68,6 +68,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `method` | string | `validation method` | clozeformula |
 | `metadata` | list | `metadata` / `tags` | item, all question types |
+| `save-to-itembank` | boolean | — (compiler flag) | items chain |
 
 #### Metadata Member Constructors
 
@@ -133,6 +134,21 @@ items [
     ]
     {}
 ]
+```
+
+By default `items` emits a preview: the item (and its questions) render
+inline through Questions API without being written to the Learnosity
+item bank. Chain `save-to-itembank true` into the items continuation to
+persist the item. Saved items always land as `status: "unpublished"`
+(draft) — publishing is an Author Site concern, not a DSL one.
+
+```
+id "mitochondria-mcq"
+items [
+  item questions [mcq stimulus "..." options [...] valid-response [0] {}] {}
+]
+  save-to-itembank true
+  {}
 ```
 
 ### item

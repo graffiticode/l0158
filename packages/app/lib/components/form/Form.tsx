@@ -24,52 +24,82 @@ export const Form = ({ state, targetOrigin }) => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const { type, request } = state.data;
   useEffect(() => {
-    // Dynamically load Learnosity script if not included in HTML
+    if (!type) return;
+    // Dynamically load Learnosity script if not included in HTML. Re-run on
+    // type change so preview (questions) and save (items) swap scripts
+    // correctly when state.data.type flips post-compile.
+    setScriptLoaded(false);
     const script = document.createElement('script');
     script.src =
       type === "questions" ? 'https://questions.learnosity.com/?latest-lts' :
       type === "author" ? 'https://authorapi.learnosity.com/?latest-lts' :
       'https://items.learnosity.com/?latest-lts';
     script.async = true;
-    script.onload = () => {
-      console.log("Learnosity script loaded", "type=" + type, "src=" + script.src);
-      setScriptLoaded(true);
-    };
+    script.onload = () => setScriptLoaded(true);
     script.onerror = (e) => {
-      console.error("Learnosity script failed to load", "type=" + type, "src=" + script.src, e);
+      console.error("Learnosity script failed to load", type, script.src, e);
     };
     document.body.appendChild(script);
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, [type]);
   useEffect(() => {
-    if (scriptLoaded) {
-      const LearnosityApp =
-            type === "questions" ? (window as any).LearnosityApp :
-            type === "author" ? (window as any).LearnosityAuthor :
-            (window as any).LearnosityItems;
-      console.log("Learnosity init", "type=" + type, "request=" + JSON.stringify(request));
+    if (!scriptLoaded) return;
+    const LearnosityApp =
+          type === "questions" ? (window as any).LearnosityApp :
+          type === "author" ? (window as any).LearnosityAuthor :
+          (window as any).LearnosityItems;
+    // Defer one frame so React has committed the response spans before
+    // Questions API validates the activity JSON against the DOM (error 10001
+    // "no matching DOM element" fires otherwise on first load).
+    const run = () => {
+      if (type === "questions") {
+        const qs = request?.questions ?? request?.request?.questions ?? [];
+        const missing = qs
+          .map((q: { response_id: string }) => q.response_id)
+          .filter((rid: string) =>
+            !document.querySelector(`.learnosity-response.question-${CSS.escape(rid)}`)
+          );
+        if (missing.length) {
+          requestAnimationFrame(run);
+          return;
+        }
+      }
       LearnosityApp.init(request, {
         readyListener: () => {
-          console.log("Learnosity ready", "type=" + type);
           if (targetOrigin) {
             window.parent.postMessage({ type: "onload", data: state.data }, targetOrigin);
           }
         },
         errorListener(err) {
-          console.error("Learnosity error", "type=" + type, err);
+          console.error("Learnosity error", type, err);
         }
       });
-    }
+    };
+    requestAnimationFrame(run);
   }, [scriptLoaded, request]);
+  if (type === "author") {
+    return <div id="learnosity-author" />;
+  }
+  if (type === "questions") {
+    // Questions API renders into .learnosity-response spans keyed by response_id.
+    // The Questions SDK returns a flat signed request (questions at the top
+    // level); Items/Author SDKs wrap data in {security, request}.
+    const questions = request?.questions ?? request?.request?.questions ?? [];
+    return (
+      <div>
+        {questions.map((q: { response_id: string }) => (
+          <span
+            key={q.response_id}
+            className={`learnosity-response question-${q.response_id}`}
+            data-response-id={q.response_id}
+          />
+        ))}
+      </div>
+    );
+  }
   return (
-    <>
-      {type === "author" ? (
-        <div id="learnosity-author" />
-      ) : (
-        <span id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
-      )}
-    </>
+    <span id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
   );
 }

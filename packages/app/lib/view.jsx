@@ -30,11 +30,6 @@ export const View = () => {
     : {};
 
   const [ state ] = useState(createState(initialState, (data, { type, args }) => {
-    console.log(
-      "L0158/state.apply()",
-      "type=" + type,
-      "args=" + JSON.stringify(args, null, 2),
-    );
     switch (type) {
     case "signed":
       return {
@@ -88,9 +83,6 @@ export const View = () => {
   useEffect(() => {
     if (initResp.data) {
       setDoInit(false);
-      console.log(
-        "L0158 View() location.hostname=" + location.hostname,
-      );
       state.apply({
         type: "signed",
         args: {

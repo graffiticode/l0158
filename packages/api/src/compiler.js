@@ -113,6 +113,16 @@ export class Checker extends BasisChecker {
       resume(err, val);
     });
   }
+
+  SAVE_TO_ITEMBANK(node, options, resume) {
+    this.visit(node.elts[0], options, async (e0, v0) => {
+      this.visit(node.elts[1], options, async (e1, v1) => {
+        const err = [].concat(e0 || [], e1 || []);
+        const val = node;
+        resume(err, val);
+      });
+    });
+  }
 }
 
 // Generate Checker methods for question types (arity 1)
@@ -165,10 +175,6 @@ export class Transformer extends BasisTransformer {
   INIT(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
-      console.log(
-        "INIT()",
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
       const err = [];
       const { type } = plain;
       let val;
@@ -190,10 +196,6 @@ export class Transformer extends BasisTransformer {
   LEARNOSITY(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
-      console.log(
-        "LEARNOSITY()",
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
       const err = [].concat(e0 || []);
       const val = plain;
       resume(err, val);
@@ -201,13 +203,12 @@ export class Transformer extends BasisTransformer {
   }
 
   ITEMS(node, options, resume) {
-    this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[1], options, async (e1, v1) => {
+    // Visit the continuation (elts[1]) BEFORE the items list (elts[0]) so
+    // that save-to-itembank chained after items sets `options` before the
+    // QUESTIONS transformers inside the items list run and read it.
+    this.visit(node.elts[1], options, async (e1, v1) => {
+      this.visit(node.elts[0], options, async (e0, v0) => {
         const plain = toPlainObject(v0);
-        console.log(
-          "ITEMS()",
-          "plain=" + JSON.stringify(plain, null, 2),
-        );
         const err = [].concat(e0 || [], e1 || []);
         // Expects a list of item records
         let items;
@@ -222,7 +223,12 @@ export class Transformer extends BasisTransformer {
           resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
           return;
         }
-        const itemsResult = await createItems({items, id: options["lrn-id"]});
+        const saveToItembank = options["save-to-itembank"] === true;
+        const itemsResult = await createItems({
+          items,
+          id: options["lrn-id"],
+          saveToItembank,
+        });
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...itemsResult };
         resume(err, val);
@@ -240,13 +246,11 @@ export class Transformer extends BasisTransformer {
   }
 
   QUESTIONS(node, options, resume) {
-    this.visit(node.elts[0], options, async (e0, v0) => {
-      this.visit(node.elts[1], options, async (e1, v1) => {
+    // Same continuation-first ordering as ITEMS, so save-to-itembank chained
+    // on top-level `questions [...] save-to-itembank true {}` is honored.
+    this.visit(node.elts[1], options, async (e1, v1) => {
+      this.visit(node.elts[0], options, async (e0, v0) => {
         const plain = toPlainObject(v0);
-        console.log(
-          "QUESTIONS()",
-          "plain=" + JSON.stringify(plain, null, 2),
-        );
         const err = [].concat(e0 || [], e1 || []);
         // Normalize to array: basis LIST node may produce {list: item} or an array
         let questions;
@@ -261,7 +265,11 @@ export class Transformer extends BasisTransformer {
           resume(err, {});
           return;
         }
-        const questionsResult = await createQuestions(questions, {id: options["lrn-id"]});
+        const saveToItembank = options["save-to-itembank"] === true;
+        const questionsResult = await createQuestions(questions, {
+          id: options["lrn-id"],
+          saveToItembank,
+        });
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...questionsResult };
         resume(err, val);
@@ -273,10 +281,6 @@ export class Transformer extends BasisTransformer {
     this.visit(node.elts[0], options, async (e0, v0) => {
       this.visit(node.elts[1], options, async (e1, v1) => {
         const plain = toPlainObject(v0);
-        console.log(
-          "FEATURES()",
-          "plain=" + JSON.stringify(plain, null, 2),
-        );
         const err = [].concat(e0 || [], e1 || []);
         // Normalize to array
         let features;
@@ -309,10 +313,6 @@ export class Transformer extends BasisTransformer {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
       const err = [];
-      console.log(
-        "AUTHOR",
-        "plain=" + JSON.stringify(plain, null, 2),
-      );
       if (!options["lrn-id"]) {
         resume([`Error: set-var "lrn-id" must be set to a non-empty string before author is called.`], undefined);
         return;
@@ -389,7 +389,22 @@ for (const [name, meta] of Object.entries(metadataMembers)) {
 // Don't include id in the output record — it flows via options only.
 Transformer.prototype.ID = function(node, options, resume) {
   this.visit(node.elts[0], options, async (e0, v0) => {
-    options.id = v0;
+    options["lrn-id"] = v0;
+    this.visit(node.elts[1], options, async (e1, v1) => {
+      const err = [].concat(e0 || [], e1 || []);
+      const val = toPlainObject(v1);
+      resume(err, val);
+    });
+  });
+};
+
+// save-to-itembank is a control-flow attribute: it doesn't emit an output
+// field, it mutates `options` so the enclosing ITEMS transformer sees the
+// flag when it runs. Placement in the chain is flexible because ITEMS
+// visits its continuation first.
+Transformer.prototype.SAVE_TO_ITEMBANK = function(node, options, resume) {
+  this.visit(node.elts[0], options, async (e0, v0) => {
+    options["save-to-itembank"] = v0 === true;
     this.visit(node.elts[1], options, async (e1, v1) => {
       const err = [].concat(e0 || [], e1 || []);
       const val = toPlainObject(v1);

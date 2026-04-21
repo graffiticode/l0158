@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-import { translateItemMetadata } from "./items.js";
+import { jest } from "@jest/globals";
+import { translateItemMetadata, buildCreateItems } from "./items.js";
 
 describe("translateItemMetadata", () => {
   const emptyResult = {
@@ -93,5 +94,73 @@ describe("translateItemMetadata", () => {
     });
     expect(result.note).toBe("variant A");
     expect(result.metadata).toBeUndefined();
+  });
+});
+
+describe("buildCreateItems preview vs save", () => {
+  const fakeSdk = {
+    init: jest.fn((kind, consumer, secret, payload) => ({ signed: true, payload })),
+  };
+  const makeItem = () => ({
+    type: "questions",
+    data: {
+      id: "q-sess",
+      name: "Test",
+      questions: [{
+        type: "mcq",
+        reference: "artcompiler-mcq-test-0",
+        data: {
+          type: "mcq",
+          stimulus: "2 + 2?",
+          options: ["3", "4", "5"],
+          validation: { valid_response: { value: ["1"] } },
+        },
+      }],
+      session_id: "q-sess-2",
+    },
+    templateVariablesRecords: undefined,
+    questionRefs: ["artcompiler-mcq-test-0"],
+    metadata: undefined,
+  });
+
+  beforeEach(() => {
+    fakeSdk.init.mockClear();
+  });
+
+  it("preview mode (default): skips dataApi and returns Questions API payload", async () => {
+    const dataApi = jest.fn();
+    const createItems = buildCreateItems({
+      sdk: fakeSdk, key: "k", secret: "s", domain: "localhost", dataApi,
+    });
+    const result = await createItems({ items: [makeItem()], id: "test" });
+    expect(dataApi).not.toHaveBeenCalled();
+    // Preview routes through Questions API (not Items API), since Items API
+    // always performs a bank lookup by reference.
+    expect(result.type).toBe("questions");
+    expect(result.data.questions).toHaveLength(1);
+    expect(result.data.questions[0]).toMatchObject({
+      response_id: "artcompiler-mcq-test-0",
+      type: "mcq",
+      stimulus: "2 + 2?",
+    });
+  });
+
+  it("save mode: writes to itembank with status unpublished and returns Questions API payload", async () => {
+    const dataApi = jest.fn().mockResolvedValue({ meta: { status: true } });
+    const createItems = buildCreateItems({
+      sdk: fakeSdk, key: "k", secret: "s", domain: "localhost", dataApi,
+    });
+    const result = await createItems({
+      items: [makeItem()], id: "test", saveToItembank: true,
+    });
+    expect(dataApi).toHaveBeenCalledTimes(1);
+    const [callArg] = dataApi.mock.calls[0];
+    expect(callArg.route).toBe("/itembank/items");
+    const sdkPayload = fakeSdk.init.mock.calls[0][3];
+    // Saved items always land as drafts — the Author Site publishes them.
+    expect(sdkPayload.items[0].status).toBe("unpublished");
+    expect(result.type).toBe("questions");
+    expect(result.data.questions).toHaveLength(1);
+    expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-test-0");
   });
 });

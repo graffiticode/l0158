@@ -43,9 +43,27 @@ describe("compiler", () => {
   });
 
   test("items [item questions [mcq {}] {}] compiles", async () => {
-    const result = await compile('items [item questions [mcq {}] {}]..');
+    // Default (no save-to-itembank) is preview via Questions API, since Items
+    // API always does a bank lookup — only the save path returns type: "items".
+    const result = await compile('id "test-preview" items [item questions [mcq {}] {}] {}..');
     expect(result).toBeDefined();
-    expect(result.type).toBe("items");
+    expect(result.type).toBe("questions");
+  });
+
+  test("items defaults to inline Questions API preview (no bank lookup)", async () => {
+    const result = await compile(
+      'id "test-preview" items [item questions [mcq {}] {}] {}..'
+    );
+    expect(result.type).toBe("questions");
+    expect(Array.isArray(result.data.questions)).toBe(true);
+    expect(result.data.questions[0].type).toBe("mcq");
+  });
+
+  test("save-to-itembank false stays in preview mode", async () => {
+    const src =
+      'id "test-save" items [item questions [mcq {}] {}] save-to-itembank false {}..';
+    const result = await compile(src);
+    expect(result.type).toBe("questions");
   });
 
   test("mcq with chained attributes compiles", async () => {

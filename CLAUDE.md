@@ -51,6 +51,25 @@ The compiler (`packages/api/src/compiler.js`) extends `BasisCompiler` from `@gra
 
 The lexicon (`src/lexicon.js`) defines language keywords: `init`, `items`, `questions`, `author`, `hello`. It is generated via `tools/build-lexicon.js` which merges basis lexicon with lang-specific entries.
 
+### Control-flow attributes (set `options` via side effect)
+
+A few arity-2 keywords don't emit fields into the output record — they mutate the Transformer's `options` so downstream transformers can read them. Template: the `ID` override at the bottom of `compiler.js`.
+
+- `id` — sets `options["lrn-id"]`, required by ITEMS/QUESTIONS/AUTHOR (they error if unset).
+- `save-to-itembank` — sets `options["save-to-itembank"]`. Read by ITEMS and QUESTIONS to decide whether to POST to the Learnosity Data API. Saved items always land as `status: "unpublished"`; publishing happens in the Learnosity Author Site UI, not from the DSL.
+
+These must appear in the chain such that their Transformer runs before the consumer's resume fires. In practice they can be chained after `items`/`questions` (inside the continuation) because ITEMS/QUESTIONS visit the continuation first, then consult options.
+
+### Preview (default) vs save to the item bank
+
+Rendering is always through Questions API with inline question data, regardless of save state. Returning `type: "questions"` is the single code path. Two reasons this is correct today: Items API can't render unpublished items (error 20013 / no visibility), and L0158 doesn't yet use item-level features (shared stimulus, layout templates, passages) that would require Items API for fidelity. When those features land, published items will need to route through Items API from the bank.
+
+By default `items [...]` writes nothing to the bank — it's a pure preview. Chain `save-to-itembank true` onto the items continuation to persist: the item POSTs to `/itembank/items` with `status: "unpublished"` (always a draft), and its questions POST to `/itembank/questions`. The save is a side effect for bank listing/search; the returned compile result still targets Questions API for rendering. Publishing a saved item is done from the Learnosity Author Site.
+
+The branch logic lives in `buildCreateItems` (`items.js`) and `buildCreateQuestions` (`questions.js`).
+
+Form.tsx retains an Items API render path (type `"items"`) for future use — e.g., previewing a published bank item directly — but the normal compile flow doesn't reach it.
+
 ## API Routes
 
 - `GET /` — health check, returns "OK"
@@ -64,6 +83,20 @@ The lexicon (`src/lexicon.js`) defines language keywords: `init`, `items`, `ques
 - **View** (`lib/view.jsx`) — SPA shell that reads URL params (id, access_token, origin, data), manages compilation workflow with SWR hooks, and communicates with parent iframe via `postMessage`
 - **State** (`lib/lib/state.js`) — simple reducer-based state management
 - **API client** (`lib/lib/api.js`) — HTTP utilities for compile and data endpoints
+
+### Form mount points and signed-request shapes
+
+Each Learnosity API expects a different mount and a differently-shaped signed request — Form.tsx branches on `state.data.type`:
+
+| type | script | signed-request shape | DOM mount |
+| :--- | :----- | :-------------------- | :-------- |
+| `items` | items.learnosity.com | `{ security, request }` (nested) | `<span id="learnosity_assess" class="learnosity-item" data-reference="item-1">` |
+| `questions` | questions.learnosity.com | flat — security fields and `questions[]` at top level | `<span class="learnosity-response question-<response_id>">` per question |
+| `author` | authorapi.learnosity.com | `{ security, request }` (nested) | `<div id="learnosity-author">` |
+
+Questions API validates the activity JSON against the DOM at init time (error 10001 "no matching DOM element" otherwise), so the Form defers init one animation frame after mount and retries until every expected `.learnosity-response.question-<response_id>` span exists.
+
+The script-loading effect depends on `type`, so a URL-cached `?data=` that flips the type post-compile correctly swaps the loaded Learnosity SDK.
 
 ## Testing Patterns
 

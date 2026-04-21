@@ -36,11 +36,7 @@ export const buildCreateQuestions = ({
   secret,
   domain,
   dataApi
-}) => async (data, {id} = {}) => {
-  // console.log(
-  //   "createQuestions()",
-  //   "data=" + JSON.stringify(data, null, 2),
-  // );
+}) => async (data, { id, saveToItembank = false } = {}) => {
   // WARNING: Only using the data from the first and only question. If we ever support
   // more than one question here, this needs to be fixed.
   const templateVariablesRecords = data[0]?.data?.templateVariablesRecords;
@@ -48,10 +44,6 @@ export const buildCreateQuestions = ({
   const questions = data.map((question, index) => {
     const reference = `artcompiler-${question.type}-${batchId}-${index}`;
     const data = fixVariableRefs(question);
-    // console.log(
-    //   "createQuestions()",
-    //   "data=" + JSON.stringify(data, null, 2),
-    // );
     return {
       type: question.type,
       reference,
@@ -59,22 +51,24 @@ export const buildCreateQuestions = ({
     };
   });
   const questionRefs = questions.map(question => question.reference);
-  const questionsReq = sdk.init(
-    'data',
-    {
-      consumer_key: key,
-      domain,
-    },
-    secret,
-    {
-      questions,
-    },
-    "set",
-  );
-  const questionsResp = await dataApi({
-    route: "/itembank/questions",
-    request: questionsReq,
-  });
+  if (saveToItembank) {
+    const questionsReq = sdk.init(
+      'data',
+      {
+        consumer_key: key,
+        domain,
+      },
+      secret,
+      {
+        questions,
+      },
+      "set",
+    );
+    await dataApi({
+      route: "/itembank/questions",
+      request: questionsReq,
+    });
+  }
   return {
     type: "questions",
     data: {
