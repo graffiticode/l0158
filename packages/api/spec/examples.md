@@ -136,21 +136,23 @@
 99. Create an items assessment with a plain text essay asking "Reflect on what you learned" with a 200-word limit, and an MCQ asking "How confident are you?" with options "Very", "Somewhat", "Not at all" where Very is correct.
 100. Create an items assessment combining all question types: an MCQ, a short text, a cloze text, and an order list, all related to basic math facts.
 
-## Category 12: Metadata and Tagging (101–110)
+## Category 12: Item Bank — Save, Tag, and Update (101–118)
 
-101. Create a multiple choice question asking "What is the primary function of the mitochondria?" with four options where "ATP production" is correct, and tag the item with NGSS MS-LS1-2 and difficulty medium.
-102. Create a short text question asking "What is the chemical symbol for water?" with the correct answer "H2O", and tag the item with CCSS 5-PS1-1, difficulty easy, DOK 1.
-103. Create a cloze dropdown question with the template "The {{response}} is the powerhouse of the cell" with options "mitochondria", "nucleus", "ribosome" where mitochondria is correct, and tag the item with difficulty medium and DOK 2.
-104. Create a multiple choice question asking "What is the function of the cell membrane?" with four options where "control what enters and exits" is correct, and add a one-line distractor rationale per option explaining each misconception.
-105. Create a multiple choice question asking "Who painted the Mona Lisa?" with four options where "Leonardo da Vinci" is correct, with question-level acknowledgements "Image courtesy Louvre Museum, public domain".
-106. Create an items assessment with a multiple choice question on photosynthesis with four options where "produces glucose and oxygen" is correct, distractors that match common misconceptions, a one-line rationale per distractor, and tag the item with NGSS MS-LS1-6, difficulty hard, DOK 3.
-107. Create a choice matrix question asking "Classify each statement" with rows "The sun is a star" and "The moon is a planet" and columns "True" and "False", tag the item with NGSS MS-ESS1-2 and difficulty easy, and add per-row rationale explaining the correct classification.
-108. Create a classification question asking "Sort animals by class" with categories "Mammals" and "Reptiles" and items "dog, snake, cat, lizard", tag the item with NGSS MS-LS4-2 and difficulty medium, and add an item-level note "Variant for the genetics unit; pair with the inheritance MCQ".
+Metadata (tags, difficulty, DOK, distractor rationale, acknowledgements,
+item notes) only surfaces in the Learnosity Author Site once an item is in
+the item bank, so every create-with-metadata prompt here also asks to save
+it. Update prompts target items that are already in the bank.
+
+101. Create a multiple choice question asking "What is the primary function of the mitochondria?" with four options where "ATP production" is correct, tag the item with NGSS MS-LS1-2 and difficulty medium, and save it to the item bank.
+102. Create a short text question asking "What is the chemical symbol for water?" with the correct answer "H2O", tag the item with CCSS 5-PS1-1, difficulty easy, DOK 1, and persist it in the Learnosity item bank.
+103. Create a cloze dropdown question with the template "The {{response}} is the powerhouse of the cell" with options "mitochondria", "nucleus", "ribosome" where mitochondria is correct, tag the item with difficulty medium and DOK 2, and write it to the item bank.
+104. Create a multiple choice question asking "What is the function of the cell membrane?" with four options where "control what enters and exits" is correct, add a one-line distractor rationale per option explaining each misconception, and save it to the item bank.
+105. Create a multiple choice question asking "Who painted the Mona Lisa?" with four options where "Leonardo da Vinci" is correct, with question-level acknowledgements "Image courtesy Louvre Museum, public domain", and save it to the item bank.
+106. Create an items assessment with a multiple choice question on photosynthesis with four options where "produces glucose and oxygen" is correct, distractors that match common misconceptions, a one-line rationale per distractor, tag the item with NGSS MS-LS1-6, difficulty hard, DOK 3, and save it to the item bank.
+107. Create a choice matrix question asking "Classify each statement" with rows "The sun is a star" and "The moon is a planet" and columns "True" and "False", tag the item with NGSS MS-ESS1-2 and difficulty easy, add per-row rationale explaining the correct classification, and save it to the item bank.
+108. Create a classification question asking "Sort animals by class" with categories "Mammals" and "Reptiles" and items "dog, snake, cat, lizard", tag the item with NGSS MS-LS4-2 and difficulty medium, add an item-level note "Variant for the genetics unit; pair with the inheritance MCQ", and commit it to the item bank.
 109. Update the existing item with id <ITEM_ID>: change the stem to be shorter and clearer, but keep all the existing tags, difficulty, DOK, and per-option distractor rationale unchanged.
 110. Update the existing item with id <ITEM_ID>: keep the stem and options unchanged, but change the difficulty tag from medium to hard and update DOK from 2 to 3 — leave the distractor rationale alone.
-
-## Category 13: Save to Item Bank (111–118)
-
 111. Create a multiple choice question asking "Which planet is closest to the Sun?" with options "Mercury", "Venus", "Earth", "Mars" where Mercury is correct, and save it to the item bank.
 112. Create a short text question asking "What is the chemical symbol for gold?" with the correct answer "Au", and persist it in the Learnosity item bank.
 113. Create an items assessment with a cloze dropdown "The {{response}} is the closest star to Earth" with options "Sun", "Moon", "Mars" where Sun is correct, tag the item with NGSS MS-ESS1-1 and difficulty easy, and write it to the item bank.
