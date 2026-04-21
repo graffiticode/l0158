@@ -148,3 +148,14 @@
 108. Create a classification question asking "Sort animals by class" with categories "Mammals" and "Reptiles" and items "dog, snake, cat, lizard", tag the item with NGSS MS-LS4-2 and difficulty medium, and add an item-level note "Variant for the genetics unit; pair with the inheritance MCQ".
 109. Update the existing item with id <ITEM_ID>: change the stem to be shorter and clearer, but keep all the existing tags, difficulty, DOK, and per-option distractor rationale unchanged.
 110. Update the existing item with id <ITEM_ID>: keep the stem and options unchanged, but change the difficulty tag from medium to hard and update DOK from 2 to 3 — leave the distractor rationale alone.
+
+## Category 13: Save to Item Bank (111–118)
+
+111. Create a multiple choice question asking "Which planet is closest to the Sun?" with options "Mercury", "Venus", "Earth", "Mars" where Mercury is correct, and save it to the item bank.
+112. Create a short text question asking "What is the chemical symbol for gold?" with the correct answer "Au", and persist it in the Learnosity item bank.
+113. Create an items assessment with a cloze dropdown "The {{response}} is the closest star to Earth" with options "Sun", "Moon", "Mars" where Sun is correct, tag the item with NGSS MS-ESS1-1 and difficulty easy, and write it to the item bank.
+114. Create a multiple choice question asking "What gas do plants primarily absorb during photosynthesis?" with options "Oxygen", "Carbon dioxide", "Nitrogen", "Helium" where Carbon dioxide is correct, with a one-line distractor rationale per option, tag with NGSS MS-LS1-6 and difficulty medium, DOK 2, and save to the item bank as a draft.
+115. Create a classification question asking "Sort animals by diet" with categories "Herbivore", "Carnivore", "Omnivore" and items "cow, lion, bear, rabbit", tag with NGSS MS-LS2-4 and difficulty medium, and commit it to the item bank.
+116. Create an order list question asking "Arrange the planets by distance from the Sun" with items "Mercury", "Venus", "Earth", "Mars", tag with difficulty easy and DOK 1, and store it in the item bank.
+117. Create a short text question asking "Who wrote 'Romeo and Juliet'?" with the correct answer "Shakespeare", case insensitive, tag with CCSS RL.9-10.4, and save it to the Learnosity bank.
+118. Create an items assessment with an MCQ on the function of the ribosome with four options where "protein synthesis" is correct, distractors matching common misconceptions, a rationale per distractor, tag with NGSS MS-LS1-2 difficulty medium DOK 2, and save it to the item bank.
