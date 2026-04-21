@@ -332,14 +332,19 @@ export class Transformer extends BasisTransformer {
   }
 }
 
-// Generate Transformer methods for question types (arity 1)
+// Generate Transformer methods for question types (arity 1). Wrap the
+// builder call so validating builders (e.g. bowtie) can throw with a
+// human-readable message and have it surface via the standard error list
+// instead of becoming an unhandled rejection.
 for (const [name, builder] of Object.entries(questionTypeBuilders)) {
   Transformer.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const err = [];
       const attrs = toPlainObject(v0);
-      const val = builder(attrs);
-      resume(err, val);
+      try {
+        resume([], builder(attrs));
+      } catch (e) {
+        resume([String(e && e.message || e)], undefined);
+      }
     });
   };
 }

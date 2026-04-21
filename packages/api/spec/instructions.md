@@ -35,6 +35,7 @@ provide a higher-level interface with sensible defaults:
 - `choicematrix` — Grid of options by stems
 - `orderlist` — Drag items into correct order
 - `classification` — Sort items into categories
+- `bowtie` — NGN/NCLEX bow-tie: 2-1-2 drag-and-drop (actions, condition, monitor)
 
 Each function takes a record built from chainable attribute keywords.
 All attributes have defaults, so `mcq {}` produces a complete question.
@@ -137,6 +138,30 @@ All attributes have defaults, so `mcq {}` produces a complete question.
     possible-responses ["Dog", "Snake", "Cat", "Lizard"]
     categories ["Mammals", "Reptiles"]
     valid-response [[0, 2], [1, 3]]
+    {}
+  ```
+
+- `bowtie` — NGN/NCLEX bow-tie. Three source pools feed three drop zones
+  in a 2-1-2 layout. `column-titles` labels both the source pools and the
+  drop zones. `possible-responses` is a list of three lists (one per column),
+  and `valid-response` is three lists of option *strings* (2-1-2) that the
+  compiler resolves against each column's pool. A bow-tie whose
+  `valid-response` is not 2-1-2, whose strings don't appear in the matching
+  pool, or whose pools are too small is rejected at compile time:
+  ```
+  bowtie
+    stimulus "65-year-old with chest pain and diaphoresis."
+    column-titles ["Actions to Take", "Condition Most Likely", "Parameters to Monitor"]
+    possible-responses [
+      ["give aspirin", "give nitro", "call cardiology", "obtain 12-lead ECG"],
+      ["myocardial infarction", "pulmonary embolism", "pericarditis"],
+      ["ST segment changes", "blood pressure", "troponin", "respiratory rate"]
+    ]
+    valid-response [
+      ["give aspirin", "obtain 12-lead ECG"],
+      ["myocardial infarction"],
+      ["ST segment changes", "troponin"]
+    ]
     {}
   ```
 

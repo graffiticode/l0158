@@ -30,6 +30,7 @@ L0158 emits one of the following interactions per question. Use the English cue 
 | `choicematrix`    | "grid", "rate each statement", "true/false matrix"                  | 2D grid: rows are stems, columns are options; one selection per row.        |
 | `orderlist`       | "order these", "put in order", "sequence"                           | Drag items into the correct sequence.                                       |
 | `classification`  | "sort into categories", "bucket these items"                        | Drag items into named category buckets.                                     |
+| `bowtie`          | "bow-tie", "NGN", "NCLEX bow-tie", "actions, condition, monitor"    | NGN/NCLEX bow-tie: pick 2 actions, 1 condition, 2 parameters to monitor.    |
 
 No `hotspot` or `image-label` interaction today; describe those as MCQ over labeled positions if you must.
 
@@ -49,6 +50,7 @@ Say this to get that:
 - **Instant feedback** — turns on immediate per-response feedback in the interaction.
 - **Shuffle options** — randomizes option order at render time.
 - **Save to the item bank** — by default an item renders as a preview and is *not* written to the Learnosity item bank. Say "save to the item bank" (or equivalent) to persist it; it lands as `status: unpublished` (draft). Publishing is done from the Learnosity Author Site UI, not from the DSL.
+- **Bow-tie (NGN/NCLEX)** — three source pools and three drop zones in a 2-1-2 layout. Standard NCLEX phrasing is "actions to take", "condition most likely", "parameters to monitor". Prompt with the clinical scenario as the stimulus and three lists of options plus the 2-1-2 correct picks; the compiler will reject inputs that don't satisfy the 2-1-2 shape.
 
 ## Metadata
 

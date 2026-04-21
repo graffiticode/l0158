@@ -11,6 +11,7 @@ import {
   buildChoicematrix,
   buildOrderlist,
   buildClassification,
+  buildBowtie,
   translateQuestionMetadata,
 } from "./question-types.js";
 
@@ -410,6 +411,134 @@ describe("question-types", () => {
         { kind: "notes", value: "n" },
         { kind: "acknowledgements", value: "a" },
       ])).toEqual({ acknowledgements: "a" });
+    });
+  });
+
+  describe("buildBowtie", () => {
+    const validAttrs = () => ({
+      stimulus: "Scenario",
+      column_titles: ["Actions", "Condition", "Monitor"],
+      possible_responses: [
+        ["give aspirin", "give nitro", "call cardiology", "obtain 12-lead ECG"],
+        ["myocardial infarction", "pulmonary embolism", "pericarditis"],
+        ["ST segment changes", "blood pressure", "troponin", "respiratory rate"],
+      ],
+      valid_response: [
+        ["give aspirin", "obtain 12-lead ECG"],
+        ["myocardial infarction"],
+        ["ST segment changes", "troponin"],
+      ],
+    });
+
+    it("builds a complete bowtie from defaults", () => {
+      const result = buildBowtie({});
+      expect(result.type).toBe("bowtie");
+      expect(result.group_possible_responses).toBe(true);
+      expect(result.max_response_per_cell).toBe(1);
+      expect(result.ui_style.column_titles).toEqual([
+        "Actions to Take", "Condition Most Likely", "Parameters to Monitor",
+      ]);
+      expect(result.possible_response_groups).toHaveLength(3);
+      expect(result.possible_response_groups[0].title).toBe("Actions to Take");
+      expect(result.validation.valid_response.value.map(a => a.length)).toEqual([2, 1, 2]);
+    });
+
+    it("resolves valid-response strings to flat global indices", () => {
+      const result = buildBowtie(validAttrs());
+      // pools: 4 + 3 + 4. Pool offsets: 0, 4, 7.
+      // "give aspirin" → 0, "obtain 12-lead ECG" → 3
+      // "myocardial infarction" → 4
+      // "ST segment changes" → 7, "troponin" → 9
+      expect(result.validation.valid_response.value).toEqual([
+        [0, 3],
+        [4],
+        [7, 9],
+      ]);
+    });
+
+    it("mirrors the author-site sample (generic pool), producing [[2,0],[5],[8,11]]", () => {
+      const result = buildBowtie({
+        column_titles: ["Area 1", "Area 2", "Area 3"],
+        possible_responses: [
+          ["c1:i1", "c1:i2", "c1:i3", "c1:i4"],
+          ["c2:i1", "c2:i2", "c2:i3", "c2:i4"],
+          ["c3:i1", "c3:i2", "c3:i3", "c3:i4"],
+        ],
+        valid_response: [
+          ["c1:i3", "c1:i1"],
+          ["c2:i2"],
+          ["c3:i1", "c3:i4"],
+        ],
+      });
+      expect(result.validation.valid_response.value).toEqual([[2, 0], [5], [8, 11]]);
+    });
+
+    it("errors when column-titles has the wrong length", () => {
+      const attrs = { ...validAttrs(), column_titles: ["only", "two"] };
+      expect(() => buildBowtie(attrs)).toThrow(/column-titles must be an array of 3/);
+    });
+
+    it("errors when possible-responses has the wrong length", () => {
+      const attrs = { ...validAttrs(), possible_responses: [["a", "b"], ["c"]] };
+      expect(() => buildBowtie(attrs)).toThrow(/possible-responses must be an array of 3/);
+    });
+
+    it("errors when valid-response has the wrong length", () => {
+      const attrs = { ...validAttrs(), valid_response: [["a"], ["b"]] };
+      expect(() => buildBowtie(attrs)).toThrow(/valid-response must be an array of 3/);
+    });
+
+    it("errors when valid-response counts are not 2-1-2", () => {
+      const attrs = {
+        ...validAttrs(),
+        valid_response: [
+          ["give aspirin", "give nitro", "call cardiology"],
+          ["myocardial infarction"],
+          ["ST segment changes", "troponin"],
+        ],
+      };
+      expect(() => buildBowtie(attrs)).toThrow(/2-1-2 correct answers \(got 3-1-2\)/);
+    });
+
+    it("errors when a valid-response entry is not in the matching pool", () => {
+      const attrs = {
+        ...validAttrs(),
+        valid_response: [
+          ["give aspirin", "NOT A REAL OPTION"],
+          ["myocardial infarction"],
+          ["ST segment changes", "troponin"],
+        ],
+      };
+      expect(() => buildBowtie(attrs)).toThrow(/"NOT A REAL OPTION" is not in possible-responses\[0\]/);
+    });
+
+    it("errors on duplicate entries within a single valid-response list", () => {
+      const attrs = {
+        ...validAttrs(),
+        valid_response: [
+          ["give aspirin", "give aspirin"],
+          ["myocardial infarction"],
+          ["ST segment changes", "troponin"],
+        ],
+      };
+      expect(() => buildBowtie(attrs)).toThrow(/duplicate entry "give aspirin"/);
+    });
+
+    it("errors when a pool is smaller than the required correct-answer count", () => {
+      const attrs = {
+        ...validAttrs(),
+        possible_responses: [
+          ["only one"],
+          ["myocardial infarction"],
+          ["ST segment changes", "troponin"],
+        ],
+        valid_response: [
+          ["only one", "missing"],
+          ["myocardial infarction"],
+          ["ST segment changes", "troponin"],
+        ],
+      };
+      expect(() => buildBowtie(attrs)).toThrow(/possible-responses\[0\] needs at least 2 options/);
     });
   });
 });

@@ -57,6 +57,20 @@ const DEFAULTS = {
     possible_responses: ["Item 1", "Item 2", "Item 3", "Item 4"],
     valid_response: [[0, 2], [1, 3]],
   },
+  bowtie: {
+    stimulus: "Review the scenario and complete the diagram.",
+    column_titles: ["Actions to Take", "Condition Most Likely", "Parameters to Monitor"],
+    possible_responses: [
+      ["Action A", "Action B", "Action C", "Action D"],
+      ["Condition X", "Condition Y", "Condition Z"],
+      ["Parameter P", "Parameter Q", "Parameter R", "Parameter S"],
+    ],
+    valid_response: [
+      ["Action A", "Action B"],
+      ["Condition X"],
+      ["Parameter P", "Parameter Q"],
+    ],
+  },
 };
 
 function withDefaults(type, attrs) {
@@ -456,6 +470,98 @@ export function buildClassification(attrs) {
   return attachQuestionMetadata(question, metadata);
 }
 
+// The bow-tie (NGN/NCLEX) shape is fixed: 2 correct answers in the left area,
+// 1 in the center, 2 in the right. These counts are baked into Learnosity's
+// widget and enforced here so authors get clear errors instead of a silently
+// misshapen question.
+const BOWTIE_AREA_COUNTS = [2, 1, 2];
+
+function ensureArrayOfLength(value, length, label) {
+  if (!Array.isArray(value) || value.length !== length) {
+    throw new Error(
+      `bowtie: ${label} must be an array of ${length} entries (got ${Array.isArray(value) ? value.length : typeof value})`
+    );
+  }
+}
+
+export function buildBowtie(attrs) {
+  const {
+    stimulus,
+    column_titles,
+    possible_responses,
+    valid_response,
+    metadata,
+    ...rest
+  } = withDefaults("bowtie", attrs);
+
+  ensureArrayOfLength(column_titles, 3, "column-titles");
+  ensureArrayOfLength(possible_responses, 3, "possible-responses");
+  ensureArrayOfLength(valid_response, 3, "valid-response");
+
+  for (let i = 0; i < 3; i++) {
+    const pool = possible_responses[i];
+    if (!Array.isArray(pool) || pool.some(x => typeof x !== "string")) {
+      throw new Error(`bowtie: possible-responses[${i}] must be an array of strings`);
+    }
+    const picks = valid_response[i];
+    if (!Array.isArray(picks) || picks.some(x => typeof x !== "string")) {
+      throw new Error(`bowtie: valid-response[${i}] must be an array of strings`);
+    }
+    if (picks.length !== BOWTIE_AREA_COUNTS[i]) {
+      throw new Error(
+        `bowtie: valid-response must have 2-1-2 correct answers (got ${valid_response.map(r => r.length).join("-")})`
+      );
+    }
+    if (pool.length < BOWTIE_AREA_COUNTS[i]) {
+      throw new Error(
+        `bowtie: possible-responses[${i}] needs at least ${BOWTIE_AREA_COUNTS[i]} options (got ${pool.length})`
+      );
+    }
+    const seen = new Set();
+    for (const pick of picks) {
+      if (seen.has(pick)) {
+        throw new Error(`bowtie: valid-response[${i}] has a duplicate entry "${pick}"`);
+      }
+      seen.add(pick);
+      if (!pool.includes(pick)) {
+        throw new Error(
+          `bowtie: valid-response[${i}] entry "${pick}" is not in possible-responses[${i}]`
+        );
+      }
+    }
+  }
+
+  // Global index = pool offset + index of the pick within its pool.
+  const offsets = [0, possible_responses[0].length, possible_responses[0].length + possible_responses[1].length];
+  const validValue = valid_response.map((picks, i) =>
+    picks.map(pick => offsets[i] + possible_responses[i].indexOf(pick))
+  );
+
+  const question = {
+    type: "bowtie",
+    stimulus,
+    ui_style: {
+      column_titles,
+      show_drag_handle: false,
+    },
+    group_possible_responses: true,
+    max_response_per_cell: 1,
+    possible_response_groups: possible_responses.map((responses, i) => ({
+      title: column_titles[i],
+      responses,
+    })),
+    validation: {
+      scoring_type: "exactMatch",
+      valid_response: {
+        score: 1,
+        value: validValue,
+      },
+    },
+    ...rest,
+  };
+  return attachQuestionMetadata(question, metadata);
+}
+
 // Registry mapping AST names to builders
 export const questionTypeBuilders = {
   MCQ: buildMcq,
@@ -469,6 +575,7 @@ export const questionTypeBuilders = {
   CHOICEMATRIX: buildChoicematrix,
   ORDERLIST: buildOrderlist,
   CLASSIFICATION: buildClassification,
+  BOWTIE: buildBowtie,
 };
 
 // Registry mapping AST names to attribute field names and expected types
@@ -489,6 +596,7 @@ export const attributeFields = {
   COLUMNS: { field: "columns", valueType: "array" },
   ORDER_LIST: { field: "list", valueType: "array" },
   CATEGORIES: { field: "categories", valueType: "array" },
+  COLUMN_TITLES: { field: "column_titles", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
   METADATA: { field: "metadata", valueType: "array" },
@@ -520,4 +628,5 @@ export const validAttributes = {
   CHOICEMATRIX: ["stimulus", "rows", "columns", "valid_response", "instant_feedback", "shuffle_options", "metadata"],
   ORDERLIST: ["stimulus", "list", "valid_response", "instant_feedback", "metadata"],
   CLASSIFICATION: ["stimulus", "categories", "possible_responses", "valid_response", "instant_feedback", "metadata"],
+  BOWTIE: ["stimulus", "column_titles", "possible_responses", "valid_response", "metadata"],
 };

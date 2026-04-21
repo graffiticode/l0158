@@ -142,6 +142,13 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
+  "bowtie": {
+    "tk": 1,
+    "name": "BOWTIE",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
   // Attribute keywords (arity 2)
   "stimulus": {
     "tk": 1,
@@ -244,6 +251,13 @@ export const lexicon = {
   "categories": {
     "tk": 1,
     "name": "CATEGORIES",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "column-titles": {
+    "tk": 1,
+    "name": "COLUMN_TITLES",
     "cls": "function",
     "length": 2,
     "arity": 2

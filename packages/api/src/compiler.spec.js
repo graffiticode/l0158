@@ -66,6 +66,50 @@ describe("compiler", () => {
     expect(result.type).toBe("questions");
   });
 
+  test("bowtie compiles to the native Learnosity shape", async () => {
+    const src = `bowtie
+      stimulus "65-year-old with chest pain and diaphoresis."
+      column-titles ["Actions", "Condition", "Monitor"]
+      possible-responses [
+        ["give aspirin", "give nitro", "call cardiology", "obtain 12-lead ECG"],
+        ["myocardial infarction", "pulmonary embolism", "pericarditis"],
+        ["ST segment changes", "blood pressure", "troponin", "respiratory rate"]
+      ]
+      valid-response [
+        ["give aspirin", "obtain 12-lead ECG"],
+        ["myocardial infarction"],
+        ["ST segment changes", "troponin"]
+      ]
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("bowtie");
+    expect(result.group_possible_responses).toBe(true);
+    expect(result.max_response_per_cell).toBe(1);
+    expect(result.ui_style.column_titles).toEqual(["Actions", "Condition", "Monitor"]);
+    expect(result.possible_response_groups).toHaveLength(3);
+    expect(result.validation.valid_response.value).toEqual([
+      [0, 3],
+      [4],
+      [7, 9],
+    ]);
+  }, 10000);
+
+  test("bowtie with wrong 2-1-2 counts surfaces a compile error", async () => {
+    const src = `bowtie
+      stimulus "..."
+      column-titles ["A", "B", "C"]
+      possible-responses [["a1", "a2"], ["b1"], ["c1", "c2"]]
+      valid-response [["a1"], ["b1"], ["c1", "c2"]]
+      {}..`;
+    await expect(compile(src)).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringMatching(/2-1-2 correct answers \(got 1-1-2\)/),
+        }),
+      ])
+    );
+  }, 10000);
+
   test("mcq with chained attributes compiles", async () => {
     const result = await compile('mcq stimulus "What is the capital of France?" options ["Paris", "London", "Berlin", "Madrid"] valid-response [0] {}..');
     expect(result.type).toBe("mcq");

@@ -43,6 +43,7 @@ complete renderable question.
 | `choicematrix` | 1 | `choicematrix` | Grid of options by stems |
 | `orderlist` | 1 | `orderlist` | Drag items into correct order |
 | `classification` | 1 | `classification` | Sort items into categories |
+| `bowtie` | 1 | `bowtie` | NGN/NCLEX bow-tie: 2-1-2 drag-and-drop |
 
 ### Attribute Keywords
 
@@ -66,6 +67,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `columns` | string[] | `options` | choicematrix |
 | `list` | string[] | `list` | orderlist |
 | `categories` | string[] | `ui_style.column_titles` | classification |
+| `column-titles` | string[] | `ui_style.column_titles` + `possible_response_groups[].title` | bowtie |
 | `method` | string | `validation method` | clozeformula |
 | `metadata` | list | `metadata` / `tags` | item, all question types |
 | `save-to-itembank` | boolean | — (compiler flag) | items chain |
@@ -367,6 +369,37 @@ classification
   valid-response [[0, 2], [1, 3]]
   {}
 ```
+
+### bowtie
+
+Creates a Next-Gen NCLEX bow-tie question: three source pools feed three
+drop zones in a 2-1-2 layout (two on the left, one in the center, two on
+the right). `column-titles` labels both the source pools and the drop
+zones. Correct answers are written as the option text — the compiler
+flattens the three pools and resolves each string to the global index
+Learnosity expects.
+
+```
+bowtie
+  stimulus "65-year-old male presents with chest pain and diaphoresis."
+  column-titles ["Actions to Take", "Condition Most Likely", "Parameters to Monitor"]
+  possible-responses [
+    ["give aspirin", "give nitro", "call cardiology", "obtain 12-lead ECG"],
+    ["myocardial infarction", "pulmonary embolism", "pericarditis"],
+    ["ST segment changes", "blood pressure", "troponin", "respiratory rate"]
+  ]
+  valid-response [
+    ["give aspirin", "obtain 12-lead ECG"],
+    ["myocardial infarction"],
+    ["ST segment changes", "troponin"]
+  ]
+  {}
+```
+
+The 2-1-2 shape is enforced at compile time: `valid-response` must have
+exactly two entries in the first and third lists and one in the middle,
+every entry must appear in the matching pool, and no list may contain
+duplicates.
 
 ## Program Examples
 
