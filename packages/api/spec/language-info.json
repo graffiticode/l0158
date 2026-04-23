@@ -1,6 +1,6 @@
 {
   "id": "0158",
-  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, and classification items. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
+  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, classification, and NGN/NCLEX bow-tie items. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
   "supported_item_types": [
     "mcq",
     "shorttext",
@@ -12,7 +12,8 @@
     "clozeformula",
     "choicematrix",
     "orderlist",
-    "classification"
+    "classification",
+    "bowtie"
   ],
   "example_prompts": [
     {
@@ -49,6 +50,11 @@
       "prompt": "Create a 4-option MCQ on the function of mitochondria. Distractors should match common organelle misconceptions, and add a one-line rationale per distractor explaining the misconception. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2.",
       "produces": "mcq",
       "notes": "Exercises both item-level metadata (NGSS, difficulty, DOK — faceted in the Author Site filter rail) and question-level metadata (per-option distractor rationale shown in the Author Site review pane)."
+    },
+    {
+      "prompt": "Create a bow-tie for a 65-year-old with chest pain and diaphoresis. Actions: give aspirin, give nitro, call cardiology, obtain 12-lead ECG. Conditions: myocardial infarction, pulmonary embolism, pericarditis. Monitor: ST segment changes, blood pressure, troponin, respiratory rate. Correct actions: give aspirin, obtain 12-lead ECG. Correct condition: myocardial infarction. Correct monitors: ST segment changes, troponin.",
+      "produces": "bowtie",
+      "notes": "NGN/NCLEX bow-tie: three source pools drop into a 2-1-2 layout (2 actions on the left, 1 condition in the center, 2 parameters to monitor on the right). The backend rejects inputs that don't satisfy the 2-1-2 shape or whose correct answers aren't in the matching pool."
     }
   ]
 }
