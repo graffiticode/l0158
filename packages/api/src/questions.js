@@ -51,6 +51,7 @@ export const buildCreateQuestions = ({
     };
   });
   const questionRefs = questions.map(question => question.reference);
+  let itemBankResult;
   if (saveToItembank) {
     const questionsReq = sdk.init(
       'data',
@@ -68,15 +69,23 @@ export const buildCreateQuestions = ({
       route: "/itembank/questions",
       request: questionsReq,
     });
+    // dataApi throws on non-2xx, so reaching here means the write succeeded.
+    itemBankResult = {
+      saved: true,
+      references: questionRefs,
+      savedAt: new Date().toISOString(),
+    };
   }
+  const data = {
+    "id": uuid(),
+    "name": "Test",
+    questions,
+    session_id: uuid(),
+  };
+  if (itemBankResult) data.itemBank = itemBankResult;
   return {
     type: "questions",
-    data: {
-      "id": uuid(),
-      "name": "Test",
-      questions,
-      session_id: uuid(),
-    },
+    data,
     templateVariablesRecords,
     questionRefs,
   };

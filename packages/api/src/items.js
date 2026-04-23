@@ -140,6 +140,7 @@ export const buildCreateItems = ({
   if (adaptive !== undefined) itemRecord.adaptive = adaptive;
   if (metadata !== undefined) itemRecord.metadata = metadata;
 
+  let itemBankResult;
   if (saveToItembank) {
     // Saved items always land as drafts. Publishing is an Author Site
     // concern — the Learnosity item bank UX toggles `status: "published"`.
@@ -160,6 +161,13 @@ export const buildCreateItems = ({
       route: "/itembank/items",
       request: itemsReq,
     });
+    // dataApi throws on non-2xx, so reaching here means the write succeeded.
+    // Surface a confirmation so callers (MCP, agents) can verify the save.
+    itemBankResult = {
+      saved: true,
+      references: [itemRef],
+      savedAt: new Date().toISOString(),
+    };
   }
 
   // Rendering always goes through Questions API with inline question data.
@@ -179,6 +187,7 @@ export const buildCreateItems = ({
     session_id: uuid(),
   };
   if (dynamicContentData) data.dynamic_content_data = dynamicContentData;
+  if (itemBankResult) data.itemBank = itemBankResult;
   return { type: "questions", data };
 };
 
