@@ -44,6 +44,7 @@ complete renderable question.
 | `orderlist` | 1 | `orderlist` | Drag items into correct order |
 | `classification` | 1 | `classification` | Sort items into categories |
 | `bowtie` | 1 | `bowtie` | NGN/NCLEX bow-tie: 2-1-2 drag-and-drop |
+| `custom` | 1 | `custom` | Embed a separately deployed Graffiticode-language interaction |
 
 ### Attribute Keywords
 
@@ -69,6 +70,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `categories` | string[] | `ui_style.column_titles` | classification |
 | `column-titles` | string[] | `ui_style.column_titles` + `possible_response_groups[].title` | bowtie |
 | `method` | string | `validation method` | clozeformula |
+| `lang` | string | — (URL/`custom_type` synthesis) | custom |
 | `metadata` | list | `metadata` / `tags` | item, all question types |
 | `save-to-itembank` | boolean | — (compiler flag) | items chain |
 
@@ -400,6 +402,48 @@ The 2-1-2 shape is enforced at compile time: `valid-response` must have
 exactly two entries in the first and third lists and one in the middle,
 every entry must appear in the matching pool, and no list may contain
 duplicates.
+
+### custom
+
+Embeds a separately deployed Graffiticode-language interaction as a Learnosity
+custom question. `lang` is required and identifies the deployed interaction;
+the compiler synthesizes `custom_type` and the question / scorer / CSS
+URLs from `https://l<lang>.graffiticode.org/...`.
+
+The continuation record passes through onto the emitted question object
+as peers of `type` (and, once wrapped through items, `response_id`). The
+`data` field — Learnosity's per-question payload string — is special-
+cased: a record value is JSON-stringified for the SDK; a string passes
+through as-is.
+
+The exact shape of the `data` record is determined by the deployed
+interaction at `l<lang>.graffiticode.org` — consult that integration's
+docs for the fields it expects.
+
+```
+custom
+  lang "0166"
+  {
+    stimulus: "...",
+    data: { ...interaction-specific fields... }
+  }
+```
+
+Compiles to:
+
+```json
+{
+  "type": "custom",
+  "custom_type": "custom_question_l0166",
+  "stimulus": "...",
+  "js": {
+    "question": "https://l0166.graffiticode.org/question.js",
+    "scorer":   "https://l0166.graffiticode.org/scorer.js"
+  },
+  "css": "https://l0166.graffiticode.org/question.css",
+  "data": "<JSON-stringified interaction data>"
+}
+```
 
 ## Program Examples
 
