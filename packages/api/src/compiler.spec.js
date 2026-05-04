@@ -94,6 +94,72 @@ describe("compiler", () => {
     ]);
   }, 10000);
 
+  test("custom synthesizes Learnosity custom-question shape from lang", async () => {
+    const src = `custom lang "0166" {
+      data: "{\\"gcItemId\\":\\"abc\\"}",
+      foo: 42
+    }..`;
+    const result = await compile(src);
+    expect(result).toEqual({
+      type: "custom",
+      custom_type: "custom_question_l0166",
+      js: {
+        question: "https://l0166.graffiticode.org/question.js",
+        scorer: "https://l0166.graffiticode.org/scorer.js",
+      },
+      css: "https://l0166.graffiticode.org/question.css",
+      data: '{"gcItemId":"abc"}',
+      foo: 42,
+    });
+  }, 10000);
+
+  test("custom stringifies a record-shaped data field for Learnosity", async () => {
+    const src = `custom lang "0166" {
+      data: {
+        problemStatement: "The magic number is",
+        terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]]
+      }
+    }..`;
+    const result = await compile(src);
+    expect(typeof result.data).toBe("string");
+    expect(JSON.parse(result.data)).toEqual({
+      problemStatement: "The magic number is",
+      terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]],
+    });
+  }, 10000);
+
+  test("custom with empty record still emits URLs and custom_type", async () => {
+    const result = await compile('custom lang "0166" {}..');
+    expect(result.type).toBe("custom");
+    expect(result.custom_type).toBe("custom_question_l0166");
+    expect(result.js.question).toBe("https://l0166.graffiticode.org/question.js");
+    expect(result.js.scorer).toBe("https://l0166.graffiticode.org/scorer.js");
+    expect(result.css).toBe("https://l0166.graffiticode.org/question.css");
+    expect(result.data).toBeUndefined();
+  }, 10000);
+
+  test("custom without lang surfaces a compile error", async () => {
+    await expect(compile('custom { data: "x" }..')).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringMatching(/lang to be a non-empty string/),
+        }),
+      ])
+    );
+  }, 10000);
+
+  test("bad custom inside questions [...] surfaces builder error, not a TypeError", async () => {
+    const src =
+      'id "test-custom" items [item questions [custom { data: "x" }] {}] {}..';
+    await expect(compile(src)).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringMatching(/lang to be a non-empty string/),
+        }),
+      ])
+    );
+  }, 10000);
+
   test("bowtie with wrong 2-1-2 counts surfaces a compile error", async () => {
     const src = `bowtie
       stimulus "..."

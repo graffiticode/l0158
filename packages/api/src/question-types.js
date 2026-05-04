@@ -562,6 +562,31 @@ export function buildBowtie(attrs) {
   return attachQuestionMetadata(question, metadata);
 }
 
+export function buildCustom(attrs) {
+  const { lang, data, ...rest } = attrs || {};
+  if (typeof lang !== "string" || lang.length === 0) {
+    throw new Error('custom requires lang to be a non-empty string (e.g. lang "0166").');
+  }
+  const base = `https://l${lang}.graffiticode.org`;
+  const out = {
+    type: "custom",
+    custom_type: `custom_question_l${lang}`,
+    js: {
+      question: `${base}/question.js`,
+      scorer: `${base}/scorer.js`,
+    },
+    css: `${base}/question.css`,
+    ...rest,
+  };
+  // Learnosity expects `data` to be a JSON string; widgets parse it on load.
+  // Authors can paste either a string (passes through) or a record (we
+  // stringify so the SDK serializes it as a single JSON-string field).
+  if (data !== undefined) {
+    out.data = typeof data === "string" ? data : JSON.stringify(data);
+  }
+  return out;
+}
+
 // Registry mapping AST names to builders
 export const questionTypeBuilders = {
   MCQ: buildMcq,
@@ -576,6 +601,7 @@ export const questionTypeBuilders = {
   ORDERLIST: buildOrderlist,
   CLASSIFICATION: buildClassification,
   BOWTIE: buildBowtie,
+  CUSTOM: buildCustom,
 };
 
 // Registry mapping AST names to attribute field names and expected types
@@ -599,6 +625,7 @@ export const attributeFields = {
   COLUMN_TITLES: { field: "column_titles", valueType: "array" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
+  LANG: { field: "lang", valueType: "string" },
   METADATA: { field: "metadata", valueType: "array" },
 };
 

@@ -223,6 +223,13 @@ export class Transformer extends BasisTransformer {
           resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
           return;
         }
+        // If any child errored (e.g. a builder threw validation), bail before
+        // createItems — the items/questions arrays contain `undefined` for the
+        // failed entry and would crash the wrapper.
+        if (err.length > 0) {
+          resume(err, undefined);
+          return;
+        }
         const saveToItembank = options["save-to-itembank"] === true;
         const itemsResult = await createItems({
           items,
@@ -262,6 +269,13 @@ export class Transformer extends BasisTransformer {
           questions = [plain];
         }
         if (!options["lrn-id"]) {
+          resume(err, {});
+          return;
+        }
+        // If any child errored (e.g. a question builder threw validation),
+        // bail before createQuestions — the questions array contains
+        // `undefined` for the failed entry and would crash the wrapper.
+        if (err.length > 0) {
           resume(err, {});
           return;
         }

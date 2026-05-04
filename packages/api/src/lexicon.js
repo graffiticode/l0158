@@ -149,6 +149,13 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
+  "custom": {
+    "tk": 1,
+    "name": "CUSTOM",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
   // Attribute keywords (arity 2)
   "stimulus": {
     "tk": 1,
@@ -272,6 +279,13 @@ export const lexicon = {
   "id": {
     "tk": 1,
     "name": "ID",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "lang": {
+    "tk": 1,
+    "name": "LANG",
     "cls": "function",
     "length": 2,
     "arity": 2

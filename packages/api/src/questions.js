@@ -76,16 +76,16 @@ export const buildCreateQuestions = ({
       savedAt: new Date().toISOString(),
     };
   }
-  const data = {
+  const questionsData = {
     "id": uuid(),
     "name": "Test",
     questions,
     session_id: uuid(),
   };
-  if (itemBankResult) data.itemBank = itemBankResult;
+  if (itemBankResult) questionsData.itemBank = itemBankResult;
   return {
     type: "questions",
-    data,
+    data: questionsData,
     templateVariablesRecords,
     questionRefs,
   };
