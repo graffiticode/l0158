@@ -1,6 +1,6 @@
 {
   "id": "0158",
-  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, classification, and NGN/NCLEX bow-tie items. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
+  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, classification, NGN/NCLEX bow-tie, and custom items that embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet) and can read content from an upstream pipeline task. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
   "supported_item_types": [
     "mcq",
     "shorttext",
@@ -13,7 +13,8 @@
     "choicematrix",
     "orderlist",
     "classification",
-    "bowtie"
+    "bowtie",
+    "custom"
   ],
   "example_prompts": [
     {
@@ -55,6 +56,11 @@
       "prompt": "Create a bow-tie for a 65-year-old with chest pain and diaphoresis. Actions: give aspirin, give nitro, call cardiology, obtain 12-lead ECG. Conditions: myocardial infarction, pulmonary embolism, pericarditis. Monitor: ST segment changes, blood pressure, troponin, respiratory rate. Correct actions: give aspirin, obtain 12-lead ECG. Correct condition: myocardial infarction. Correct monitors: ST segment changes, troponin.",
       "produces": "bowtie",
       "notes": "NGN/NCLEX bow-tie: three source pools drop into a 2-1-2 layout (2 actions on the left, 1 condition in the center, 2 parameters to monitor on the right). The backend rejects inputs that don't satisfy the 2-1-2 shape or whose correct answers aren't in the matching pool."
+    },
+    {
+      "prompt": "Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.'",
+      "produces": "custom",
+      "notes": "Embedded interaction: emits a `custom` question with `lang \"0166\"` whose `data:` reads the upstream pipeline task via the base-language `data {}` primitive. The pipeline edge (which L0166 producer feeds this consumer) is wired in the console; L0158 source does not reference task IDs. Scoring is the L0166 widget's own `scorer.js` — no `valid-response` is emitted. `save-to-itembank` produces a snapshot frozen at compile time."
     }
   ]
 }

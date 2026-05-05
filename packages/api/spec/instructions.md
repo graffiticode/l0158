@@ -36,6 +36,7 @@ provide a higher-level interface with sensible defaults:
 - `orderlist` — Drag items into correct order
 - `classification` — Sort items into categories
 - `bowtie` — NGN/NCLEX bow-tie: 2-1-2 drag-and-drop (actions, condition, monitor)
+- `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet); see Pipeline Composition
 
 Each function takes a record built from chainable attribute keywords.
 All attributes have defaults, so `mcq {}` produces a complete question.
@@ -163,6 +164,22 @@ All attributes have defaults, so `mcq {}` produces a complete question.
       ["ST segment changes", "troponin"]
     ]
     {}
+  ```
+
+- `custom` — Embed a separately deployed Graffiticode-language interaction.
+  `lang` is required and identifies the deployed interaction (the compiler
+  synthesizes URLs and `custom_type` from `https://l<lang>.graffiticode.org/...`).
+  `data` carries interaction-specific fields and is JSON-stringified for
+  Learnosity. Scoring is the deployed interaction's own concern — do not
+  add `valid-response`. When the item draws content from an upstream
+  pipeline node, read it with `data {default}` (see Pipeline Composition):
+  ```
+  custom
+    lang "0166"
+    {
+      stimulus: "Use the spreadsheet to compute the column totals."
+      data: data {}
+    }
   ```
 
 ### Metadata
@@ -346,6 +363,51 @@ learnosity
   {}..
 ```
 
+### Pipeline Composition
+
+When the prompt asks for an item whose content comes from another
+Graffiticode language — typically an L0166 spreadsheet ("a spreadsheet
+question", "use this sheet", "embed the L0166 interaction", "questions
+backed by a deployed widget") — emit a `custom` question whose `data:`
+field reads from the upstream pipeline node via the base-language
+`data {default}` primitive:
+
+```
+set-var "lrn-id" get-val-public "itemId"
+learnosity
+  items [
+    item
+      questions [
+        custom
+          lang "0166"
+          {
+            stimulus: "Use the spreadsheet to compute the column totals.",
+            data: data {}
+          }
+      ]
+      {}
+  ] {}..
+```
+
+- `data {default}` is inherited from the base language. It returns the
+  upstream task's compiled output if a producer is wired in the console
+  pipeline, or the default value otherwise. Use `{}` (or a small skeleton
+  matching the interaction's expected shape) so the program also renders
+  for preview without an upstream.
+- The pipeline edge — which producer task feeds this consumer — is wired
+  in the console's pipeline editor, never in source. Source code does not
+  reference upstream task IDs.
+- One L0158 program has at most one upstream. Multiple `custom` questions
+  in the same program all read the same upstream value. If the prompt
+  needs distinct upstreams per question, that's multiple L0158 programs.
+- Scoring is the deployed interaction's `scorer.js` — do not add
+  `valid-response` for `custom` questions.
+- `save-to-itembank true` freezes the upstream value at compile time into
+  the saved item. The bank entry is a snapshot, not a live reference;
+  edits to the upstream after save do not propagate. If the prompt asks
+  to "save a live spreadsheet question to the bank", clarify or fall back
+  to preview-only.
+
 ## Example Patterns
 
 - Simple MCQ assessment:
@@ -430,6 +492,24 @@ learnosity
             stimulus "Type the answer"
             valid-response "answer"
             {}
+        ]
+        {}
+    ] {}..
+  ```
+
+- Spreadsheet question reading an upstream L0166 task:
+  ```
+  set-var "lrn-id" get-val-public "itemId"
+  learnosity
+    items [
+      item
+        questions [
+          custom
+            lang "0166"
+            {
+              stimulus: "Use the spreadsheet to compute the column totals.",
+              data: data {}
+            }
         ]
         {}
     ] {}..

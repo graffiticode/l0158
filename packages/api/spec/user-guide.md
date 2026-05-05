@@ -31,6 +31,7 @@ L0158 emits one of the following interactions per question. Use the English cue 
 | `orderlist`       | "order these", "put in order", "sequence"                           | Drag items into the correct sequence.                                       |
 | `classification`  | "sort into categories", "bucket these items"                        | Drag items into named category buckets.                                     |
 | `bowtie`          | "bow-tie", "NGN", "NCLEX bow-tie", "actions, condition, monitor"    | NGN/NCLEX bow-tie: pick 2 actions, 1 condition, 2 parameters to monitor.    |
+| `custom`          | "spreadsheet question", "use this spreadsheet", "embed an L0166 widget", "embed a Graffiticode interaction" | Embed a separately deployed Graffiticode-language interaction as the question — most commonly an L0166 spreadsheet. The interaction's content can be authored inline or read from an upstream pipeline task (see Pipeline Composition). |
 
 No `hotspot` or `image-label` interaction today; describe those as MCQ over labeled positions if you must.
 
@@ -51,6 +52,25 @@ Say this to get that:
 - **Shuffle options** — randomizes option order at render time.
 - **Save to the item bank** — by default an item renders as a preview and is *not* written to the Learnosity item bank. Say "save to the item bank" (or equivalent) to persist it; it lands as `status: unpublished` (draft). Publishing is done from the Learnosity Author Site UI, not from the DSL.
 - **Bow-tie (NGN/NCLEX)** — three source pools and three drop zones in a 2-1-2 layout. Standard NCLEX phrasing is "actions to take", "condition most likely", "parameters to monitor". Prompt with the clinical scenario as the stimulus and three lists of options plus the 2-1-2 correct picks; the compiler will reject inputs that don't satisfy the 2-1-2 shape.
+- **Embedded interaction (custom question)** — when the item should render an interaction authored in another Graffiticode language (e.g. an L0166 spreadsheet), say "embed the L0166 spreadsheet" or "use this spreadsheet as the question". Name the language by its number (`L0166`, `L0167`, …). Provide the stem and any framing prose; the deployed interaction handles its own rendering and scoring.
+
+## Pipeline Composition
+
+L0158 items can read content from an upstream task in the console pipeline. The most common case is a `custom` question backed by an L0166 spreadsheet: the L0166 task produces the sheet's authored state, and the L0158 item embeds that state inside its `data:` slot via the base-language `data {default}` primitive. The pipeline editor in the console wires the upstream task ID; L0158 source does not reference task IDs directly.
+
+What you describe in the prompt:
+
+- Which language to embed (e.g. "L0166 spreadsheet").
+- The stem and framing — "use the spreadsheet below to compute the column totals", etc.
+- Whether the item is preview-only or persisted to the bank.
+
+What happens automatically:
+
+- L0158 emits a `custom` question with `lang` set to the embedded language and `data: data {}` reading the upstream value, with a default that lets the item render even when no upstream is wired.
+- Scoring is delegated to the deployed interaction's own scorer; do not request `valid-response` for embedded interactions.
+- `save-to-itembank` produces a snapshot. Persisted items capture the upstream content at compile time and do not update when the upstream is later edited. If the user wants live updates from the upstream, keep the item in preview mode rather than persisting.
+
+A single L0158 program has at most one upstream. Distinct upstreams per question require distinct L0158 programs.
 
 ## Metadata
 
@@ -70,6 +90,7 @@ You usually do not need to think about which level is which — describe what yo
 - *"Given this passage about photosynthesis, write three related MCQs sharing the passage as a stimulus. Each should target a different depth-of-knowledge level."* → three `mcq` items grouped under one stimulus
 - *"Create an MCQ on the function of mitochondria with four options. Distractors should match common misconceptions, and add a one-line rationale per distractor. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* → `mcq` with item-level NGSS/difficulty/DOK tags and question-level per-option rationale
 - *"Update item-id <X>: change the stem to be shorter and clearer, but keep all the existing tags and rationale."* → preserves both metadata blocks; only the stem changes
+- *"Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.' "* → `custom` with `lang "0166"` reading the upstream sheet via `data {}`; preview by default, no `valid-response` (the L0166 scorer handles scoring).
 
 ## Out of Scope
 

@@ -445,6 +445,35 @@ Compiles to:
 }
 ```
 
+#### Pipeline composition
+
+When an L0158 program is wired downstream of another Graffiticode task in
+the console pipeline, the upstream task's compiled output is read via the
+base-language `data {default}` primitive (untyped form) and threaded into
+the `custom` question's `data:` field:
+
+```
+custom
+  lang "0166"
+  {
+    stimulus: "Use the spreadsheet to compute the column totals.",
+    data: data {}
+  }
+```
+
+- `data {default}` returns the upstream task's compiled output if a
+  producer is wired, or the supplied default otherwise. A `{}` default
+  lets the program render in preview without an upstream.
+- Wiring of producer task ID to consumer is set in the console's pipeline
+  editor, not in source.
+- An L0158 program has at most one upstream. Multiple `custom` questions
+  in the same program all read the same upstream value.
+- Scoring is the deployed interaction's own concern (`scorer.js`).
+  `valid-response` is not used with `custom`.
+- `save-to-itembank true` freezes the upstream value at compile time into
+  the saved item — the bank entry is a snapshot, not a live reference.
+  Re-authoring the upstream after save does not update the bank entry.
+
 ## Program Examples
 
 Multiple choice assessment:
@@ -504,5 +533,24 @@ learnosity
   items [
     item questions [mcq {}] {},
     item questions [shorttext {}] {}
+  ] {}..
+```
+
+Spreadsheet question reading an upstream L0166 task:
+
+```
+set-var "lrn-id" get-val-public "itemId"
+learnosity
+  items [
+    item
+      questions [
+        custom
+          lang "0166"
+          {
+            stimulus: "Use the spreadsheet to compute the column totals.",
+            data: data {}
+          }
+      ]
+      {}
   ] {}..
 ```
