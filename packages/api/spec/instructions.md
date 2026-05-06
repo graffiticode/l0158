@@ -36,7 +36,7 @@ provide a higher-level interface with sensible defaults:
 - `orderlist` — Drag items into correct order
 - `classification` — Sort items into categories
 - `bowtie` — NGN/NCLEX bow-tie: 2-1-2 drag-and-drop (actions, condition, monitor)
-- `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet). Set the interaction payload with the chained `model` attribute (preferred); see Pipeline Composition
+- `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet). Set the interaction payload with the chained `model` attribute. When the user's request asks to embed content from another Graffiticode language, emit `NEEDS_INNER` instead of generating the `custom` directly (see Composition).
 
 Each function takes a record built from chainable attribute keywords.
 All attributes have defaults, so `mcq {}` produces a complete question.
@@ -172,9 +172,10 @@ All attributes have defaults, so `mcq {}` produces a complete question.
   Set the interaction payload with the chained `model` attribute — `model`
   is JSON-stringified for Learnosity (records → string, strings → passthrough).
   Scoring is the deployed interaction's own concern — do not add
-  `valid-response`. When the item draws content from an upstream pipeline
-  node, read it with `data {default}` and pass to `model` (see Pipeline
-  Composition):
+  `valid-response`. When the prompt asks for inner content from another
+  Graffiticode language, emit `NEEDS_INNER` (see Composition); only generate
+  the `custom` directly on the orchestrator's second pass, when a
+  `<COMPOSITION_CONTEXT>` block tells you `data` is bound:
   ```
   custom
     lang "0166"
@@ -364,14 +365,20 @@ learnosity
   {}..
 ```
 
-### Pipeline Composition
+### Composition
 
 When the prompt asks for an item whose content comes from another
 Graffiticode language — typically an L0166 spreadsheet ("a spreadsheet
 question", "use this sheet", "embed the L0166 interaction", "questions
-backed by a deployed widget") — emit a `custom` question whose `model`
-attribute reads the upstream pipeline node via the base-language
-`data {default}` primitive:
+backed by a deployed widget") — DO NOT generate code on the first pass.
+Emit `NEEDS_INNER` instead, as described in the global "Composition
+(Inner Content)" guidance. Describe what the inner content should be in
+prose; the orchestrator picks the producer language, generates and
+compiles the inner item, then re-prompts this dialect with a
+`<COMPOSITION_CONTEXT>` block indicating `data` is bound at compile time.
+
+On that second pass, generate the `custom` question with `data {default}`
+in the `model` attribute:
 
 ```
 set-var "lrn-id" get-val-public "itemId"
@@ -390,13 +397,9 @@ learnosity
 ```
 
 - `data {default}` is inherited from the base language. It returns the
-  upstream task's compiled output if a producer is wired in the console
-  pipeline, or the default value otherwise. Use `{}` (or a small skeleton
-  matching the interaction's expected shape) so the program also renders
-  for preview without an upstream.
-- The pipeline edge — which producer task feeds this consumer — is wired
-  in the console's pipeline editor, never in source. Source code does not
-  reference upstream task IDs.
+  upstream's compiled output when the orchestrator has wired one, or the
+  default value otherwise. Use `{}` (or a small skeleton matching the
+  interaction's expected shape) so the program also renders standalone.
 - One L0158 program has at most one upstream. Multiple `custom` questions
   in the same program all read the same upstream value. If the prompt
   needs distinct upstreams per question, that's multiple L0158 programs.
