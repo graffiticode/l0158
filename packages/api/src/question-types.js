@@ -626,6 +626,7 @@ export const attributeFields = {
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
   LANG: { field: "lang", valueType: "string" },
+  MODEL: { field: "data", valueType: "any" },
   METADATA: { field: "metadata", valueType: "array" },
 };
 

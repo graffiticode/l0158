@@ -290,6 +290,13 @@ export const lexicon = {
     "length": 2,
     "arity": 2
   },
+  "model": {
+    "tk": 1,
+    "name": "MODEL",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
   "save-to-itembank": {
     "tk": 1,
     "name": "SAVE_TO_ITEMBANK",

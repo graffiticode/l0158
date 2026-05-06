@@ -160,6 +160,72 @@ describe("compiler", () => {
     );
   }, 10000);
 
+  test("custom model with a record stringifies into the data field", async () => {
+    const src = `custom
+      lang "0166"
+      model {
+        problemStatement: "The magic number is",
+        terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]]
+      }
+      {}..`;
+    const result = await compile(src);
+    expect(typeof result.data).toBe("string");
+    expect(JSON.parse(result.data)).toEqual({
+      problemStatement: "The magic number is",
+      terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]],
+    });
+  }, 10000);
+
+  test("custom model with a string passes through unchanged", async () => {
+    const src = `custom
+      lang "0166"
+      model "{\\"gcItemId\\":\\"abc\\"}"
+      {}..`;
+    const result = await compile(src);
+    expect(result.data).toBe('{"gcItemId":"abc"}');
+  }, 10000);
+
+  test("chained model overrides a record-literal data: in the terminator", async () => {
+    const src = `custom
+      lang "0166"
+      model { a: 1 }
+      { data: { b: 2 } }..`;
+    const result = await compile(src);
+    expect(JSON.parse(result.data)).toEqual({ a: 1 });
+  }, 10000);
+
+  test("custom model is order-independent with lang", async () => {
+    const src = `custom
+      model { foo: 1 }
+      lang "0166"
+      {}..`;
+    const result = await compile(src);
+    expect(result.custom_type).toBe("custom_question_l0166");
+    expect(result.js.question).toBe("https://l0166.graffiticode.org/question.js");
+    expect(JSON.parse(result.data)).toEqual({ foo: 1 });
+  }, 10000);
+
+  test("custom model survives the items/questions render wrapper", async () => {
+    const src = `id "test-model"
+      items [
+        item
+          questions [
+            custom
+              lang "0166"
+              model { foo: 1 }
+              {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("questions");
+    const customQ = result.data.questions.find((q) => q && q.type === "custom");
+    expect(customQ).toBeTruthy();
+    expect(customQ.custom_type).toBe("custom_question_l0166");
+    expect(JSON.parse(customQ.data)).toEqual({ foo: 1 });
+  }, 10000);
+
   test("bowtie with wrong 2-1-2 counts surfaces a compile error", async () => {
     const src = `bowtie
       stimulus "..."

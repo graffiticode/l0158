@@ -71,6 +71,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `column-titles` | string[] | `ui_style.column_titles` + `possible_response_groups[].title` | bowtie |
 | `method` | string | `validation method` | clozeformula |
 | `lang` | string | — (URL/`custom_type` synthesis) | custom |
+| `model` | record or string | `data` (JSON-stringified) | custom |
 | `metadata` | list | `metadata` / `tags` | item, all question types |
 | `save-to-itembank` | boolean | — (compiler flag) | items chain |
 
@@ -416,17 +417,21 @@ as peers of `type` (and, once wrapped through items, `response_id`). The
 cased: a record value is JSON-stringified for the SDK; a string passes
 through as-is.
 
-The exact shape of the `data` record is determined by the deployed
-interaction at `l<lang>.graffiticode.org` — consult that integration's
-docs for the fields it expects.
+The `data` field is most cleanly set with the chained `model` attribute
+(arity 2), which folds its value into the continuation's `data:`. The
+record-literal form (`{ data: ... }` in the terminator) also works; if
+both are present the chained `model` wins.
+
+The exact shape of the model is determined by the deployed interaction
+at `l<lang>.graffiticode.org` — consult that integration's docs for the
+fields it expects.
 
 ```
 custom
   lang "0166"
-  {
-    stimulus: "...",
-    data: { ...interaction-specific fields... }
-  }
+  stimulus "..."
+  model { ...interaction-specific fields... }
+  {}
 ```
 
 Compiles to:
@@ -450,15 +455,14 @@ Compiles to:
 When an L0158 program is wired downstream of another Graffiticode task in
 the console pipeline, the upstream task's compiled output is read via the
 base-language `data {default}` primitive (untyped form) and threaded into
-the `custom` question's `data:` field:
+the `custom` question's `data:` field via the `model` attribute:
 
 ```
 custom
   lang "0166"
-  {
-    stimulus: "Use the spreadsheet to compute the column totals.",
-    data: data {}
-  }
+  stimulus "Use the spreadsheet to compute the column totals."
+  model data {}
+  {}
 ```
 
 - `data {default}` returns the upstream task's compiled output if a
@@ -546,10 +550,9 @@ learnosity
       questions [
         custom
           lang "0166"
-          {
-            stimulus: "Use the spreadsheet to compute the column totals.",
-            data: data {}
-          }
+          stimulus "Use the spreadsheet to compute the column totals."
+          model data {}
+          {}
       ]
       {}
   ] {}..

@@ -36,7 +36,7 @@ provide a higher-level interface with sensible defaults:
 - `orderlist` — Drag items into correct order
 - `classification` — Sort items into categories
 - `bowtie` — NGN/NCLEX bow-tie: 2-1-2 drag-and-drop (actions, condition, monitor)
-- `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet); see Pipeline Composition
+- `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet). Set the interaction payload with the chained `model` attribute (preferred); see Pipeline Composition
 
 Each function takes a record built from chainable attribute keywords.
 All attributes have defaults, so `mcq {}` produces a complete question.
@@ -169,17 +169,18 @@ All attributes have defaults, so `mcq {}` produces a complete question.
 - `custom` — Embed a separately deployed Graffiticode-language interaction.
   `lang` is required and identifies the deployed interaction (the compiler
   synthesizes URLs and `custom_type` from `https://l<lang>.graffiticode.org/...`).
-  `data` carries interaction-specific fields and is JSON-stringified for
-  Learnosity. Scoring is the deployed interaction's own concern — do not
-  add `valid-response`. When the item draws content from an upstream
-  pipeline node, read it with `data {default}` (see Pipeline Composition):
+  Set the interaction payload with the chained `model` attribute — `model`
+  is JSON-stringified for Learnosity (records → string, strings → passthrough).
+  Scoring is the deployed interaction's own concern — do not add
+  `valid-response`. When the item draws content from an upstream pipeline
+  node, read it with `data {default}` and pass to `model` (see Pipeline
+  Composition):
   ```
   custom
     lang "0166"
-    {
-      stimulus: "Use the spreadsheet to compute the column totals."
-      data: data {}
-    }
+    stimulus "Use the spreadsheet to compute the column totals."
+    model data {}
+    {}
   ```
 
 ### Metadata
@@ -368,8 +369,8 @@ learnosity
 When the prompt asks for an item whose content comes from another
 Graffiticode language — typically an L0166 spreadsheet ("a spreadsheet
 question", "use this sheet", "embed the L0166 interaction", "questions
-backed by a deployed widget") — emit a `custom` question whose `data:`
-field reads from the upstream pipeline node via the base-language
+backed by a deployed widget") — emit a `custom` question whose `model`
+attribute reads the upstream pipeline node via the base-language
 `data {default}` primitive:
 
 ```
@@ -380,10 +381,9 @@ learnosity
       questions [
         custom
           lang "0166"
-          {
-            stimulus: "Use the spreadsheet to compute the column totals.",
-            data: data {}
-          }
+          stimulus "Use the spreadsheet to compute the column totals."
+          model data {}
+          {}
       ]
       {}
   ] {}..
@@ -506,10 +506,9 @@ learnosity
         questions [
           custom
             lang "0166"
-            {
-              stimulus: "Use the spreadsheet to compute the column totals.",
-              data: data {}
-            }
+            stimulus "Use the spreadsheet to compute the column totals."
+            model data {}
+            {}
         ]
         {}
     ] {}..
