@@ -16,7 +16,14 @@ function isNonNullNonEmptyObject(obj) {
 
 export const View = () => {
   const params = new URLSearchParams(window.location.search);
-  const [ id, setId ] = useState(params.get("id"));
+  const rawId = params.get("id");
+  console.log("[L0158/View] mount", {
+    rawId,
+    search: window.location.search,
+    idHasPlus: typeof rawId === "string" && rawId.indexOf("+") !== -1,
+    idSegments: typeof rawId === "string" ? rawId.split("+") : null,
+  });
+  const [ id, setId ] = useState(rawId);
   const [ accessToken, setAccessToken ] = useState(params.get("access_token"));
   const [ targetOrigin, setTargetOrigin ] = useState(params.get("origin"));
   const [ doRecompile, setDoRecompile ] = useState(false);
@@ -65,6 +72,13 @@ export const View = () => {
   );
 
   if (compileResp.data) {
+    console.log("[L0158/View] compileResp", {
+      id,
+      hasErrors: Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0,
+      errors: compileResp.data.errors || null,
+      type: compileResp.data?.type,
+      keys: compileResp.data && typeof compileResp.data === "object" ? Object.keys(compileResp.data) : null,
+    });
     setDoRecompile(false);
     if (Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0) {
       state.apply({ type: "signed", args: compileResp.data });
@@ -72,6 +86,9 @@ export const View = () => {
       setData(compileResp.data);
       setDoInit(true);
     }
+  }
+  if (compileResp.error) {
+    console.error("[L0158/View] compileResp.error", { id, error: compileResp.error });
   }
 
   const initResp = useSWR(
@@ -82,6 +99,12 @@ export const View = () => {
 
   useEffect(() => {
     if (initResp.data) {
+      console.log("[L0158/View] initResp", {
+        id,
+        hasErrors: Array.isArray(initResp.data.errors) && initResp.data.errors.length > 0,
+        errors: initResp.data.errors || null,
+        keys: typeof initResp.data === "object" ? Object.keys(initResp.data) : null,
+      });
       setDoInit(false);
       state.apply({
         type: "signed",
@@ -91,7 +114,10 @@ export const View = () => {
         },
       });
     }
-  }, [initResp.data]);
+    if (initResp.error) {
+      console.error("[L0158/View] initResp.error", { id, error: initResp.error });
+    }
+  }, [initResp.data, initResp.error]);
 
   return (
     isNonNullNonEmptyObject(state.data) &&
