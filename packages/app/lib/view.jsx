@@ -62,14 +62,20 @@ export const View = () => {
     }
   }, [id]);
 
-  const compileResp = useSWR(
-    doRecompile && accessToken && id && {
-      accessToken,
-      id,
-      data: state.data,
-    },
-    compile
-  );
+  // Idempotent fetch keyed by id alone. The api server's `/data` route is
+  // cached by id; subsequent identical requests hit the cache without
+  // recompiling the chain. We use this in place of POST /compile (which
+  // posts a state task and was causing chain-id churn driven by Learnosity
+  // init responses accumulating into state.data — each fresh user_id /
+  // signature was busting the cache and re-firing the chain compile, which
+  // in turn racked l0166 with concurrent recompiles and produced transient
+  // "Language server error:" responses).
+  //
+  // State changes (form interactions) are handled by the parent (gallery)
+  // via its own compile() POST against the head + build-time prefix; the
+  // view itself only needs the initial idempotent fetch.
+  const fetchKey = doRecompile && accessToken && id ? { accessToken, id } : null;
+  const compileResp = useSWR(fetchKey, getData);
 
   if (compileResp.data) {
     console.log("[L0158/View] compileResp", {
