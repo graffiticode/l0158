@@ -14,6 +14,56 @@ function isNonNullNonEmptyObject(obj) {
   );
 }
 
+// Dynamic-data substitution applied at session init. Learnosity substitutes
+// {{var:X}} in the standard fields it owns the schema for (stimulus, options,
+// ...), but it treats custom-question `data` as opaque pass-through — that's
+// confirmed by inspection: a custom question whose widget data contains
+// {{var:A1}} reaches the widget unsubstituted. To give custom and built-in
+// questions the same author-facing behavior, we substitute everywhere in the
+// compile output ourselves before handing it to LearnosityApp.init.
+//
+// Each View mount picks a fresh row, so reloads re-randomize. The compile
+// output (and any saved bank item) keeps the full dynamic_content_data
+// table, so items rendered later via Items API still re-randomize via
+// Learnosity's own substitution.
+function pickRow(dcd) {
+  if (!dcd || !Array.isArray(dcd.cols)) return null;
+  const rowIds = Object.keys(dcd.rows || {});
+  if (rowIds.length === 0) return null;
+  const rowId = rowIds[Math.floor(Math.random() * rowIds.length)];
+  const row = dcd.rows[rowId];
+  if (!row || !Array.isArray(row.values)) return null;
+  return dcd.cols.reduce((env, col, i) => {
+    env[col] = row.values[i];
+    return env;
+  }, {});
+}
+
+function resolveVariables(val, env) {
+  if (typeof val === "string") {
+    let out = val;
+    for (const key of Object.keys(env)) {
+      const re = new RegExp(`\\{\\{var:${key}\\}\\}`, "g");
+      out = out.replace(re, env[key]);
+    }
+    return out;
+  }
+  if (Array.isArray(val)) return val.map(item => resolveVariables(item, env));
+  if (val !== null && typeof val === "object") {
+    const acc = {};
+    for (const key of Object.keys(val)) acc[key] = resolveVariables(val[key], env);
+    return acc;
+  }
+  return val;
+}
+
+function applyDynamicData(compiled) {
+  const dcd = compiled?.data?.dynamic_content_data;
+  const env = pickRow(dcd);
+  if (!env) return compiled;
+  return resolveVariables(compiled, env);
+}
+
 export const View = () => {
   const params = new URLSearchParams(window.location.search);
   const rawId = params.get("id");
@@ -89,7 +139,7 @@ export const View = () => {
     if (Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0) {
       state.apply({ type: "signed", args: compileResp.data });
     } else {
-      setData(compileResp.data);
+      setData(applyDynamicData(compileResp.data));
       setDoInit(true);
     }
   }

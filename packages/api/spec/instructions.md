@@ -408,6 +408,37 @@ learnosity
   to "save a live spreadsheet question to the bank", clarify or fall back
   to preview-only.
 
+### Dynamic Data
+
+Learnosity items can carry a table of variable values; each session
+substitutes one row into the question text via `{{colname}}` placeholders.
+
+- Embedding an L0166 custom question whose compiled output includes
+  `templateVariablesRecords` automatically routes those rows into the
+  item's `dynamic_content_data`. No extra keyword needed — just reference
+  the variables in stems with `{{A1}}`-style placeholders.
+- To declare a table directly (no L0166 upstream), chain the
+  item-level `params` keyword with a list of row records:
+
+  ```
+  set-var "lrn-id" get-val-public "itemId"
+  learnosity
+    items [
+      item
+        params [
+          { A1: "50", A2: "25" }
+          { A1: "100", A2: "75" }
+        ]
+        questions [
+          shorttext stimulus "What is {{A1}} + {{A2}}?" {}
+        ]
+        {}
+    ] {}..
+  ```
+
+- If both forms are present on the same item, the inherited L0166 table
+  wins. Don't mix them unless the prompt explicitly asks for a fallback.
+
 ## Example Patterns
 
 - Simple MCQ assessment:

@@ -37,9 +37,18 @@ export const buildCreateQuestions = ({
   domain,
   dataApi
 }) => async (data, { id, saveToItembank = false } = {}) => {
-  // WARNING: Only using the data from the first and only question. If we ever support
-  // more than one question here, this needs to be fixed.
-  const templateVariablesRecords = data[0]?.data?.templateVariablesRecords;
+  // Inherit a dynamic-data table from the first question whose data carries
+  // one (typically an embedded L0166 custom question whose data includes
+  // templateVariablesRecords). Items have one shared table in Learnosity's
+  // model; first-wins matches the common single-widget-per-item case.
+  let templateVariablesRecords;
+  for (const q of data) {
+    const records = q?.data?.templateVariablesRecords;
+    if (Array.isArray(records) && records.length > 0) {
+      templateVariablesRecords = records;
+      break;
+    }
+  }
   const batchId = id || "0";
   const questions = data.map((question, index) => {
     const reference = `artcompiler-${question.type}-${batchId}-${index}`;

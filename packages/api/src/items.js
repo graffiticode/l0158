@@ -119,11 +119,17 @@ export const buildCreateItems = ({
   saveToItembank = false,
 }) => {
   const [ item ] = items;
-  const { templateVariablesRecords } = item;
+  // Inherited (from an embedded L0166 custom question) overrides hardwired
+  // (declared via the item-level `params` keyword). When a widget is embedded,
+  // its expansion is authoritative.
+  const dynamicRows =
+    (Array.isArray(item.templateVariablesRecords) && item.templateVariablesRecords.length > 0)
+      ? item.templateVariablesRecords
+      : item.params;
   const itemRef = `graffiticode-${id || '0'}`;
   const questionRecords = item.data.questions;
   const questionWidgets = questionRecords.map(q => ({ reference: q.reference }));
-  const dynamicContentData = getDynamicContentData(templateVariablesRecords);
+  const dynamicContentData = getDynamicContentData(dynamicRows);
   const { tags, note, description, source, adaptive, metadata } = translateItemMetadata(item.metadata);
   const itemRecord = {
     reference: itemRef,

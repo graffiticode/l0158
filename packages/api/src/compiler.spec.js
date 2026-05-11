@@ -113,7 +113,7 @@ describe("compiler", () => {
     });
   }, 10000);
 
-  test("custom stringifies a record-shaped data field for Learnosity", async () => {
+  test("custom passes a record-shaped data field through unchanged", async () => {
     const src = `custom lang "0166" {
       data: {
         problemStatement: "The magic number is",
@@ -121,8 +121,7 @@ describe("compiler", () => {
       }
     }..`;
     const result = await compile(src);
-    expect(typeof result.data).toBe("string");
-    expect(JSON.parse(result.data)).toEqual({
+    expect(result.data).toEqual({
       problemStatement: "The magic number is",
       terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]],
     });
@@ -160,7 +159,7 @@ describe("compiler", () => {
     );
   }, 10000);
 
-  test("custom model with a record stringifies into the data field", async () => {
+  test("custom model with a record passes through into the data field", async () => {
     const src = `custom
       lang "0166"
       model {
@@ -169,8 +168,7 @@ describe("compiler", () => {
       }
       {}..`;
     const result = await compile(src);
-    expect(typeof result.data).toBe("string");
-    expect(JSON.parse(result.data)).toEqual({
+    expect(result.data).toEqual({
       problemStatement: "The magic number is",
       terms: [[4, 3, 8], [9, 5, 1], [2, 7, 6]],
     });
@@ -191,7 +189,7 @@ describe("compiler", () => {
       model { a: 1 }
       { data: { b: 2 } }..`;
     const result = await compile(src);
-    expect(JSON.parse(result.data)).toEqual({ a: 1 });
+    expect(result.data).toEqual({ a: 1 });
   }, 10000);
 
   test("custom model is order-independent with lang", async () => {
@@ -202,7 +200,7 @@ describe("compiler", () => {
     const result = await compile(src);
     expect(result.custom_type).toBe("custom_question_l0166");
     expect(result.js.question).toBe("https://l0166.graffiticode.org/question.js");
-    expect(JSON.parse(result.data)).toEqual({ foo: 1 });
+    expect(result.data).toEqual({ foo: 1 });
   }, 10000);
 
   test("custom model survives the items/questions render wrapper", async () => {
@@ -223,7 +221,7 @@ describe("compiler", () => {
     const customQ = result.data.questions.find((q) => q && q.type === "custom");
     expect(customQ).toBeTruthy();
     expect(customQ.custom_type).toBe("custom_question_l0166");
-    expect(JSON.parse(customQ.data)).toEqual({ foo: 1 });
+    expect(customQ.data).toEqual({ foo: 1 });
   }, 10000);
 
   test("bowtie with wrong 2-1-2 counts surfaces a compile error", async () => {
@@ -286,5 +284,152 @@ describe("compiler", () => {
       { kind: "tags", value: { NGSS: ["MS-LS1-2"], Difficulty: "medium", DOK: "2", "Common Core": "Math:6.NS.A.1" } },
       { kind: "notes", value: "Organelle set variant A." },
     ]);
+  }, 10000);
+
+  test("hardwired params builds dynamic_content_data on the preview", async () => {
+    const src = `id "t-params"
+      items [
+        item
+          params [
+            { A1: "50", A2: "25" }
+            { A1: "100", A2: "75" }
+          ]
+          questions [
+            shorttext stimulus "{{A1}}+{{A2}}=?" {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("questions");
+    const dcd = result.data.dynamic_content_data;
+    expect(dcd).toBeDefined();
+    expect(dcd.cols).toEqual(["A1", "A2"]);
+    const rows = Object.values(dcd.rows);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ values: ["50", "25"], index: 0 });
+    expect(rows[1]).toMatchObject({ values: ["100", "75"], index: 1 });
+  }, 10000);
+
+  test("custom L0166 data.templateVariablesRecords flows into dynamic_content_data", async () => {
+    const src = `id "t-inherit"
+      items [
+        item
+          questions [
+            custom
+              lang "0166"
+              model {
+                templateVariablesRecords: [
+                  { A1: "50", A2: "25" }
+                  { A1: "100", A2: "75" }
+                ]
+              }
+              {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("questions");
+    const dcd = result.data.dynamic_content_data;
+    expect(dcd).toBeDefined();
+    expect(dcd.cols).toEqual(["A1", "A2"]);
+    expect(Object.values(dcd.rows)).toHaveLength(2);
+  }, 10000);
+
+  test("inherited dynamic data overrides hardwired params", async () => {
+    const src = `id "t-precedence"
+      items [
+        item
+          params [{ X: "hardwired" }]
+          questions [
+            custom
+              lang "0166"
+              model {
+                templateVariablesRecords: [{ X: "inherited" }]
+              }
+              {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    const rows = Object.values(result.data.dynamic_content_data.rows);
+    expect(rows[0].values).toEqual(["inherited"]);
+  }, 10000);
+
+  test("custom widget data carries {{var:X}} placeholders like built-in questions", async () => {
+    // Custom questions go through the same fixVariableRefs path as built-in
+    // questions: bare {{X}} markers become {{var:X}} so Learnosity can
+    // substitute them at activity render time using dynamic_content_data.
+    const src = `id "t-custom-vars"
+      items [
+        item
+          questions [
+            custom
+              lang "0166"
+              model {
+                interaction: {
+                  cells: {
+                    A1: { text: "{{A1}}" }
+                  }
+                }
+                templateVariablesRecords: [{ A1: "50" }]
+              }
+              {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    const customQ = result.data.questions.find((q) => q.type === "custom");
+    expect(customQ.data.interaction.cells.A1.text).toBe("{{var:A1}}");
+  }, 10000);
+
+  test("non-custom question stimulus is rewritten with {{var:}} prefix", async () => {
+    const src = `id "t-rewrite"
+      items [
+        item
+          params [{ A1: "50" }]
+          questions [
+            shorttext stimulus "value is {{A1}}" {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    const q = result.data.questions[0];
+    expect(q.stimulus).toBe("value is {{var:A1}}");
+  }, 10000);
+
+  test("custom question stimulus and widget data both get {{var:X}} rewriting", async () => {
+    const src = `id "t-stim"
+      items [
+        item
+          questions [
+            custom
+              lang "0166"
+              stimulus "value is {{A1}}"
+              model { foo: "x={{A1}}" }
+              {}
+          ]
+          {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    const customQ = result.data.questions.find((q) => q.type === "custom");
+    expect(customQ.stimulus).toBe("value is {{var:A1}}");
+    expect(customQ.data).toEqual({ foo: "x={{var:A1}}" });
+  }, 10000);
+
+  test("no params and no custom question: dynamic_content_data is absent", async () => {
+    const src = `id "t-none"
+      items [
+        item questions [mcq {}] {}
+      ]
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("questions");
+    expect(result.data.dynamic_content_data).toBeUndefined();
   }, 10000);
 });

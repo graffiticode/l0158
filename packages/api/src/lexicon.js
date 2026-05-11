@@ -304,6 +304,13 @@ export const lexicon = {
     "length": 2,
     "arity": 2
   },
+  "params": {
+    "tk": 1,
+    "name": "PARAMS",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
   // Metadata container (arity 2) — value is a list of member constructors
   "metadata": {
     "tk": 1,

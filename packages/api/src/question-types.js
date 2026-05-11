@@ -578,11 +578,8 @@ export function buildCustom(attrs) {
     css: `${base}/question.css`,
     ...rest,
   };
-  // Learnosity expects `data` to be a JSON string; widgets parse it on load.
-  // Authors can paste either a string (passes through) or a record (we
-  // stringify so the SDK serializes it as a single JSON-string field).
   if (data !== undefined) {
-    out.data = typeof data === "string" ? data : JSON.stringify(data);
+    out.data = data;
   }
   return out;
 }
@@ -628,6 +625,7 @@ export const attributeFields = {
   LANG: { field: "lang", valueType: "string" },
   MODEL: { field: "data", valueType: "any" },
   METADATA: { field: "metadata", valueType: "array" },
+  PARAMS: { field: "params", valueType: "array" },
 };
 
 // Metadata member constructors (arity 1). Each maps a DSL keyword to the

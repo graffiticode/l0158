@@ -72,6 +72,15 @@ What happens automatically:
 
 A single L0158 program has at most one upstream. Distinct upstreams per question require distinct L0158 programs.
 
+## Dynamic Data
+
+Learnosity supports a per-item table of variable values. Each session draws one row and substitutes the columns into question text via `{{colname}}` placeholders. L0158 reaches this two ways:
+
+- **Inherited** — an embedded L0166 custom question whose compiled output includes `templateVariablesRecords` (L0166's range expansion of `params { … }`) automatically flows through to the item's dynamic content. Authors do nothing extra; reference variables in stems with `{{A1}}`-style placeholders.
+- **Hardwired** — declare the table directly with the item-level `params` keyword: `item params [{ A1: "50", A2: "25" } { A1: "100", A2: "75" }] questions [...] {}`. Use this when there is no upstream L0166 widget but the question still needs row-by-row variation.
+
+When both are present, the inherited table wins — embedded L0166 widgets are authoritative about their own variables.
+
 ## Metadata
 
 L0158 attaches metadata at two levels.
