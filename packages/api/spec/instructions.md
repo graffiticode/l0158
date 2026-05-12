@@ -173,13 +173,13 @@ All attributes have defaults, so `mcq {}` produces a complete question.
   is JSON-stringified for Learnosity (records → string, strings → passthrough).
   Scoring is the deployed interaction's own concern — do not add
   `valid-response`. When the item draws content from an upstream pipeline
-  node, read it with `data {default}` and pass to `model` (see Pipeline
-  Composition):
+  node, read it with `data use "<lang>"` (preferred) or `data {default}`
+  and pass to `model` (see Pipeline Composition):
   ```
   custom
     lang "0166"
     stimulus "Use the spreadsheet to compute the column totals."
-    model data {}
+    model data use "0166"
     {}
   ```
 
@@ -371,7 +371,9 @@ Graffiticode language — typically an L0166 spreadsheet ("a spreadsheet
 question", "use this sheet", "embed the L0166 interaction", "questions
 backed by a deployed widget") — emit a `custom` question whose `model`
 attribute reads the upstream pipeline node via the base-language
-`data {default}` primitive:
+`data` primitive. Prefer the `data use "<lang>"` form: it names the
+upstream language explicitly so the console can reactively generate and
+chain the upstream task.
 
 ```
 set-var "lrn-id" get-val-public "itemId"
@@ -382,21 +384,27 @@ learnosity
         custom
           lang "0166"
           stimulus "Use the spreadsheet to compute the column totals."
-          model data {}
+          model data use "0166"
           {}
       ]
       {}
   ] {}..
 ```
 
-- `data {default}` is inherited from the base language. It returns the
-  upstream task's compiled output if a producer is wired in the console
-  pipeline, or the default value otherwise. Use `{}` (or a small skeleton
-  matching the interaction's expected shape) so the program also renders
-  for preview without an upstream.
-- The pipeline edge — which producer task feeds this consumer — is wired
-  in the console's pipeline editor, never in source. Source code does not
-  reference upstream task IDs.
+- **`data use "<lang>"`** (preferred). Inherits from the base language.
+  The `use` annotation declares the upstream language id; the console
+  reads it at write time, fetches `L<lang>/schema.json`, generates the
+  upstream task, and chains it. At runtime, `data` returns the upstream's
+  compiled output if a producer is wired, or `{}` otherwise.
+- **`data {default}`** (untyped fallback). Same runtime semantics but
+  without the language hint, so the console will not auto-discover an
+  upstream — the chain must be assembled manually in the pipeline editor.
+  Use a small skeleton matching the interaction's expected shape so the
+  program also renders in preview without an upstream.
+- The `lang` on the surrounding `custom` should match the `use` argument.
+- The pipeline edge can be assembled reactively from the `use` hint or
+  set manually in the console's pipeline editor. Source code never
+  references upstream task IDs directly.
 - One L0158 program has at most one upstream. Multiple `custom` questions
   in the same program all read the same upstream value. If the prompt
   needs distinct upstreams per question, that's multiple L0158 programs.
@@ -538,7 +546,7 @@ substitutes one row into the question text via `{{colname}}` placeholders.
           custom
             lang "0166"
             stimulus "Use the spreadsheet to compute the column totals."
-            model data {}
+            model data use "0166"
             {}
         ]
         {}

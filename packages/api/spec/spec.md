@@ -454,8 +454,16 @@ Compiles to:
 
 When an L0158 program is wired downstream of another Graffiticode task in
 the console pipeline, the upstream task's compiled output is read via the
-base-language `data {default}` primitive (untyped form) and threaded into
-the `custom` question's `data:` field via the `model` attribute:
+base-language `data` primitive and threaded into the `custom` question's
+`data:` field via the `model` attribute. There are two equivalent forms:
+
+```
+custom
+  lang "0166"
+  stimulus "Use the spreadsheet to compute the column totals."
+  model data use "0166"
+  {}
+```
 
 ```
 custom
@@ -465,11 +473,19 @@ custom
   {}
 ```
 
-- `data {default}` returns the upstream task's compiled output if a
-  producer is wired, or the supplied default otherwise. A `{}` default
-  lets the program render in preview without an upstream.
+- **`data use "<lang>"`** (preferred) declares the upstream language
+  explicitly. The console reads this annotation at write time, fetches
+  `L<lang>/schema.json`, and reactively generates the upstream task to
+  chain. Falls back to `{}` if no upstream is bound at runtime.
+- **`data {default}`** is the untyped form: returns the upstream's
+  compiled output if a producer is wired, or the supplied default
+  otherwise. No language hint, so the console will not auto-discover
+  an upstream — the chain must be assembled manually.
+- For both forms, the `lang` of the surrounding `custom` should match
+  the upstream dialect.
 - Wiring of producer task ID to consumer is set in the console's pipeline
-  editor, not in source.
+  editor (or assembled reactively from the `use` hint), not by hand in
+  source.
 - An L0158 program has at most one upstream. Multiple `custom` questions
   in the same program all read the same upstream value.
 - Scoring is the deployed interaction's own concern (`scorer.js`).
@@ -551,7 +567,7 @@ learnosity
         custom
           lang "0166"
           stimulus "Use the spreadsheet to compute the column totals."
-          model data {}
+          model data use "0166"
           {}
       ]
       {}

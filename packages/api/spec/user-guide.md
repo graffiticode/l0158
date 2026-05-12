@@ -56,7 +56,7 @@ Say this to get that:
 
 ## Pipeline Composition
 
-L0158 items can read content from an upstream task in the console pipeline. The most common case is a `custom` question backed by an L0166 spreadsheet: the L0166 task produces the sheet's authored state, and the L0158 item embeds that state inside its `data:` slot via the base-language `data {default}` primitive. The pipeline editor in the console wires the upstream task ID; L0158 source does not reference task IDs directly.
+L0158 items can read content from an upstream task in the console pipeline. The most common case is a `custom` question backed by an L0166 spreadsheet: the L0166 task produces the sheet's authored state, and the L0158 item embeds that state inside its `data:` slot via the base-language `data` primitive. Two equivalent forms exist: `data use "<lang>"` (preferred) declares the upstream language explicitly so the console can reactively generate and chain the upstream task; `data {default}` is the untyped fallback for manually wired chains. The pipeline editor wires the upstream task ID; L0158 source does not reference task IDs directly.
 
 What you describe in the prompt:
 
@@ -66,7 +66,7 @@ What you describe in the prompt:
 
 What happens automatically:
 
-- L0158 emits a `custom` question with `lang` set to the embedded language and `data: data {}` reading the upstream value, with a default that lets the item render even when no upstream is wired.
+- L0158 emits a `custom` question with `lang` set to the embedded language and `data: data use "<lang>"` reading the upstream value. The `use` annotation lets the console discover the upstream language and chain it; without an upstream bound, `data` falls back to `{}` so the item still renders for preview.
 - Scoring is delegated to the deployed interaction's own scorer; do not request `valid-response` for embedded interactions.
 - `save-to-itembank` produces a snapshot. Persisted items capture the upstream content at compile time and do not update when the upstream is later edited. If the user wants live updates from the upstream, keep the item in preview mode rather than persisting.
 
@@ -99,7 +99,7 @@ You usually do not need to think about which level is which — describe what yo
 - *"Given this passage about photosynthesis, write three related MCQs sharing the passage as a stimulus. Each should target a different depth-of-knowledge level."* → three `mcq` items grouped under one stimulus
 - *"Create an MCQ on the function of mitochondria with four options. Distractors should match common misconceptions, and add a one-line rationale per distractor. Tag with NGSS MS-LS1-2, difficulty medium, DOK 2."* → `mcq` with item-level NGSS/difficulty/DOK tags and question-level per-option rationale
 - *"Update item-id <X>: change the stem to be shorter and clearer, but keep all the existing tags and rationale."* → preserves both metadata blocks; only the stem changes
-- *"Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.' "* → `custom` with `lang "0166"` reading the upstream sheet via `data {}`; preview by default, no `valid-response` (the L0166 scorer handles scoring).
+- *"Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.' "* → `custom` with `lang "0166"` reading the upstream sheet via `data use "0166"`; preview by default, no `valid-response` (the L0166 scorer handles scoring).
 
 ## Out of Scope
 
