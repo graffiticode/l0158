@@ -128,23 +128,20 @@ export const View = () => {
   const compileResp = useSWR(fetchKey, getData);
 
   if (compileResp.data) {
-    console.log("[L0158/View] compileResp", {
-      id,
-      hasErrors: Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0,
-      errors: compileResp.data.errors || null,
-      type: compileResp.data?.type,
-      keys: compileResp.data && typeof compileResp.data === "object" ? Object.keys(compileResp.data) : null,
-    });
     setDoRecompile(false);
     if (Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0) {
-      state.apply({ type: "signed", args: compileResp.data });
+      state.apply({ type: "signed", args: { errors: compileResp.data.errors } });
     } else {
       setData(applyDynamicData(compileResp.data));
       setDoInit(true);
     }
   }
   if (compileResp.error) {
-    console.error("[L0158/View] compileResp.error", { id, error: compileResp.error });
+    setDoRecompile(false);
+    state.apply({
+      type: "signed",
+      args: { errors: [{ message: String(compileResp.error.message || compileResp.error) }] },
+    });
   }
 
   const initResp = useSWR(
@@ -155,23 +152,26 @@ export const View = () => {
 
   useEffect(() => {
     if (initResp.data) {
-      console.log("[L0158/View] initResp", {
-        id,
-        hasErrors: Array.isArray(initResp.data.errors) && initResp.data.errors.length > 0,
-        errors: initResp.data.errors || null,
-        keys: typeof initResp.data === "object" ? Object.keys(initResp.data) : null,
-      });
+      setDoInit(false);
+      if (Array.isArray(initResp.data.errors) && initResp.data.errors.length > 0) {
+        state.apply({ type: "signed", args: { errors: initResp.data.errors } });
+      } else {
+        state.apply({
+          type: "signed",
+          args: {
+            type: data.type,
+            request: initResp.data,
+            errors: undefined,
+          },
+        });
+      }
+    }
+    if (initResp.error) {
       setDoInit(false);
       state.apply({
         type: "signed",
-        args: {
-          type: data.type,
-          request: initResp.data,
-        },
+        args: { errors: [{ message: String(initResp.error.message || initResp.error) }] },
       });
-    }
-    if (initResp.error) {
-      console.error("[L0158/View] initResp.error", { id, error: initResp.error });
     }
   }, [initResp.data, initResp.error]);
 

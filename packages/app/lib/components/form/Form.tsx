@@ -18,12 +18,11 @@ function renderErrors(errors: { message: string; from: number; to: number }[]) {
 }
 
 export const Form = ({ state, targetOrigin }) => {
-  if (Array.isArray(state.data?.errors) && state.data.errors.length > 0) {
-    return renderErrors(state.data.errors);
-  }
+  const hasErrors = Array.isArray(state.data?.errors) && state.data.errors.length > 0;
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const { type, request } = state.data;
   useEffect(() => {
+    if (hasErrors) return;
     if (!type) return;
     // Dynamically load Learnosity script if not included in HTML. Re-run on
     // type change so preview (questions) and save (items) swap scripts
@@ -77,8 +76,12 @@ export const Form = ({ state, targetOrigin }) => {
         }
       });
     };
+    if (hasErrors) return;
     requestAnimationFrame(run);
-  }, [scriptLoaded, request]);
+  }, [scriptLoaded, request, hasErrors]);
+  if (hasErrors) {
+    return renderErrors(state.data.errors);
+  }
   if (type === "author") {
     return <div id="learnosity-author" />;
   }
