@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
-# L0158 User Guide
+# L0158 Usage Guide
 
 Agent-facing guide for authoring Learnosity-compatible assessment items through L0158. Read this before composing a `create_item` prompt or an `update_item` modification.
 
