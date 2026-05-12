@@ -367,13 +367,26 @@ learnosity
 ### Pipeline Composition
 
 When the prompt asks for an item whose content comes from another
-Graffiticode language — typically an L0166 spreadsheet ("a spreadsheet
-question", "use this sheet", "embed the L0166 interaction", "questions
-backed by a deployed widget") — emit a `custom` question whose `model`
-attribute reads the upstream pipeline node via the base-language
-`data` primitive. Prefer the `data use "<lang>"` form: it names the
-upstream language explicitly so the console can reactively generate and
-chain the upstream task.
+Graffiticode language, emit a `custom` question whose `model` attribute
+reads the upstream pipeline node via the base-language `data` primitive.
+Prefer the `data use "<lang>"` form: it names the upstream language
+explicitly so the console can reactively generate and chain the upstream
+task.
+
+**Composable upstreams.** Map the content type to the correct upstream
+language id; use that id consistently as both the `lang` on the surrounding
+`custom` and the argument to `use`:
+
+| If the prompt asks for… | Upstream lang |
+| :--- | :--- |
+| Spreadsheet content ("spreadsheet question", "use this sheet", "table-based assessment") | `0166` |
+| Concept-web assessment ("concept web", "concept map", "node-and-edge concept assessment") | `0169` |
+
+If the prompt's content type doesn't fit any row above, do not invent
+an upstream — emit a question type that L0158 authors directly (mcq,
+shorttext, etc.) or, if the request is fundamentally out of L0158's
+scope, emit `OUT_OF_SCOPE: <reason>` and let the router suggest the
+right dialect.
 
 ```
 set-var "lrn-id" get-val-public "itemId"
