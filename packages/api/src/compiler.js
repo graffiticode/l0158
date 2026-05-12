@@ -353,6 +353,13 @@ export class Transformer extends BasisTransformer {
 for (const [name, builder] of Object.entries(questionTypeBuilders)) {
   Transformer.prototype[name] = function(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
+      // Propagate descendant errors (e.g. basis DATA's schema-validation
+      // failures) instead of silently dropping them and emitting a null
+      // value for the affected attribute.
+      if (e0 && e0.length > 0) {
+        resume(e0, null);
+        return;
+      }
       const attrs = toPlainObject(v0);
       try {
         resume([], builder(attrs));
