@@ -16,6 +16,7 @@
     "Save-to-itembank for persistence vs. preview-only items"
   ],
   "out_of_scope": [
+    "Assessment items for any platform other than Learnosity (e.g. Kahoot, Quizizz, Google Forms, Edulastic, OpenAssessments, Canvas Quizzes, Moodle, plain HTML quiz pages) — L0158 emits Learnosity-shaped JSON only",
     "Activity-level assembly (timed tests, sections, branching) — use Learnosity Activities API",
     "Delivery configuration (proctoring, time limits, attempt caps, accommodations)",
     "Learner-side analytics (responses, mastery, reporting) — Learnosity Data / Reports APIs",
