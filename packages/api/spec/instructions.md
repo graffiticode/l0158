@@ -107,7 +107,7 @@ All attributes have defaults, so `mcq {}` produces a complete question.
 - `clozeformula` — Fill-in-the-blank with math/formula input:
   ```
   clozeformula
-    stimulus "Solve: \(x + 3 = 7\). \(x =\) {{response}}"
+    stimulus "Solve: \\(x + 3 = 7\\). \\(x =\\) {{response}}"
     valid-response ["4"]
     method "equivLiteral"
     {}
@@ -185,10 +185,15 @@ All attributes have defaults, so `mcq {}` produces a complete question.
 
 ### Math Notation
 
-Wrap mathematical notation in the LaTeX inline-math delimiters `\(` and `\)`
+Wrap mathematical notation in the LaTeX inline-math delimiters `\\(` and `\\)`
 so Learnosity typesets it with MathJax. Apply this to math wherever it is
 displayed — `clozeformula` stems, math MCQ stimuli and options, and any other
 text that contains an expression.
+
+Backslashes are escaped inside DSL string literals, so write every backslash
+doubled: `\\(` and `\\)` for the delimiters, and `\\times`, `\\frac`, `\\sqrt`,
+etc. for LaTeX commands. The compiler unescapes each `\\` to a single `\`, so
+the string Learnosity receives is `\(3 \times 4\)`, which MathJax then renders.
 
 Keep response areas outside the delimiters. A cloze `{{response}}` blank is an
 answer-entry slot, not notation to typeset, so leave it unwrapped and wrap the
@@ -197,14 +202,14 @@ in for values within an expression belong inside the delimiters with the rest
 of the math.
 
 Whenever a question contains LaTeX, chain `is-math true` onto that question so
-Learnosity loads MathJax and renders the `\( … \)` expressions. The `is-math`
+Learnosity loads MathJax and renders the `\\( … \\)` expressions. The `is-math`
 attribute is an arity-2 boolean valid on every built-in question type
 (`clozeformula` sets it automatically). Example:
 
 ```
 mcq
-  stimulus "Which sum equals \(1 + 2\)?"
-  options ["\(2\)", "\(3\)", "\(4\)"]
+  stimulus "Which product equals \\(3 \\times 4\\)?"
+  options ["\\(10\\)", "\\(12\\)", "\\(14\\)"]
   valid-response [1]
   is-math true
   {}
@@ -212,7 +217,7 @@ mcq
 
 ```
 clozeformula
-  stimulus "Solve: \(x + 3 = 7\). \(x =\) {{response}}"
+  stimulus "Solve: \\(x + 3 = 7\\). \\(x =\\) {{response}}"
   valid-response ["4"]
   method "equivLiteral"
   {}
@@ -554,7 +559,7 @@ substitutes one row into the question text via `{{colname}}` placeholders.
       item
         questions [
           clozeformula
-            stimulus "Solve: \(x + 3 = 7\). \(x =\) {{response}}"
+            stimulus "Solve: \\(x + 3 = 7\\). \\(x =\\) {{response}}"
             valid-response ["4"]
             method "equivLiteral"
             {}
