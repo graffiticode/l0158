@@ -184,3 +184,29 @@ an L0166 program, or read from the upstream pipeline task with
 128. Create a custom spreadsheet question that reads the upstream task model via `data {}`. Stem: "Use the spreadsheet supplied above to answer the prompt." Do not emit a `valid-response` — scoring is handled by the embedded L0166 widget.
 129. Create a custom spreadsheet question with the stem "Enter the correct multiplication formula in each cell of column C." Embed an L0166 spreadsheet with prices in column A (10, 20, 30), quantities in column B (2, 3, 1), and three assessed cells in column C using the formula method expecting `=A1*B1`, `=A2*B2`, and `=A3*B3` row by row.
 130. Create a custom spreadsheet question with the stem "Compute each section subtotal and the grand total." The embedded L0166 spreadsheet has two sections of 3 data rows each in column A, an assessed SUM subtotal cell at the bottom of each section, and a final assessed cell summing the two subtotals. Bold the subtotal and total rows. Tag the item with difficulty hard and DOK 3.
+
+## Category 15: Dynamic Data — Params for Math Questions (131–142)
+
+These items carry a dynamic-data table declared with the item-level `params`
+keyword: a list of row records, one drawn per session. Reference a column
+anywhere in the question with a `{{colname}}` placeholder — `{{response}}`
+stays reserved for the cloze blank. Placeholders are substituted wherever a
+string appears (stem, options, and `valid-response`), so the correct answer
+can vary row by row: give the answer its own column and point `valid-response`
+at it. Use this for math questions that should show each student different
+numbers without an upstream L0166 widget. (When an embedded L0166 question
+supplies its own `templateVariablesRecords`, that inherited table takes
+precedence over a hardwired `params` table on the same item.)
+
+131. Create a cloze formula question with a dynamic data table so each student sees different numbers: stem "Compute {{a}} + {{b}} = {{response}}". Provide rows {a: 2, b: 3, ans: 5}, {a: 7, b: 5, ans: 12}, {a: 14, b: 8, ans: 22}, and set the correct answer to {{ans}} using equivValue.
+132. Create a cloze formula question with the stem "Solve for x: {{m}}x = {{p}}. x = {{response}}" and a params table {m: 2, p: 10, x: 5}, {m: 3, p: 12, x: 4}, {m: 5, p: 45, x: 9}, with the correct answer {{x}} using equivLiteral.
+133. Create a cloze formula question with the stem "Find the area of a {{w}} by {{h}} rectangle: {{response}}" and rows {w: 4, h: 5, area: 20}, {w: 6, h: 3, area: 18}, {w: 7, h: 2, area: 14}, with the correct answer {{area}} using equivValue.
+134. Create a cloze formula question with instant feedback and a dynamic table: "Evaluate {{a}}^{{n}} = {{response}}" with rows {a: 2, n: 3, ans: 8}, {a: 3, n: 2, ans: 9}, {a: 5, n: 2, ans: 25}, and the correct answer {{ans}} using equivValue.
+135. Create a cloze formula question with two blanks driven by a params table: "{{a}} + {{b}} = {{response}} and {{a}} − {{b}} = {{response}}" with rows {a: 8, b: 3, sum: 11, diff: 5}, {a: 10, b: 6, sum: 16, diff: 4}, {a: 9, b: 4, sum: 13, diff: 5}, with correct answers {{sum}} and {{diff}} using equivValue.
+136. Create a multiple choice question with a dynamic table asking "Which value equals {{a}} + {{b}}?" with options "{{sum}}", "{{d1}}", "{{d2}}", "{{d3}}" where the first option is correct, with options shuffled. Rows: {a: 12, b: 7, sum: 19, d1: 17, d2: 21, d3: 18}, {a: 9, b: 6, sum: 15, d1: 13, d2: 16, d3: 14}, {a: 14, b: 8, sum: 22, d1: 20, d2: 24, d3: 21}.
+137. Create a multiple choice question with a dynamic table asking "What is {{a}} × {{b}}?" with options "{{prod}}", "{{near}}", "{{far}}", "{{off}}" where the first option is correct and options are shuffled. Rows: {a: 6, b: 7, prod: 42, near: 48, far: 36, off: 49}, {a: 8, b: 4, prod: 32, near: 28, far: 36, off: 24}, {a: 9, b: 6, prod: 54, near: 56, far: 45, off: 63}.
+138. Create a cloze formula question with the stem "Round {{x}} to the nearest ten: {{response}}" and rows {x: 47, ans: 50}, {x: 83, ans: 80}, {x: 25, ans: 30}, with the correct answer {{ans}} using equivValue.
+139. Create an items assessment with two dynamically parameterized questions, each with its own params table. First, a cloze formula "Add {{a}} + {{b}} = {{response}}" with rows {a: 5, b: 6, ans: 11}, {a: 8, b: 9, ans: 17}, {a: 13, b: 4, ans: 17} and correct answer {{ans}}. Second, a multiple choice "Which value equals {{a}} − {{b}}?" with options "{{diff}}", "{{d1}}", "{{d2}}" where the first is correct, shuffled, with rows {a: 20, b: 8, diff: 12, d1: 28, d2: 13}, {a: 15, b: 9, diff: 6, d1: 24, d2: 7}.
+140. Create a cloze formula question with a dynamic table and save it to the item bank so the parameter table is persisted with the saved item: stem "Compute {{a}} ÷ {{b}} = {{response}}" with rows {a: 12, b: 4, ans: 3}, {a: 20, b: 5, ans: 4}, {a: 18, b: 6, ans: 3}, correct answer {{ans}} using equivValue.
+141. Create a multiple choice question with a dynamic table asking "Is {{a}} + {{b}} equal to {{claimed}}?" with options "True" and "False" where False is correct, and add a one-line distractor rationale per option. Rows: {a: 7, b: 8, claimed: 14}, {a: 9, b: 6, claimed: 16}, {a: 12, b: 5, claimed: 18}.
+142. Create a cloze formula question with a dynamic table asking "Simplify {{a}}x + {{b}}x = {{response}}" with rows {a: 3, b: 4, ans: "7x"}, {a: 5, b: 2, ans: "7x"}, {a: 6, b: 9, ans: "15x"}, with the correct answer {{ans}} using equivSymbolic, tagged with CCSS 7.EE.A.1, difficulty medium, DOK 2.
