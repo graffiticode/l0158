@@ -185,6 +185,13 @@ export const lexicon = {
     "length": 2,
     "arity": 2
   },
+  "is-math": {
+    "tk": 1,
+    "name": "IS_MATH",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
   "shuffle-options": {
     "tk": 1,
     "name": "SHUFFLE_OPTIONS",

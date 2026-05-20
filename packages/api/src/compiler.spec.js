@@ -248,6 +248,12 @@ describe("compiler", () => {
     expect(result.validation.valid_response.value).toEqual(["0"]);
   }, 10000);
 
+  test("is-math attribute emits is_math on the question", async () => {
+    const result = await compile('mcq stimulus "What is the sum?" options ["3", "4"] valid-response [0] is-math true {}..');
+    expect(result.type).toBe("mcq");
+    expect(result.is_math).toBe(true);
+  }, 10000);
+
   test("mcq with question-level metadata translates field names", async () => {
     const src = `mcq
       stimulus "Which organelle produces ATP?"

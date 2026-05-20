@@ -196,6 +196,20 @@ surrounding expression instead. Dynamic-data `{{col}}` placeholders that stand
 in for values within an expression belong inside the delimiters with the rest
 of the math.
 
+Whenever a question contains LaTeX, chain `is-math true` onto that question so
+Learnosity loads MathJax and renders the `\( … \)` expressions. The `is-math`
+attribute is an arity-2 boolean valid on every built-in question type
+(`clozeformula` sets it automatically). Example:
+
+```
+mcq
+  stimulus "Which sum equals \(1 + 2\)?"
+  options ["\(2\)", "\(3\)", "\(4\)"]
+  valid-response [1]
+  is-math true
+  {}
+```
+
 ```
 clozeformula
   stimulus "Solve: \(x + 3 = 7\). \(x =\) {{response}}"
@@ -347,9 +361,9 @@ mcq
 ```
 
 Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
-`shuffle-options`, `multiple-responses`, `case-sensitive`, `max-length`,
-`max-word-count`, `placeholder`, `possible-responses`, `rows`, `columns`,
-`list`, `categories`, `method`.
+`is-math`, `shuffle-options`, `multiple-responses`, `case-sensitive`,
+`max-length`, `max-word-count`, `placeholder`, `possible-responses`, `rows`,
+`columns`, `list`, `categories`, `method`.
 
 ### Save to Item Bank vs. Preview
 

@@ -57,6 +57,7 @@ of attributes for a question type. The chain terminates with `{}`.
 | `options` | string[] | `options` | mcq, choicematrix |
 | `valid-response` | varies | `validation.valid_response.value` | All scored types |
 | `instant-feedback` | boolean | `instant_feedback` | All types |
+| `is-math` | boolean | `is_math` | All types (enables MathJax for LaTeX) |
 | `shuffle-options` | boolean | `shuffle_options` | mcq, choicematrix |
 | `multiple-responses` | boolean | `multiple_responses` | mcq |
 | `case-sensitive` | boolean | `case_sensitive` | shorttext, clozetext |
