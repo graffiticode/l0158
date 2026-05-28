@@ -1,0 +1,55 @@
+eyJ0YXNrSWRzIjpbIlNxdDhLSVo4MmkyYnBpSjB1M1R4Il19
+eyJ0YXNrSWRzIjpbIlRRZXloajk0VlhsSWl6VmpsQWVQIl19
+eyJ0YXNrSWRzIjpbInhXVGE2dHdBZUFNQnNkSkhienBTIl19
+eyJ0YXNrSWRzIjpbImNxME1XdjVCSUZiakhzRnk1V2t6Il19
+eyJ0YXNrSWRzIjpbIm9IWXdPdjhYaERFNTRrVDJ2VlJJIl19
+eyJ0YXNrSWRzIjpbIkJFSGxLR1JWc1RQY2VqVU1kTXF2Il19
+eyJ0YXNrSWRzIjpbInQxQlFTdGZSOHVGVVZxbERzWXhRIl19
+eyJ0YXNrSWRzIjpbIkEydlJHT2dJYjR3Z0IxMlZoWVNUIl19+eyJ0YXNrSWRzIjpbIlRNbWtxQ1pZbUt1REJxSnZoQUhoIl19
+eyJ0YXNrSWRzIjpbIktjdG5UbDhNRmJvbFE2Zm9XRUhXIl19+eyJ0YXNrSWRzIjpbIlRNbWtxQ1pZbUt1REJxSnZoQUhoIl19
+
+{
+  "type": "questions",
+  "data": {
+    "id": "gV1Cidcb4Pdejv0sW2ZR",
+    "name": "Test",
+    "questions": [
+      {
+        "response_id": "artcompiler-custom-gV1Cidcb4Pdejv0sW2ZR-0",
+        "type": "custom",
+        "custom_type": "custom_question_l0166",
+        "js": {
+          "question": "https://l0166.graffiticode.org/question.js",
+          "scorer": "https://l0166.graffiticode.org/scorer.js"
+        },
+        "css": "https://l0166.graffiticode.org/question.css",
+        "stimulus": "Use the spreadsheet to complete the activity.",
+        "data": "{\"title\":\"\",\"instructions\":\"\",\"validation\":{\"points\":0,\"regions\":{\"*\":{\"primaryColumn\":null,\"order\":\"expected\",\"rows\":[{\"id\":1,\"A\":{},\"B\":{}},{\"id\":2,\"A\":{},\"B\":{}}]}},\"cells\":{}},\"interaction\":{\"type\":\"table\",\"columns\":{\"A\":{\"align\":\"center\",\"width\":100},\"B\":{\"align\":\"center\",\"width\":100}},\"cells\":{\"A1\":{},\"B1\":{},\"A2\":{},\"B2\":{}}}}"
+      }
+    ],
+    "session_id": "76f117f4-dc73-4d43-8605-85bb2547e907"
+  }
+}
+
+{
+  "type": "questions",
+  "data": {
+    "id": "gV1Cidcb4Pdejv0sW2ZR",
+    "name": "Test",
+    "questions": [
+      {
+        "response_id": "artcompiler-custom-gV1Cidcb4Pdejv0sW2ZR-0",
+        "type": "custom",
+        "custom_type": "custom_question_l0166",
+        "js": {
+          "question": "https://l0166.graffiticode.org/question.js",
+          "scorer": "https://l0166.graffiticode.org/scorer.js"
+        },
+        "css": "https://l0166.graffiticode.org/question.css",
+        "stimulus": "Use the spreadsheet to complete the activity.",
+        "data": "{\"title\":\"\",\"instructions\":\"\",\"validation\":{\"points\":0,\"regions\":{\"*\":{\"primaryColumn\":null,\"order\":\"expected\",\"rows\":[{\"id\":1,\"A\":{},\"B\":{}},{\"id\":2,\"A\":{},\"B\":{}}]}},\"cells\":{}},\"interaction\":{\"type\":\"table\",\"columns\":{\"A\":{\"align\":\"center\",\"width\":100},\"B\":{\"align\":\"center\",\"width\":100}},\"cells\":{\"A1\":{},\"B1\":{},\"A2\":{},\"B2\":{}}}}"
+      }
+    ],
+    "session_id": "f3916283-2e0c-46e7-a17f-b31f3debdfa5"
+  }
+}
