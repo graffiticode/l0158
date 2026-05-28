@@ -14,6 +14,23 @@ function isNonNullNonEmptyObject(obj) {
   );
 }
 
+// Both the /compile response and the stored /data response use the standard
+// { data, errors } envelope. A response carrying a `data` and/or `errors`
+// field is read as an envelope. For backward compatibility, a payload with
+// neither field is used as the data model itself.
+function unwrapEnvelope(resp) {
+  if (
+    resp && typeof resp === "object" && !Array.isArray(resp) &&
+    ("data" in resp || "errors" in resp)
+  ) {
+    return {
+      data: resp.data,
+      errors: Array.isArray(resp.errors) ? resp.errors : [],
+    };
+  }
+  return { data: resp, errors: [] };
+}
+
 // Dynamic-data substitution applied at session init. Learnosity substitutes
 // {{var:X}} in the standard fields it owns the schema for (stimulus, options,
 // ...), but it treats custom-question `data` as opaque pass-through — that's
@@ -129,19 +146,16 @@ export const View = () => {
 
   if (compileResp.data) {
     setDoRecompile(false);
-    if (Array.isArray(compileResp.data.errors) && compileResp.data.errors.length > 0) {
-      state.apply({ type: "signed", args: { errors: compileResp.data.errors } });
-    } else {
-      setData(applyDynamicData(compileResp.data));
+    const { data: compiled, errors } = unwrapEnvelope(compileResp.data);
+    state.setErrors(errors);
+    if (errors.length === 0 && compiled !== null && compiled !== undefined) {
+      setData(applyDynamicData(compiled));
       setDoInit(true);
     }
   }
   if (compileResp.error) {
     setDoRecompile(false);
-    state.apply({
-      type: "signed",
-      args: { errors: [{ message: String(compileResp.error.message || compileResp.error) }] },
-    });
+    state.setErrors([{ message: String(compileResp.error.message || compileResp.error) }]);
   }
 
   const initResp = useSWR(
@@ -153,30 +167,26 @@ export const View = () => {
   useEffect(() => {
     if (initResp.data) {
       setDoInit(false);
-      if (Array.isArray(initResp.data.errors) && initResp.data.errors.length > 0) {
-        state.apply({ type: "signed", args: { errors: initResp.data.errors } });
-      } else {
+      const { data: signed, errors } = unwrapEnvelope(initResp.data);
+      state.setErrors(errors);
+      if (errors.length === 0 && signed !== null && signed !== undefined) {
         state.apply({
           type: "signed",
           args: {
             type: data.type,
-            request: initResp.data,
-            errors: undefined,
+            request: signed,
           },
         });
       }
     }
     if (initResp.error) {
       setDoInit(false);
-      state.apply({
-        type: "signed",
-        args: { errors: [{ message: String(initResp.error.message || initResp.error) }] },
-      });
+      state.setErrors([{ message: String(initResp.error.message || initResp.error) }]);
     }
   }, [initResp.data, initResp.error]);
 
   return (
-    isNonNullNonEmptyObject(state.data) &&
+    (isNonNullNonEmptyObject(state.data) || state.errors.length > 0) &&
       <Form state={state} targetOrigin={targetOrigin} /> ||
       <div />
   );
