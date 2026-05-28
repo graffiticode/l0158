@@ -15,17 +15,20 @@ function isNonNullNonEmptyObject(obj) {
 }
 
 // Both the /compile response and the stored /data response use the standard
-// { data, errors } envelope. A response carrying a `data` and/or `errors`
-// field is read as an envelope. For backward compatibility, a payload with
-// neither field is used as the data model itself.
+// { data, errors } envelope. Detection requires `errors` to be an array (the
+// envelope always carries one, even on success), because l0158's raw compile
+// val carries its own top-level `data` key (items.js returns
+// { type: "questions", data: {...} }), so a `data`-only heuristic would
+// misidentify a legacy stored val as an envelope. For backward compatibility,
+// a payload without a top-level `errors` array is used as the data model.
 function unwrapEnvelope(resp) {
   if (
     resp && typeof resp === "object" && !Array.isArray(resp) &&
-    ("data" in resp || "errors" in resp)
+    Array.isArray(resp.errors)
   ) {
     return {
       data: resp.data,
-      errors: Array.isArray(resp.errors) ? resp.errors : [],
+      errors: resp.errors,
     };
   }
   return { data: resp, errors: [] };
