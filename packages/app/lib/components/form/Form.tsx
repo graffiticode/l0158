@@ -93,7 +93,7 @@ export const Form = ({ state, targetOrigin }) => {
     return renderErrors(state.errors, theme);
   }
   if (type === "author") {
-    return <div id="learnosity-author" />;
+    return <div id="learnosity-author" className="p-4" />;
   }
   if (type === "questions") {
     // Questions API renders into .learnosity-response spans keyed by response_id.
@@ -101,7 +101,7 @@ export const Form = ({ state, targetOrigin }) => {
     // level); Items/Author SDKs wrap data in {security, request}.
     const questions = request?.questions ?? request?.request?.questions ?? [];
     return (
-      <div>
+      <div className="p-4">
         {questions.map((q: { response_id: string }) => (
           <span
             key={q.response_id}
@@ -113,6 +113,8 @@ export const Form = ({ state, targetOrigin }) => {
     );
   }
   return (
-    <span id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
+    <div className="p-4">
+      <span id="learnosity_assess" className="learnosity-item" data-reference="item-1" />
+    </div>
   );
 }
