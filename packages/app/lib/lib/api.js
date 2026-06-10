@@ -49,9 +49,11 @@ export const getApiData = async ({ accessToken, id }) => {
 export const postApiCompile = async ({ accessToken, id, data }) => {
   try {
     const headers = {
-      authorization: accessToken,
       "x-graffiticode-storage-type": "persistent",
     };
+    if (accessToken) {
+      headers.authorization = accessToken;
+    }
     const baseUrl = getApiUrl();
     console.log("postApiCompile request", "id=" + id, "baseUrl=" + baseUrl, "data=" + JSON.stringify(data));
     const post = bent(baseUrl, "POST", "json", headers);
@@ -70,9 +72,11 @@ export const postApiCompile = async ({ accessToken, id, data }) => {
 
 export const postLangCompile = async ({ accessToken, code, data }) => {
   try {
-    const headers = {
-      authorization: accessToken,
-    };
+    // Only attach the Authorization header when there is a real token. Sending
+    // `authorization: null/undefined` makes bent emit the literal string
+    // "null", which the lang server rejects as a failed auth (401) rather than
+    // treating it as anonymous. Public tasks must compile without a token.
+    const headers = accessToken ? { authorization: accessToken } : {};
     const baseUrl = getLangUrl();
     console.log("postLangCompile request", "baseUrl=" + baseUrl, "data=" + JSON.stringify(data));
     const post = bent(baseUrl, "POST", "json", headers);
