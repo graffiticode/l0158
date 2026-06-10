@@ -144,7 +144,7 @@ export const View = () => {
   // State changes (form interactions) are handled by the parent (gallery)
   // via its own compile() POST against the head + build-time prefix; the
   // view itself only needs the initial idempotent fetch.
-  const fetchKey = doRecompile && accessToken && id ? { accessToken, id } : null;
+  const fetchKey = doRecompile && id ? { accessToken, id } : null;
   const compileResp = useSWR(fetchKey, getData);
 
   if (compileResp.data) {
