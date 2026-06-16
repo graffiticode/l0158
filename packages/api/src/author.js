@@ -6,10 +6,10 @@ export const buildInitAuthor = ({
   key,
   secret,
   domain,
-}) => async ({ data, mode = "item_edit", widgetTypes, customWidgets }) => {
+}) => async ({ data, mode = "item_edit", widgetTypes, customWidgets }, { key: optKey, secret: optSecret } = {}) => {
   const user_id = uuid();
   const consumer = {
-    consumer_key: key,
+    consumer_key: optKey ?? key,
     domain,
     user_id,
   };
@@ -102,7 +102,7 @@ export const buildInitAuthor = ({
   const signedRequest = sdk.init(
     'author',
     consumer,
-    secret,
+    optSecret ?? secret,
     requestData
   );
   return signedRequest;

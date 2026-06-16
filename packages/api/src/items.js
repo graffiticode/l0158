@@ -117,7 +117,11 @@ export const buildCreateItems = ({
   items,
   id,
   saveToItembank = false,
+  key: optKey,
+  secret: optSecret,
 }) => {
+  const effKey = optKey ?? key;
+  const effSecret = optSecret ?? secret;
   const [ item ] = items;
   // Inherited (from an embedded L0166 custom question) overrides hardwired
   // (declared via the item-level `params` keyword). When a widget is embedded,
@@ -154,10 +158,10 @@ export const buildCreateItems = ({
     const itemsReq = sdk.init(
       'data',
       {
-        consumer_key: key,
+        consumer_key: effKey,
         domain,
       },
-      secret,
+      effSecret,
       {
         items: [itemRecord],
       },
@@ -202,18 +206,18 @@ export const buildInitItems = ({
   key,
   secret,
   domain,
-}) => async ({ data }) => {
+}) => async ({ data }, { key: optKey, secret: optSecret } = {}) => {
   // Construct a items api request.
   const user_id = uuid();
   const consumer = {
-    consumer_key: key,
+    consumer_key: optKey ?? key,
     domain,
     user_id,
   };
   const signedRequest = sdk.init(
     'items',
     consumer,
-    secret,
+    optSecret ?? secret,
     data
   );
   return signedRequest;

@@ -41,6 +41,27 @@ const initQuestions = buildInitQuestions({sdk, key, secret, domain});
 const initAuthor = buildInitAuthor({sdk, key, secret, domain});
 const createAuthor = buildCreateAuthor({sdk, key, secret, domain, dataApi});
 
+// Resolve the Learnosity credentials for a compilation. A program may supply
+// its own consumer key/secret via `set-var "learnosity-key" ...` /
+// `set-var "learnosity-secret" ...`, which basis writes into `options`. The two
+// must be supplied together (a key with a mismatched secret fails Learnosity's
+// signature validation). When both are present they're used for all signing and
+// `fromOptions` is true (the gate that permits item-bank mutations); otherwise
+// the env defaults are used. Returns `{ error }` when exactly one is supplied.
+function resolveCredentials(options) {
+  const optKey = options["learnosity-key"];
+  const optSecret = options["learnosity-secret"];
+  const hasKey = typeof optKey === "string" && optKey !== "";
+  const hasSecret = typeof optSecret === "string" && optSecret !== "";
+  if (hasKey !== hasSecret) {
+    return { error: `Error: set-var "learnosity-key" and "learnosity-secret" must both be set together.` };
+  }
+  if (hasKey && hasSecret) {
+    return { key: optKey, secret: optSecret, fromOptions: true };
+  }
+  return { key, secret, fromOptions: false };
+}
+
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
@@ -176,17 +197,23 @@ export class Transformer extends BasisTransformer {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
       const err = [];
+      const creds = resolveCredentials(options);
+      if (creds.error) {
+        resume([creds.error], undefined);
+        return;
+      }
+      const credArgs = { key: creds.key, secret: creds.secret };
       const { type } = plain;
       let val;
       switch (type) {
       case "questions":
-        val = await initQuestions(plain);
+        val = await initQuestions(plain, credArgs);
         break;
       case "items":
-        val = await initItems(plain);
+        val = await initItems(plain, credArgs);
         break;
       case "author":
-        val = await initAuthor(plain);
+        val = await initAuthor(plain, credArgs);
         break;
       }
       resume(err, val);
@@ -230,11 +257,22 @@ export class Transformer extends BasisTransformer {
           resume(err, undefined);
           return;
         }
+        const creds = resolveCredentials(options);
+        if (creds.error) {
+          resume([...err, creds.error], undefined);
+          return;
+        }
         const saveToItembank = options["save-to-itembank"] === true;
+        if (saveToItembank && !creds.fromOptions) {
+          resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], undefined);
+          return;
+        }
         const itemsResult = await createItems({
           items,
           id: options["lrn-id"],
           saveToItembank,
+          key: creds.key,
+          secret: creds.secret,
         });
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...itemsResult };
@@ -279,10 +317,21 @@ export class Transformer extends BasisTransformer {
           resume(err, {});
           return;
         }
+        const creds = resolveCredentials(options);
+        if (creds.error) {
+          resume([...err, creds.error], {});
+          return;
+        }
         const saveToItembank = options["save-to-itembank"] === true;
+        if (saveToItembank && !creds.fromOptions) {
+          resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], {});
+          return;
+        }
         const questionsResult = await createQuestions(questions, {
           id: options["lrn-id"],
           saveToItembank,
+          key: creds.key,
+          secret: creds.secret,
         });
         const continuation = toPlainObject(v1);
         const val = { ...continuation, ...questionsResult };

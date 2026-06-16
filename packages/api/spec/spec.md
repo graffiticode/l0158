@@ -148,8 +148,17 @@ item bank. Chain `save-to-itembank true` into the items continuation to
 persist the item. Saved items always land as `status: "unpublished"`
 (draft) — publishing is an Author Site concern, not a DSL one.
 
+Item-bank writes require caller-supplied Learnosity credentials, set with
+`set-var "learnosity-key" ...` and `set-var "learnosity-secret" ...` before
+`items`. The two must be supplied together (only one is an error). When
+present they sign every Learnosity request (preview and write); when absent,
+previews use the server's default credentials but `save-to-itembank true` is
+an error — the default credentials may sign previews but never mutate the bank.
+
 ```
 id "mitochondria-mcq"
+set-var "learnosity-key" get-val-public "learnosityKey"
+set-var "learnosity-secret" get-val-private "learnositySecret"
 items [
   item questions [mcq stimulus "..." options [...] valid-response [0] {}] {}
 ]

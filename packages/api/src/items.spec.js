@@ -163,4 +163,18 @@ describe("buildCreateItems preview vs save", () => {
     expect(result.data.questions).toHaveLength(1);
     expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-test-0");
   });
+
+  it("per-call key/secret override the closure (env) credentials for signing", async () => {
+    const dataApi = jest.fn().mockResolvedValue({ meta: { status: true } });
+    const createItems = buildCreateItems({
+      sdk: fakeSdk, key: "env-key", secret: "env-secret", domain: "localhost", dataApi,
+    });
+    await createItems({
+      items: [makeItem()], id: "test", saveToItembank: true,
+      key: "caller-key", secret: "caller-secret",
+    });
+    const [, consumer, secret] = fakeSdk.init.mock.calls[0];
+    expect(consumer.consumer_key).toBe("caller-key");
+    expect(secret).toBe("caller-secret");
+  });
 });

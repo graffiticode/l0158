@@ -36,7 +36,9 @@ export const buildCreateQuestions = ({
   secret,
   domain,
   dataApi
-}) => async (data, { id, saveToItembank = false } = {}) => {
+}) => async (data, { id, saveToItembank = false, key: optKey, secret: optSecret } = {}) => {
+  const effKey = optKey ?? key;
+  const effSecret = optSecret ?? secret;
   // Inherit a dynamic-data table from the first question whose data carries
   // one (typically an embedded L0166 custom question whose data includes
   // templateVariablesRecords). Items have one shared table in Learnosity's
@@ -65,10 +67,10 @@ export const buildCreateQuestions = ({
     const questionsReq = sdk.init(
       'data',
       {
-        consumer_key: key,
+        consumer_key: effKey,
         domain,
       },
-      secret,
+      effSecret,
       {
         questions,
       },
@@ -105,18 +107,18 @@ export const buildInitQuestions = ({
   key,
   secret,
   domain,
-}) => async ({ data }) => {
+}) => async ({ data }, { key: optKey, secret: optSecret } = {}) => {
   // Construct a questions api request.
   const user_id = uuid();
   const consumer = {
-    consumer_key: key,
+    consumer_key: optKey ?? key,
     domain,
     user_id,
   };
   const signedRequest = sdk.init(
     'questions',
     consumer,
-    secret,
+    optSecret ?? secret,
     data
   );
   return signedRequest;

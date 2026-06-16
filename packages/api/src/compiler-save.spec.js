@@ -53,9 +53,27 @@ describe("compiler save-to-itembank paths", () => {
     expect(dataApiMock).not.toHaveBeenCalled();
   });
 
-  test("save-to-itembank true POSTs questions AND items with status unpublished, returns Questions API payload", async () => {
+  test("save-to-itembank true without caller credentials errors", async () => {
+    // Item-bank writes require caller-supplied credentials; the default env
+    // credentials may sign previews but must never mutate the shared bank.
+    await expect(
+      compile('id "test-b" items [item questions [mcq {}] {}] save-to-itembank true {}..')
+    ).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining("save-to-itembank requires set-var"),
+        }),
+      ])
+    );
+    expect(dataApiMock).not.toHaveBeenCalled();
+  });
+
+  test("save-to-itembank true with caller credentials POSTs questions AND items with status unpublished, returns Questions API payload", async () => {
+    // Credentials supplied via set-var are what permits (and signs) the write.
     const result = await compile(
-      'id "test-b" items [item questions [mcq {}] {}] save-to-itembank true {}..'
+      `set-var "learnosity-key" "caller-key"
+set-var "learnosity-secret" "caller-secret"
+id "test-b" items [item questions [mcq {}] {}] save-to-itembank true {}..`
     );
     // Rendering always goes through Questions API; the save side effect is
     // the dataApi POSTs below.
@@ -71,6 +89,9 @@ describe("compiler save-to-itembank paths", () => {
     const itemsPayload = JSON.parse(itemsCall.request.request);
     expect(itemsPayload.items[0].status).toBe("unpublished");
     expect(itemsPayload.items[0].reference).toBe("graffiticode-test-b");
+    // The signed request must carry the caller-supplied consumer key.
+    const itemsSecurity = JSON.parse(itemsCall.request.security);
+    expect(itemsSecurity.consumer_key).toBe("caller-key");
   });
 
 });

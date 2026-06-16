@@ -66,6 +66,46 @@ describe("compiler", () => {
     expect(result.type).toBe("questions");
   });
 
+  test("save-to-itembank true without caller credentials errors", async () => {
+    // Item-bank writes require the caller to supply credentials via set-var;
+    // the default env credentials may sign previews but must not mutate the bank.
+    const src = `set-var "lrn-id" "t"
+items [item questions [mcq {}] {}] save-to-itembank true {}..`;
+    await expect(compile(src)).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining("save-to-itembank requires set-var"),
+        }),
+      ])
+    );
+  });
+
+  test("set-var learnosity-key without learnosity-secret errors", async () => {
+    const src = `set-var "learnosity-key" "k"
+set-var "lrn-id" "t"
+items [item questions [mcq {}] {}] {}..`;
+    await expect(compile(src)).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining("must both be set together"),
+        }),
+      ])
+    );
+  });
+
+  test("set-var learnosity-secret without learnosity-key errors", async () => {
+    const src = `set-var "learnosity-secret" "s"
+set-var "lrn-id" "t"
+items [item questions [mcq {}] {}] {}..`;
+    await expect(compile(src)).rejects.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          message: expect.stringContaining("must both be set together"),
+        }),
+      ])
+    );
+  });
+
   test("bowtie compiles to the native Learnosity shape", async () => {
     const src = `bowtie
       stimulus "65-year-old with chest pain and diaphoresis."

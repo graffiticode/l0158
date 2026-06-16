@@ -382,16 +382,32 @@ item and its questions to the Learnosity item bank. Saved items always land
 as `status: "unpublished"` (draft); publishing is done from the Learnosity
 Author Site UI, not from the DSL.
 
+Writing to the item bank requires caller-supplied Learnosity credentials.
+Set both with `set-var` before `items`:
+
+```
+set-var "learnosity-key" get-val-public "learnosityKey"
+set-var "learnosity-secret" get-val-private "learnositySecret"
+```
+
+The two must be supplied **together** — providing only one is an error. When
+present they are used to sign every Learnosity request (preview rendering and
+the bank write); when absent, previews fall back to the server's default
+credentials. `save-to-itembank true` without these credentials is an error:
+the default credentials may sign previews but never mutate the bank.
+
 Prompts that should trigger `save-to-itembank true`:
 
 - "save it to the item bank" / "write to the bank" / "persist it" → include
-  `save-to-itembank true`
-- No such phrasing → preview-only; omit the attribute.
+  `save-to-itembank true` and the credential `set-var` lines above.
+- No such phrasing → preview-only; omit the attribute (and the credentials).
 
 Example — save as draft:
 
 ```
 set-var "lrn-id" get-val-public "itemId"
+set-var "learnosity-key" get-val-public "learnosityKey"
+set-var "learnosity-secret" get-val-private "learnositySecret"
 learnosity
   items [
     item
