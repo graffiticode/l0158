@@ -197,7 +197,10 @@ export const View = () => {
     const postHeight = () => {
       const h = document.body.scrollHeight;
       if (h > 0) {
-        window.parent.postMessage({ type: "resize", height: h }, targetOrigin || "*");
+        // Post to "*": the embedding widget iframe is often a sandboxed/opaque
+        // origin, so a specific targetOrigin would get the message dropped. The
+        // parent validates event.source, and height is non-sensitive.
+        window.parent.postMessage({ type: "resize", height: h }, "*");
       }
     };
     const ro = new ResizeObserver(postHeight);
