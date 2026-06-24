@@ -188,6 +188,24 @@ export const View = () => {
     }
   }, [initResp.data, initResp.error]);
 
+  // When embedded (e.g. the MCP/ChatGPT inline widget iframe), report our actual
+  // content height to the parent so it can size the iframe to the form instead
+  // of a fixed guess (which left a large gap below short items). Learnosity
+  // renders/relayouts asynchronously, so a ResizeObserver keeps the height live.
+  useEffect(() => {
+    if (typeof window === "undefined" || window.parent === window) return;
+    const postHeight = () => {
+      const h = document.body.scrollHeight;
+      if (h > 0) {
+        window.parent.postMessage({ type: "resize", height: h }, targetOrigin || "*");
+      }
+    };
+    const ro = new ResizeObserver(postHeight);
+    ro.observe(document.body);
+    postHeight();
+    return () => ro.disconnect();
+  }, [targetOrigin]);
+
   return (
     (isNonNullNonEmptyObject(state.data) || state.errors.length > 0) &&
       <Form state={state} targetOrigin={targetOrigin} /> ||
