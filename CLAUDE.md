@@ -16,13 +16,15 @@ npm workspaces monorepo with two packages:
 ## Build & Run Commands
 
 ```bash
-npm run build                         # Build app, then api, then static (lexicon + spec)
+npm run build                         # Build app, then api, then static (lexicon, spec, instructions, language-info)
 npm run dev                           # Dev server with Firestore emulator + local auth
 npm start                             # Production start
 
-# Testing (Jest + supertest, tests in packages/api/src/*.spec.js)
-npx jest                              # Run all tests
-npx jest packages/api/src/auth.spec.js  # Run a single test file
+# Testing (Jest + supertest, tests colocated in packages/api/src/**/*.spec.js)
+# NOTE: from the repo root `npx jest` finds NOTHING — the root jest config
+# (package.json) ignores packages/. Run the suite from inside packages/api:
+cd packages/api && npx jest         # Run all api tests
+npx jest packages/api/src/auth.spec.js  # Single file works from root (explicit path overrides the ignore)
 
 # Linting
 npm run lint                          # Lint test/ directory (root)
@@ -50,6 +52,17 @@ The compiler (`packages/api/src/compiler.js`) extends `BasisCompiler` from `@gra
 - `buildDataApi` — from `dataapi.js`, calls Learnosity Data API
 
 The lexicon (`src/lexicon.js`) defines language keywords: `init`, `items`, `questions`, `author`, `hello`. It is generated via `tools/build-lexicon.js` which merges basis lexicon with lang-specific entries.
+
+### Static build / language metadata
+
+`npm run build-static` (part of `npm run build`) regenerates `packages/api/dist/` artifacts from sources in `packages/api/spec/`:
+
+- `build-lexicon` → `dist/lexicon.json` (served at `GET /lexicon.js`)
+- `build-spec` → `dist/spec.html` (+ copies `template.gc`, `scope.json`)
+- `build-instructions` → `dist/instructions.md`
+- `build-language-info` → `dist/language-info.json`, injecting `authoring_guide` from the `## Overview` section of `spec/usage-guide.md` (build **fails** if that section is missing, under 100 chars, or if `language-info.json` already contains an `authoring_guide` key)
+
+These feed the Graffiticode platform's language registry — the metadata the MCP `get_language_info` / `get_spec` tools surface. When changing the DSL's surface or docs, edit the `spec/` sources, not the generated `dist/` files.
 
 ### Control-flow attributes (set `options` via side effect)
 
