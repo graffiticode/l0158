@@ -478,4 +478,28 @@ items [item questions [mcq {}] {}] {}..`;
     expect(result.type).toBe("questions");
     expect(result.data.dynamic_content_data).toBeUndefined();
   }, 10000);
+
+  test("hot-text compiles to the Learnosity tokenhighlight shape", async () => {
+    const src = `hot-text
+      stimulus "Highlight the verbs."
+      passage "The cat runs then jumps high."
+      valid-response ["runs", "jumps"]
+      distractors ["cat", "high"]
+      max-selection 2
+      {}..`;
+    const result = await compile(src);
+    expect(result.type).toBe("tokenhighlight");
+    expect(result.tokenization).toBe("custom");
+    expect(result.template).toContain('<span class="lrn_token">runs</span>');
+    expect(result.max_selection).toBe(2);
+    // Span order: cat=0, runs=1, jumps=2, high=3 → correct are runs, jumps.
+    expect(result.validation.valid_response.value).toEqual([1, 2]);
+  }, 10000);
+
+  test("token-highlight is a synonym for hot-text", async () => {
+    const hot = await compile('hot-text {}..');
+    const token = await compile('token-highlight {}..');
+    expect(token.type).toBe("tokenhighlight");
+    expect(token).toEqual(hot);
+  }, 10000);
 });

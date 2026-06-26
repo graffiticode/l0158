@@ -7,6 +7,7 @@
     "Cloze (fill-in-the-blank) items with text, dropdown, association, or formula blanks",
     "Choice matrix, ordering, and classification items",
     "NGN/NCLEX bowtie items",
+    "Token-highlight (hot text) items: highlight listed tokens within a passage",
     "Math fill-in items with equivalence-based scoring",
     "Spreadsheet-based assessment items",
     "Concept-web assessment items",

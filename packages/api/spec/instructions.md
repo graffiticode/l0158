@@ -36,6 +36,7 @@ provide a higher-level interface with sensible defaults:
 - `orderlist` — Drag items into correct order
 - `classification` — Sort items into categories
 - `bowtie` — NGN/NCLEX bow-tie: 2-1-2 drag-and-drop (actions, condition, monitor)
+- `hot-text` — Highlight tokens in a passage (synonym: `token-highlight`). List correct tokens with `valid-response` and clickable wrong ones with `distractors`
 - `custom` — Embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet). Set the interaction payload with the chained `model` attribute (preferred); see Pipeline Composition
 
 Each function takes a record built from chainable attribute keywords.
@@ -163,6 +164,25 @@ All attributes have defaults, so `mcq {}` produces a complete question.
       ["myocardial infarction"],
       ["ST segment changes", "troponin"]
     ]
+    {}
+  ```
+
+- `hot-text` — Highlight tokens in a passage (synonym: `token-highlight`).
+  List the correct clickable tokens with `valid-response` and the
+  clickable-but-wrong ones with `distractors`; only listed tokens are
+  clickable. The compiler wraps each whole-word occurrence in
+  `<span class="lrn_token">` and scores correct tokens by span index. Matching
+  is case-insensitive and whole-word; a repeated correct token is scored at
+  every occurrence. Optional `max-selection` caps the learner's selections. A
+  token not present in the passage, or one listed in both `valid-response` and
+  `distractors`, is rejected at compile time:
+  ```
+  hot-text
+    stimulus "Highlight the verbs."
+    passage "The cat runs then jumps high."
+    valid-response ["runs", "jumps"]
+    distractors ["cat", "high"]
+    max-selection 2
     {}
   ```
 

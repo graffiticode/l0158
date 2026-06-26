@@ -210,3 +210,17 @@ precedence over a hardwired `params` table on the same item.)
 140. Create a cloze formula question with a dynamic table and save it to the item bank so the parameter table is persisted with the saved item: stem "Compute {{a}} ÷ {{b}} = {{response}}" with rows {a: 12, b: 4, ans: 3}, {a: 20, b: 5, ans: 4}, {a: 18, b: 6, ans: 3}, correct answer {{ans}} using equivValue.
 141. Create a multiple choice question with a dynamic table asking "Is {{a}} + {{b}} equal to {{claimed}}?" with options "True" and "False" where False is correct, and add a one-line distractor rationale per option. Rows: {a: 7, b: 8, claimed: 14}, {a: 9, b: 6, claimed: 16}, {a: 12, b: 5, claimed: 18}.
 142. Create a cloze formula question with a dynamic table asking "Simplify {{a}}x + {{b}}x = {{response}}" with rows {a: 3, b: 4, ans: "7x"}, {a: 5, b: 2, ans: "7x"}, {a: 6, b: 9, ans: "15x"}, with the correct answer {{ans}} using equivSymbolic, tagged with CCSS 7.EE.A.1, difficulty medium, DOK 2.
+
+## Category 16: Token Highlight — Hot Text (143–148)
+
+Each hot-text item names a passage, the correct tokens to highlight, and the
+clickable distractors. Only the listed tokens are clickable; matching is
+case-insensitive and whole-word, and a repeated correct token counts at every
+occurrence. `token-highlight` is a synonym for `hot-text`.
+
+143. Create a hot text question asking "Highlight the verbs." with the passage "The cat runs then jumps high." where "runs" and "jumps" are correct and "cat" and "high" are clickable distractors.
+144. Create a token highlight question asking "Click the two nouns." with the passage "A small dog chased the red ball across the yard." where "dog" and "ball" are correct, and "small", "red", and "yard" are distractors.
+145. Create a hot text question asking "Highlight every word spelled incorrectly." with the passage "She recieved a seperate letter in the libary." where "recieved", "seperate", and "libary" are correct and "letter" is a distractor.
+146. Create a hot text question asking "Select the adjectives." with the passage "The bright sun warmed the cold sand on the quiet beach." where "bright", "cold", and "quiet" are correct and "sun", "sand", and "beach" are distractors, and let the student pick at most three.
+147. Create a hot text question asking "Highlight the sentence's subject and verb." with the passage "The energetic puppy barked loudly at the mail carrier." where "puppy" and "barked" are correct and "energetic", "loudly", and "carrier" are distractors.
+148. Create a hot text question asking "Click each time the word 'run' appears." with the passage "I run to school, then run back, and run again at night." where every "run" is correct and "school" and "night" are distractors.

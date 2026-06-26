@@ -12,6 +12,8 @@ import {
   buildOrderlist,
   buildClassification,
   buildBowtie,
+  buildHotText,
+  questionTypeBuilders,
   translateQuestionMetadata,
 } from "./question-types.js";
 
@@ -49,7 +51,7 @@ describe("question-types", () => {
       const result = buildClozetext({});
       expect(result.type).toBe("clozetext");
       expect(result.template).toBe("The {{response}} is the answer.");
-      expect(result.validation.valid_response.value).toEqual([["answer"]]);
+      expect(result.validation.valid_response.value).toEqual(["answer"]);
     });
 
     it("should build clozeassociation with defaults from empty attrs", () => {
@@ -68,7 +70,16 @@ describe("question-types", () => {
       const result = buildClozeformula({});
       expect(result.type).toBe("clozeformulaV2");
       expect(result.validation.valid_response.value).toEqual([
-        { method: "equivLiteral", value: "x+1" },
+        [{
+          method: "equivLiteral",
+          value: "x+1",
+          options: {
+            ignoreOrder: false,
+            setDecimalSeparator: ".",
+            setThousandsSeparator: [],
+            inverseResult: false,
+          },
+        }],
       ]);
     });
 
@@ -235,6 +246,19 @@ describe("question-types", () => {
   });
 
   describe("buildClozeformula", () => {
+    // Each formula value is wrapped in its own array with a method + options
+    // object (Learnosity's clozeformulaV2 validation shape).
+    const formulaValue = (method, value) => [{
+      method,
+      value,
+      options: {
+        ignoreOrder: false,
+        setDecimalSeparator: ".",
+        setThousandsSeparator: [],
+        inverseResult: false,
+      },
+    }];
+
     it("should build clozeformulaV2 with default equivLiteral method", () => {
       const result = buildClozeformula({
         stimulus: "Solve: {{response}}",
@@ -243,7 +267,7 @@ describe("question-types", () => {
       expect(result.type).toBe("clozeformulaV2");
       expect(result.template).toBe("Solve: {{response}}");
       expect(result.validation.valid_response.value).toEqual([
-        { method: "equivLiteral", value: "x^2" },
+        formulaValue("equivLiteral", "x^2"),
       ]);
     });
 
@@ -254,7 +278,7 @@ describe("question-types", () => {
         method: "equivSymbolic",
       });
       expect(result.validation.valid_response.value).toEqual([
-        { method: "equivSymbolic", value: "2x" },
+        formulaValue("equivSymbolic", "2x"),
       ]);
     });
 
@@ -264,7 +288,7 @@ describe("question-types", () => {
         valid_response: "x+1",
       });
       expect(result.validation.valid_response.value).toEqual([
-        { method: "equivLiteral", value: "x+1" },
+        formulaValue("equivLiteral", "x+1"),
       ]);
     });
   });
@@ -539,6 +563,92 @@ describe("question-types", () => {
         ],
       };
       expect(() => buildBowtie(attrs)).toThrow(/possible-responses\[0\] needs at least 2 options/);
+    });
+  });
+
+  describe("buildHotText", () => {
+    const baseAttrs = () => ({
+      stimulus: "Highlight the verbs.",
+      passage: "The cat runs then jumps high.",
+      valid_response: ["runs", "jumps"],
+      distractors: ["cat", "high"],
+    });
+
+    it("wraps listed tokens as lrn_token spans and scores the correct ones by index", () => {
+      const result = buildHotText(baseAttrs());
+      expect(result.type).toBe("tokenhighlight");
+      expect(result.tokenization).toBe("custom");
+      expect(result.template).toBe(
+        'The <span class="lrn_token">cat</span> <span class="lrn_token">runs</span> ' +
+        'then <span class="lrn_token">jumps</span> <span class="lrn_token">high</span>.'
+      );
+      // Span order: cat=0, runs=1, jumps=2, high=3 → correct are runs, jumps.
+      expect(result.validation).toEqual({
+        scoring_type: "exactMatch",
+        valid_response: { score: 1, value: [1, 2] },
+      });
+    });
+
+    it("makes distractors clickable but excludes them from the scored value", () => {
+      const result = buildHotText(baseAttrs());
+      expect(result.template).toContain('<span class="lrn_token">cat</span>');
+      expect(result.template).toContain('<span class="lrn_token">high</span>');
+      expect(result.validation.valid_response.value).not.toContain(0); // cat
+      expect(result.validation.valid_response.value).not.toContain(3); // high
+    });
+
+    it("scores every occurrence of a repeated correct token", () => {
+      const result = buildHotText({
+        passage: "Run fast and run far.",
+        valid_response: ["run"],
+        distractors: ["fast"],
+      });
+      // Span order: run=0, fast=1, run=2 → both 'run' occurrences are correct.
+      expect(result.validation.valid_response.value).toEqual([0, 2]);
+    });
+
+    it("passes max_selection through when provided", () => {
+      const result = buildHotText({ ...baseAttrs(), max_selection: 2 });
+      expect(result.max_selection).toBe(2);
+    });
+
+    it("builds from defaults when given empty attrs", () => {
+      const result = buildHotText({});
+      expect(result.type).toBe("tokenhighlight");
+      expect(result.validation.valid_response.value).toEqual([1, 2]);
+    });
+
+    it("does not match a token inside a larger word", () => {
+      const result = buildHotText({
+        passage: "The category cat sat.",
+        valid_response: ["cat"],
+        distractors: ["sat"],
+      });
+      // 'cat' inside 'category' is not wrapped; standalone 'cat' is index 0.
+      expect(result.template).toBe(
+        'The category <span class="lrn_token">cat</span> <span class="lrn_token">sat</span>.'
+      );
+      expect(result.validation.valid_response.value).toEqual([0]);
+    });
+
+    it("errors when a token is not found in the passage", () => {
+      const attrs = { ...baseAttrs(), valid_response: ["sprints"] };
+      expect(() => buildHotText(attrs)).toThrow(/token "sprints" was not found/);
+    });
+
+    it("errors when a token is in both valid-response and distractors", () => {
+      const attrs = { ...baseAttrs(), distractors: ["runs"] };
+      expect(() => buildHotText(attrs)).toThrow(/listed in both valid-response and distractors/);
+    });
+
+    it("errors on an empty passage", () => {
+      expect(() => buildHotText({ passage: "", valid_response: ["a"] }))
+        .toThrow(/non-empty passage/);
+    });
+
+    it("registers hot-text and token-highlight as the same builder", () => {
+      expect(questionTypeBuilders.HOT_TEXT).toBe(buildHotText);
+      expect(questionTypeBuilders.TOKEN_HIGHLIGHT).toBe(buildHotText);
     });
   });
 });

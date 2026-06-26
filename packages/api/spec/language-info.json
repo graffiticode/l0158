@@ -1,6 +1,6 @@
 {
   "id": "0158",
-  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, classification, NGN/NCLEX bow-tie, and custom items that embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet) and can read content from an upstream pipeline task. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
+  "description": "Authors Learnosity-compatible assessment items from natural language. Supports multiple-choice, cloze/fill-in-the-blank, short-text, essay, math fill-in, choice matrix, ordering, classification, NGN/NCLEX bow-tie, token-highlight (hot text), and custom items that embed a separately deployed Graffiticode-language interaction (e.g. an L0166 spreadsheet) and can read content from an upstream pipeline task. Describe the stem, correct answer, distractors, scoring, and tags — L0158 emits a valid Learnosity item JSON.",
   "supported_item_types": [
     "mcq",
     "shorttext",
@@ -14,6 +14,7 @@
     "orderlist",
     "classification",
     "bowtie",
+    "hot-text",
     "custom"
   ],
   "example_prompts": [
@@ -56,6 +57,11 @@
       "prompt": "Create a bow-tie for a 65-year-old with chest pain and diaphoresis. Actions: give aspirin, give nitro, call cardiology, obtain 12-lead ECG. Conditions: myocardial infarction, pulmonary embolism, pericarditis. Monitor: ST segment changes, blood pressure, troponin, respiratory rate. Correct actions: give aspirin, obtain 12-lead ECG. Correct condition: myocardial infarction. Correct monitors: ST segment changes, troponin.",
       "produces": "bowtie",
       "notes": "NGN/NCLEX bow-tie: three source pools drop into a 2-1-2 layout (2 actions on the left, 1 condition in the center, 2 parameters to monitor on the right). The backend rejects inputs that don't satisfy the 2-1-2 shape or whose correct answers aren't in the matching pool."
+    },
+    {
+      "prompt": "Hot text item: 'Highlight the verbs.' Passage: 'The cat runs then jumps high.' Correct tokens to highlight: runs, jumps. Also make 'cat' and 'high' clickable as distractors. Let them pick at most two.",
+      "produces": "hot-text",
+      "notes": "Token-highlight (hot text): only the listed tokens are clickable. valid-response holds the correct tokens, distractors the clickable wrong ones; the backend wraps each whole-word occurrence in a clickable span and scores correct tokens by position. Matching is case-insensitive; a repeated correct word counts at every occurrence. 'at most two' sets max-selection."
     },
     {
       "prompt": "Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.'",

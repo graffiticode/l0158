@@ -71,6 +71,12 @@ const DEFAULTS = {
       ["Parameter P", "Parameter Q"],
     ],
   },
+  tokenhighlight: {
+    stimulus: "Highlight the verbs in the sentence.",
+    passage: "The cat runs then jumps high.",
+    valid_response: ["runs", "jumps"],
+    distractors: ["cat", "high"],
+  },
 };
 
 function withDefaults(type, attrs) {
@@ -584,6 +590,94 @@ export function buildCustom(attrs) {
   return out;
 }
 
+function escapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Token highlight (hot-text). Tokens are explicitly listed: `valid_response`
+// holds the correct clickable tokens and `distractors` the clickable-but-wrong
+// ones. Only listed tokens are clickable, so tokenization is always "custom":
+// we wrap each whole-word occurrence of a listed token in
+// <span class="lrn_token"> and reference the correct ones by their span index
+// (document order). A token string that occurs more than once is wrapped — and,
+// when correct, scored — at every occurrence.
+function markTokens(passage, validResponse, distractors) {
+  if (typeof passage !== "string" || passage.length === 0) {
+    throw new Error("hot-text requires a non-empty passage string.");
+  }
+  const correct = Array.isArray(validResponse) ? validResponse : (validResponse == null ? [] : [validResponse]);
+  const wrong = Array.isArray(distractors) ? distractors : (distractors == null ? [] : [distractors]);
+  const clickable = [...correct, ...wrong];
+  for (const t of clickable) {
+    if (typeof t !== "string" || t.length === 0) {
+      throw new Error("hot-text: valid-response and distractors must be non-empty strings.");
+    }
+  }
+  if (correct.length === 0) {
+    throw new Error("hot-text requires at least one correct token in valid-response.");
+  }
+  // Matching is case-insensitive so a sentence-initial capital still matches a
+  // lowercase token (valid-response "run" matches "Run" starting a sentence).
+  const correctSet = new Set(correct.map(s => s.toLowerCase()));
+  for (const d of wrong) {
+    if (correctSet.has(d.toLowerCase())) {
+      throw new Error(`hot-text: "${d}" is listed in both valid-response and distractors.`);
+    }
+  }
+  // Match whole-word occurrences of any clickable token, longest first so a
+  // longer token isn't pre-empted by a shorter overlapping one.
+  const ordered = [...new Set(clickable)].sort((a, b) => b.length - a.length);
+  const pattern = new RegExp(`(?<![\\w-])(${ordered.map(escapeRegExp).join("|")})(?![\\w-])`, "gi");
+  const found = new Set();
+  const value = [];
+  let index = 0;
+  const template = passage.replace(pattern, (match) => {
+    found.add(match.toLowerCase());
+    if (correctSet.has(match.toLowerCase())) {
+      value.push(index);
+    }
+    index += 1;
+    return `<span class="lrn_token">${match}</span>`;
+  });
+  for (const t of clickable) {
+    if (!found.has(t.toLowerCase())) {
+      throw new Error(`hot-text: token "${t}" was not found in the passage.`);
+    }
+  }
+  return { template, value: value.sort((a, b) => a - b) };
+}
+
+export function buildHotText(attrs) {
+  const {
+    stimulus,
+    passage,
+    valid_response,
+    distractors,
+    max_selection,
+    metadata,
+    ...rest
+  } = withDefaults("tokenhighlight", attrs);
+  const { template, value } = markTokens(passage, valid_response, distractors);
+  const question = {
+    type: "tokenhighlight",
+    stimulus,
+    template,
+    tokenization: "custom",
+    ...rest,
+  };
+  if (max_selection != null) {
+    question.max_selection = max_selection;
+  }
+  question.validation = {
+    scoring_type: "exactMatch",
+    valid_response: {
+      score: 1,
+      value,
+    },
+  };
+  return attachQuestionMetadata(question, metadata);
+}
+
 // Registry mapping AST names to builders
 export const questionTypeBuilders = {
   MCQ: buildMcq,
@@ -599,6 +693,10 @@ export const questionTypeBuilders = {
   CLASSIFICATION: buildClassification,
   BOWTIE: buildBowtie,
   CUSTOM: buildCustom,
+  // hot-text and token-highlight are synonyms: two AST names, one builder
+  // (mirrors the MAX_LENGTH/MAX_WORD_COUNT field-alias precedent below).
+  HOT_TEXT: buildHotText,
+  TOKEN_HIGHLIGHT: buildHotText,
 };
 
 // Registry mapping AST names to attribute field names and expected types
@@ -621,6 +719,9 @@ export const attributeFields = {
   ORDER_LIST: { field: "list", valueType: "array" },
   CATEGORIES: { field: "categories", valueType: "array" },
   COLUMN_TITLES: { field: "column_titles", valueType: "array" },
+  PASSAGE: { field: "passage", valueType: "string" },
+  DISTRACTORS: { field: "distractors", valueType: "array" },
+  MAX_SELECTION: { field: "max_selection", valueType: "number" },
   METHOD: { field: "method", valueType: "string", allowed: ["equivLiteral", "equivSymbolic", "equivValue", "isSimplified", "isFactorised", "isExpanded", "stringMatch", "isUnit"] },
   ID: { field: "id", valueType: "string" },
   LANG: { field: "lang", valueType: "string" },
@@ -656,4 +757,6 @@ export const validAttributes = {
   ORDERLIST: ["stimulus", "list", "valid_response", "instant_feedback", "is_math", "metadata"],
   CLASSIFICATION: ["stimulus", "categories", "possible_responses", "valid_response", "instant_feedback", "is_math", "metadata"],
   BOWTIE: ["stimulus", "column_titles", "possible_responses", "valid_response", "is_math", "metadata"],
+  HOT_TEXT: ["stimulus", "passage", "valid_response", "distractors", "max_selection", "metadata"],
+  TOKEN_HIGHLIGHT: ["stimulus", "passage", "valid_response", "distractors", "max_selection", "metadata"],
 };

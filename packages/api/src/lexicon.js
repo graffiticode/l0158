@@ -156,6 +156,22 @@ export const lexicon = {
     "length": 1,
     "arity": 1
   },
+  // hot-text and token-highlight are synonyms for the Learnosity tokenhighlight
+  // widget; both resolve to the same builder via questionTypeBuilders.
+  "hot-text": {
+    "tk": 1,
+    "name": "HOT_TEXT",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
+  "token-highlight": {
+    "tk": 1,
+    "name": "TOKEN_HIGHLIGHT",
+    "cls": "function",
+    "length": 1,
+    "arity": 1
+  },
   // Attribute keywords (arity 2)
   "stimulus": {
     "tk": 1,
@@ -272,6 +288,27 @@ export const lexicon = {
   "column-titles": {
     "tk": 1,
     "name": "COLUMN_TITLES",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "passage": {
+    "tk": 1,
+    "name": "PASSAGE",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "distractors": {
+    "tk": 1,
+    "name": "DISTRACTORS",
+    "cls": "function",
+    "length": 2,
+    "arity": 2
+  },
+  "max-selection": {
+    "tk": 1,
+    "name": "MAX_SELECTION",
     "cls": "function",
     "length": 2,
     "arity": 2
