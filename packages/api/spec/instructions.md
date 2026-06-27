@@ -445,9 +445,17 @@ learnosity
 When the prompt asks for an item whose content comes from another
 Graffiticode language, emit a `custom` question whose `model` attribute
 reads the upstream pipeline node via the base-language `data` primitive.
-Prefer the `data use "<lang>"` form: it names the upstream language
-explicitly so the console can reactively generate and chain the upstream
-task.
+
+**REQUIRED — the binding is not optional.** Every `custom` question that
+embeds an upstream interaction MUST include a `model data use "<lang>"`
+attribute, with `<lang>` equal to that `custom`'s own `lang`. The `model`
+line is what wires the upstream content in: a `custom` question that has
+`lang` and `stimulus` but omits `model data use` renders an EMPTY
+interaction and is invalid output. Emit all three — `lang`, `stimulus`,
+and `model data use "<lang>"` — every time. Use the `data use "<lang>"`
+form (not the bare `data {default}` fallback) whenever you know the
+upstream language, so the console can reactively generate and chain the
+upstream task.
 
 **Composable upstreams.** Map the content type to the correct upstream
 language id; use that id consistently as both the `lang` on the surrounding
@@ -499,6 +507,10 @@ learnosity
   needs distinct upstreams per question, that's multiple L0158 programs.
 - Scoring is the deployed interaction's `scorer.js` — do not add
   `valid-response` for `custom` questions.
+- **Before finishing a composed item, verify every `custom` question has a
+  `model data use "<lang>"` line whose argument equals its `lang`.** A
+  dropped `model` binding is the single most common composition error and
+  produces a silently empty interaction — never emit a `custom` without it.
 - `save-to-itembank true` freezes the upstream value at compile time into
   the saved item. The bank entry is a snapshot, not a live reference;
   edits to the upstream after save do not propagate. If the prompt asks
