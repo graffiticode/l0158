@@ -406,9 +406,14 @@ Writing to the item bank requires caller-supplied Learnosity credentials.
 Set both with `set-var` before `items`:
 
 ```
-set-var "learnosity-key" get-val-public "learnosityKey"
-set-var "learnosity-secret" get-val-private "learnositySecret"
+set-var "learnosity-key" get-val-public "learnosity-key"
+set-var "learnosity-secret" get-val-private "learnosity-secret"
 ```
+
+Use these exact credential field names: `learnosity-key` (public) and
+`learnosity-secret` (private). They are the stored credential fields, named
+`<backend>-<field>`, so always pass them in that kebab-case form — never
+camelCase (`learnosityKey`/`learnositySecret`) or other spellings.
 
 The two must be supplied **together** — providing only one is an error. When
 present they are used to sign every Learnosity request (preview rendering and
@@ -426,8 +431,8 @@ Example — save as draft:
 
 ```
 set-var "lrn-id" get-val-public "itemId"
-set-var "learnosity-key" get-val-public "learnosityKey"
-set-var "learnosity-secret" get-val-private "learnositySecret"
+set-var "learnosity-key" get-val-public "learnosity-key"
+set-var "learnosity-secret" get-val-private "learnosity-secret"
 learnosity
   items [
     item
