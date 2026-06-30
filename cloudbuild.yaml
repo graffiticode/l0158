@@ -33,7 +33,12 @@ steps:
       - '--region=$_DEPLOY_REGION'
       - '--quiet'
       - '--set-env-vars=AUTH_URL=$_AUTH_URL,LEARNOSITY_KEY=$_LEARNOSITY_KEY'
-      - '--set-secrets=LEARNOSITY_SECRET=learnosity-secret:latest'
+      # --update-secrets is ADDITIVE: it must never drop GRAFFITICODE_SECRET_KEY,
+      # which is mounted out-of-band by scripts/set-compiler-secret.sh (the
+      # deliberate, never-rotate provisioning). --set-secrets would wipe it and
+      # break get-val-private decryption. The key is owned by that script, never
+      # by this deploy config.
+      - '--update-secrets=LEARNOSITY_SECRET=learnosity-secret:latest'
       - '--allow-unauthenticated'
     id: Deploy
     entrypoint: gcloud
