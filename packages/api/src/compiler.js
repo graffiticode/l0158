@@ -41,6 +41,15 @@ const initQuestions = buildInitQuestions({sdk, key, secret, domain});
 const initAuthor = buildInitAuthor({sdk, key, secret, domain});
 const createAuthor = buildCreateAuthor({sdk, key, secret, domain, dataApi});
 
+// Sentinel `lrn-id` (= get-val-public "itemId") injected by the console during
+// code-generation VERIFICATION. Must match VERIFY_ITEM_ID in the console
+// (code-generation-service.ts). A compile whose lrn-id is this value is a dry
+// run: the caller's Learnosity credentials aren't injected during verification,
+// so we validate the program but skip item-bank writes and their credential
+// gate (the real post-generation compile carries the credentials and performs
+// the write).
+const VERIFY_ITEM_ID = "verify-itemid";
+
 // Resolve the Learnosity credentials for a compilation. A program may supply
 // its own consumer key/secret via `set-var "learnosity-key" ...` /
 // `set-var "learnosity-secret" ...`, which basis writes into `options`. The two
@@ -262,7 +271,9 @@ export class Transformer extends BasisTransformer {
           resume([...err, creds.error], undefined);
           return;
         }
-        const saveToItembank = options["save-to-itembank"] === true;
+        // Dry run during generation-time verification: skip the write + gate.
+        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
+        const saveToItembank = options["save-to-itembank"] === true && !dryRun;
         if (saveToItembank && !creds.fromOptions) {
           resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], undefined);
           return;
@@ -322,7 +333,9 @@ export class Transformer extends BasisTransformer {
           resume([...err, creds.error], {});
           return;
         }
-        const saveToItembank = options["save-to-itembank"] === true;
+        // Dry run during generation-time verification: skip the write + gate.
+        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
+        const saveToItembank = options["save-to-itembank"] === true && !dryRun;
         if (saveToItembank && !creds.fromOptions) {
           resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], {});
           return;
