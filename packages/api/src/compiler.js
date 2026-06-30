@@ -266,13 +266,15 @@ export class Transformer extends BasisTransformer {
           resume(err, undefined);
           return;
         }
+        // Dry run during generation-time verification: credentials aren't
+        // injected (and `get-val-private` of an absent value bakes encrypt("")),
+        // so skip BOTH credential gates and the write — just validate structure.
+        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
         const creds = resolveCredentials(options);
-        if (creds.error) {
+        if (creds.error && !dryRun) {
           resume([...err, creds.error], undefined);
           return;
         }
-        // Dry run during generation-time verification: skip the write + gate.
-        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
         const saveToItembank = options["save-to-itembank"] === true && !dryRun;
         if (saveToItembank && !creds.fromOptions) {
           resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], undefined);
@@ -328,13 +330,15 @@ export class Transformer extends BasisTransformer {
           resume(err, {});
           return;
         }
+        // Dry run during generation-time verification: credentials aren't
+        // injected (and `get-val-private` of an absent value bakes encrypt("")),
+        // so skip BOTH credential gates and the write — just validate structure.
+        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
         const creds = resolveCredentials(options);
-        if (creds.error) {
+        if (creds.error && !dryRun) {
           resume([...err, creds.error], {});
           return;
         }
-        // Dry run during generation-time verification: skip the write + gate.
-        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
         const saveToItembank = options["save-to-itembank"] === true && !dryRun;
         if (saveToItembank && !creds.fromOptions) {
           resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], {});
