@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+import crypto from "crypto";
 import { buildDataApi } from "./dataapi.js";
 import { buildCreateItems, buildInitItems } from "./items.js";
 import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
@@ -62,6 +63,17 @@ function resolveCredentials(options) {
   const optSecret = options["learnosity-secret"];
   const hasKey = typeof optKey === "string" && optKey !== "";
   const hasSecret = typeof optSecret === "string" && optSecret !== "";
+  // TEMP diagnostic (lengths/hash only — never the secret value): distinguishes
+  // correct creds (keyLen=16, secLen=40) from an undecrypted ciphertext
+  // (secLen~129) or absent creds (0). Remove once the itembank write is verified.
+  try {
+    const sha8 = (s) => s ? crypto.createHash("sha256").update(s).digest("hex").slice(0, 8) : "-";
+    console.log("[itembank-diag] resolveCredentials",
+      "lrn-id=", JSON.stringify(options["lrn-id"]),
+      "save=", options["save-to-itembank"],
+      "keyLen=", (optKey || "").length, "secLen=", (optSecret || "").length,
+      "secSha8=", sha8(optSecret));
+  } catch (e) { /* crypto unavailable — ignore */ }
   if (hasKey !== hasSecret) {
     return { error: `Error: set-var "learnosity-key" and "learnosity-secret" must both be set together.` };
   }
