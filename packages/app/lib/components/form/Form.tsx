@@ -31,17 +31,20 @@ export const Form = ({ state, targetOrigin }) => {
   const theme = typeof state.data === "object" && state.data !== null ? state.data.theme : undefined;
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const { type, request } = state.data || {};
+  // L0158 signs nothing. With no signed `request` there's nothing Learnosity
+  // can initialize, so the Form shows "Preview unavailable" and never loads
+  // the SDK or calls LearnosityApp.init.
+  const hasRequest = request !== null && typeof request === "object";
   useEffect(() => {
     if (hasErrors) return;
-    if (!type) return;
+    if (!type || !hasRequest) return;
     // Dynamically load Learnosity script if not included in HTML. Re-run on
-    // type change so preview (questions) and save (items) swap scripts
-    // correctly when state.data.type flips post-compile.
+    // type change so questions and items swap scripts correctly when
+    // state.data.type flips post-compile.
     setScriptLoaded(false);
     const script = document.createElement('script');
     script.src =
       type === "questions" ? 'https://questions.learnosity.com/?latest-lts' :
-      type === "author" ? 'https://authorapi.learnosity.com/?latest-lts' :
       'https://items.learnosity.com/?latest-lts';
     script.async = true;
     script.onload = () => setScriptLoaded(true);
@@ -52,12 +55,11 @@ export const Form = ({ state, targetOrigin }) => {
     return () => {
       document.body.removeChild(script);
     };
-  }, [type]);
+  }, [type, hasRequest]);
   useEffect(() => {
-    if (!scriptLoaded) return;
+    if (!scriptLoaded || !hasRequest) return;
     const LearnosityApp =
           type === "questions" ? (window as any).LearnosityApp :
-          type === "author" ? (window as any).LearnosityAuthor :
           (window as any).LearnosityItems;
     // Defer one frame so React has committed the response spans before
     // Questions API validates the activity JSON against the DOM (error 10001
@@ -92,8 +94,22 @@ export const Form = ({ state, targetOrigin }) => {
   if (hasErrors) {
     return renderErrors(state.errors, theme);
   }
-  if (type === "author") {
-    return <div id="learnosity-author" className="p-4" />;
+  if (!hasRequest) {
+    return (
+      <div className="p-4">
+        <div
+          role="status"
+          className={classNames(
+            "rounded-md p-3 border text-sm",
+            theme === "dark"
+              ? "bg-gray-800 border-gray-600 text-gray-200"
+              : "bg-gray-50 border-gray-300 text-gray-800"
+          )}
+        >
+          Preview unavailable
+        </div>
+      </div>
+    );
   }
   if (type === "questions") {
     // Questions API renders into .learnosity-response spans keyed by response_id.

@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-L0158 is a Graffiticode language for building Learnosity assessment integrations. It compiles Graffiticode programs into Learnosity API requests (Items, Questions, Author APIs) and renders them via a React frontend.
+L0158 is a Graffiticode language for authoring Learnosity assessment items (deprecated in favour of L0176, still served). It compiles `items` and `questions` programs to one **unsigned**, render-ready Learnosity activity. L0158 holds **no Learnosity credential** and signs nothing:
+
+- **Renders through L0176.** L0176 signs the activity at view time through Graffiticode's Broker (whose signatures are bound to L0176's host) and renders it in its own form; once the cutover is active the api sends L0158 items to L0176's form.
+- **Saves through L0176.** L0158 never writes to the item bank: `save-to-itembank true` and `set-var "learnosity-key"` / `"learnosity-secret"` are compile errors.
+- **Has no Author.** `author`, and `init` of an Author activity, are compile errors pointing to L0177.
 
 ## Project Structure
 
@@ -41,47 +45,42 @@ npm run -w packages/api build-spec    # Build API docs from spec-md
 The compiler (`packages/api/src/compiler.js`) extends `BasisCompiler` from `@graffiticode/basis`. It defines:
 
 - **Checker** — semantic validation visitor with methods per AST node type
-- **Transformer** — transforms AST nodes into Learnosity API requests
+- **Transformer** — transforms AST nodes into the render-ready activity
 
-**AST node types:** `INIT`, `ITEMS`, `QUESTIONS`, `AUTHOR`, `HELLO`, `PROG`
+**AST node types:** `INIT`, `ITEMS`, `QUESTIONS`, `AUTHOR` (a compile error), `LEARNOSITY` (a pass-through), `HELLO`, `PROG`
 
-**Builder functions** (injected at compiler startup with Learnosity SDK credentials):
-- `buildInitItems` / `buildCreateItems` — from `items.js`
-- `buildInitQuestions` / `buildCreateQuestions` — from `questions.js`
-- `buildInitAuthor` / `buildCreateAuthor` — from `author.js`
-- `buildDataApi` — from `dataapi.js`, calls Learnosity Data API
+**Builders** (plain functions, no credentials or network):
+- `createItems` — from `items.js`
+- `createQuestions`, `getDynamicContentData` — from `questions.js`
+- `normalizeActivity`, `toInlineQuestion`, the preview rules and the removed-feature error messages — from `activity.js`
 
-The lexicon (`src/lexicon.js`) defines language keywords: `init`, `items`, `questions`, `author`, `hello`. It is generated via `tools/build-lexicon.js` which merges basis lexicon with lang-specific entries.
+The lexicon (`src/lexicon.js`) defines language keywords: `init`, `learnosity`, `items`, `questions`, `author`, `hello`. It is generated via `tools/build-lexicon.js` which merges basis lexicon with lang-specific entries. `author` and `save-to-itembank` stay in the lexicon so stored programs that use them still parse and get a compile error rather than a parse error.
 
-### Static build / language metadata
+### The activity contract
 
-`npm run build-static` (part of `npm run build`) regenerates `packages/api/dist/` artifacts from sources in `packages/api/spec/`:
+`items` and standalone `questions` both compile to exactly:
 
-- `build-lexicon` → `dist/lexicon.json` (served at `GET /lexicon.js`)
-- `build-spec` → `dist/spec.html` (+ copies `template.gc`, `scope.json`)
-- `build-instructions` → `dist/instructions.md`
-- `build-language-info` → `dist/language-info.json`, injecting `authoring_guide` from the `## Overview` section of `spec/usage-guide.md` (build **fails** if that section is missing, under 100 chars, or if `language-info.json` already contains an `authoring_guide` key)
+```
+{ type: "questions",
+  data: { id, name, questions: [{ response_id, type, ...questionData }], session_id, dynamic_content_data? } }
+```
 
-These feed the Graffiticode platform's language registry — the metadata the MCP `get_language_info` / `get_spec` tools surface. When changing the DSL's surface or docs, edit the `spec/` sources, not the generated `dist/` files.
+No `request`, no `itemBank`, and no `data` field outside Broker's `validatePreview` `PREVIEW_KEYS` (`id`, `name`, `questions`, `session_id`, `dynamic_content_data`, `type`); every question has a string `type` and a `response_id` matching `/^[A-Za-z0-9_.:-]{1,250}$/` (generated ids are sanitized to fit). The rules are copied from graffiticode `packages/broker/src/operations.ts`, in `src/activity.js` and, for tests, `src/testing/validate-preview.js`. Compile-time dynamic-data handling stays: `{{X}}` is rewritten to `{{var:X}}` (`fixVariableRefs`) and `dynamic_content_data` is built from an embedded custom question's `templateVariablesRecords` or, failing that, the item's `params`. The View that renders it (L0176's) picks a row and resolves per view, then signs.
+
+`init <activity>` returns a `questions` or `items` activity unsigned and normalized to the same shape (legacy `{ type, reference, data }` question records converted, an old `request` dropped); anything else is a compile error.
 
 ### Control-flow attributes (set `options` via side effect)
 
 A few arity-2 keywords don't emit fields into the output record — they mutate the Transformer's `options` so downstream transformers can read them. Template: the `ID` override at the bottom of `compiler.js`.
 
-- `id` — sets `options["lrn-id"]`, required by ITEMS/QUESTIONS/AUTHOR (they error if unset).
-- `save-to-itembank` — sets `options["save-to-itembank"]`. Read by ITEMS and QUESTIONS to decide whether to POST to the Learnosity Data API. Saved items always land as `status: "unpublished"`; publishing happens in the Learnosity Author Site UI, not from the DSL.
+- `id` — sets `options["lrn-id"]`, required by ITEMS/QUESTIONS (they error if unset).
+- `save-to-itembank` — removed. `true` is a compile error ("Error: L0158 no longer saves to the item bank; use L0176."); `false` is a no-op.
 
-These must appear in the chain such that their Transformer runs before the consumer's resume fires. In practice they can be chained after `items`/`questions` (inside the continuation) because ITEMS/QUESTIONS visit the continuation first, then consult options.
+`set-var "learnosity-key"` / `"learnosity-secret"` (which basis writes into `options`) are checked in `PROG` and are a compile error whatever else the program does.
 
-### Preview (default) vs save to the item bank
+### Rendering
 
-Rendering is always through Questions API with inline question data, regardless of save state. Returning `type: "questions"` is the single code path. Two reasons this is correct today: Items API can't render unpublished items (error 20013 / no visibility), and L0158 doesn't yet use item-level features (shared stimulus, layout templates, passages) that would require Items API for fidelity. When those features land, published items will need to route through Items API from the bank.
-
-By default `items [...]` writes nothing to the bank — it's a pure preview. Chain `save-to-itembank true` onto the items continuation to persist: the item POSTs to `/itembank/items` with `status: "unpublished"` (always a draft), and its questions POST to `/itembank/questions`. The save is a side effect for bank listing/search; the returned compile result still targets Questions API for rendering. Publishing a saved item is done from the Learnosity Author Site.
-
-The branch logic lives in `buildCreateItems` (`items.js`) and `buildCreateQuestions` (`questions.js`).
-
-Form.tsx retains an Items API render path (type `"items"`) for future use — e.g., previewing a published bank item directly — but the normal compile flow doesn't reach it.
+Rendering is through Questions API with inline question data (`type: "questions"`): Items API can't render unpublished items, and L0158 uses no item-level features (shared stimulus, layout templates, passages). L0176 signs and renders. Item-level `metadata` (tags, notes, description, source, difficulty-level, acknowledgements) described the bank record L0158 used to save; it is accepted but no longer emitted. Question-level metadata stays on each question.
 
 ## API Routes
 
@@ -92,20 +91,19 @@ Form.tsx retains an Items API render path (type `"items"`) for future use — e.
 
 ## App Components
 
-- **Form** (`lib/components/form/Form.tsx`) — renders Learnosity assessments by dynamically loading Learnosity scripts based on type (items/questions/author) and calling the appropriate Learnosity JS API
-- **View** (`lib/view.jsx`) — SPA shell that reads URL params (id, access_token, origin, data), manages compilation workflow with SWR hooks, and communicates with parent iframe via `postMessage`
+- **Form** (`lib/components/form/Form.tsx`) — renders Learnosity assessments by dynamically loading Learnosity scripts based on type (items/questions) and calling the appropriate Learnosity JS API
+- **View** (`lib/view.jsx`) — SPA shell that reads URL params (id, access_token, origin, data), fetches the compiled item with SWR, and communicates with parent iframe via `postMessage`. It no longer asks for a signature (L0158 can't sign): an L0158 item opened here, before the api sends it to L0176's form, shows "Preview unavailable".
 - **State** (`lib/lib/state.js`) — simple reducer-based state management
 - **API client** (`lib/lib/api.js`) — HTTP utilities for compile and data endpoints
 
 ### Form mount points and signed-request shapes
 
-Each Learnosity API expects a different mount and a differently-shaped signed request — Form.tsx branches on `state.data.type`:
+With no signed `request` in its state the Form shows "Preview unavailable" and never loads the Learnosity SDK or calls `LearnosityApp.init`. Given one (e.g. through `?data=`), each Learnosity API expects a different mount and a differently-shaped signed request — Form.tsx branches on `state.data.type`:
 
 | type | script | signed-request shape | DOM mount |
 | :--- | :----- | :-------------------- | :-------- |
 | `items` | items.learnosity.com | `{ security, request }` (nested) | `<span id="learnosity_assess" class="learnosity-item" data-reference="item-1">` |
 | `questions` | questions.learnosity.com | flat — security fields and `questions[]` at top level | `<span class="learnosity-response question-<response_id>">` per question |
-| `author` | authorapi.learnosity.com | `{ security, request }` (nested) | `<div id="learnosity-author">` |
 
 Questions API validates the activity JSON against the DOM at init time (error 10001 "no matching DOM element" otherwise), so the Form defers init one animation frame after mount and retries until every expected `.learnosity-response.question-<response_id>` span exists.
 
@@ -122,10 +120,9 @@ Tests are colocated with source files (`*.spec.js`). Key testing utilities:
 ## Environment Variables
 
 - `AUTH_URL` — Auth service URL (default: `https://auth.graffiticode.org`)
-- `LEARNOSITY_KEY` / `LEARNOSITY_SECRET` — Learnosity API credentials
 - `FIRESTORE_EMULATOR_HOST` — Set for local dev (`127.0.0.1:8080`)
 - `PORT` — Server port (default: `50158`)
 
 ## Deployment
 
-Google Cloud Run via Cloud Build (`cloudbuild.yaml`). Learnosity secrets managed via GCP Secret Manager. Deploy commands in root `package.json`: `gcp:build`, `gcp:deploy`, `gcp:logs`.
+Google Cloud Run via Cloud Build (`cloudbuild.yaml`). The service mounts no secret and reads no Learnosity credential: every deploy removes `LEARNOSITY_KEY` (`--remove-env-vars`), `LEARNOSITY_SECRET` and the retired `GRAFFITICODE_SECRET_KEY` (`--remove-secrets`), since Cloud Run otherwise carries them over from the previous revision. Deploy commands in root `package.json`: `gcp:build`, `gcp:deploy`, `gcp:logs`.

@@ -76,7 +76,7 @@
     {
       "prompt": "Create a spreadsheet question. Embed the L0166 spreadsheet as the interaction. Stem: 'Use the spreadsheet below to compute the column totals for the first quarter.'",
       "produces": "custom",
-      "notes": "Embedded interaction: emits a `custom` question with `lang \"0166\"` whose `data:` reads the upstream pipeline task via the base-language `data {}` primitive. The pipeline edge (which L0166 producer feeds this consumer) is wired in the console; L0158 source does not reference task IDs. Scoring is the L0166 widget's own `scorer.js` — no `valid-response` is emitted. `save-to-itembank` produces a snapshot frozen at compile time."
+      "notes": "Embedded interaction: emits a `custom` question with `lang \"0166\"` whose `data:` reads the upstream pipeline task via the base-language `data {}` primitive. The pipeline edge (which L0166 producer feeds this consumer) is wired in the console; L0158 source does not reference task IDs. Scoring is the L0166 widget's own `scorer.js` — no `valid-response` is emitted."
     }
   ]
 }

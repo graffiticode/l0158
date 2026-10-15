@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 import { v4 as uuid } from "uuid";
+import { toResponseId } from "./activity.js";
 
 const replaceVariableRefs = (str) => {
   // Replace {{...}} with {{var:...}} for template variables,
@@ -30,15 +31,37 @@ const fixVariableRefs = (obj) => (
   }, obj)
 );
 
-export const buildCreateQuestions = ({
-  sdk,
-  key,
-  secret,
-  domain,
-  dataApi
-}) => async (data, { id, saveToItembank = false, key: optKey, secret: optSecret } = {}) => {
-  const effKey = optKey ?? key;
-  const effSecret = optSecret ?? secret;
+// Build the dynamic_content_data table Learnosity substitutes {{var:X}} from:
+// one row per record, columns from the first record's keys. Returns undefined
+// for no records.
+export const getDynamicContentData = (records) => {
+  if (!Array.isArray(records) || records.length === 0) {
+    return undefined;
+  }
+  const reference = "graffiticode-" + new Date().toISOString().split(":").join("").split(".").join("");
+  let cols;
+  const rows = {};
+  records.forEach((d, i) => {
+    if (!cols) {
+      cols = Object.keys(d);
+    }
+    rows[reference + "-row-" + i] = {
+      "values": Object.values(d),
+      "index": i,
+    };
+  });
+  return { cols, rows };
+};
+
+// Compile a list of questions to the render-ready activity (see activity.js):
+// `{ type: "questions", data: { id, name, questions, session_id,
+// dynamic_content_data? } }`, each question inline as `{ response_id, type,
+// ...questionData }`. Unsigned: L0176 signs it at render time.
+//
+// `params` is a hardwired dynamic-data table (from a `params` chained into the
+// questions continuation); a table inherited from an embedded custom question
+// wins over it.
+export const createQuestions = (data, { id, params } = {}) => {
   // Inherit a dynamic-data table from the first question whose data carries
   // one (typically an embedded L0166 custom question whose data includes
   // templateVariablesRecords). Items have one shared table in Learnosity's
@@ -53,73 +76,24 @@ export const buildCreateQuestions = ({
   }
   const batchId = id || "0";
   const questions = data.map((question, index) => {
-    const reference = `artcompiler-${question.type}-${batchId}-${index}`;
-    const data = fixVariableRefs(question);
+    const responseId = toResponseId(`artcompiler-${question.type}-${batchId}-${index}`);
+    const fixed = fixVariableRefs(question);
     return {
+      response_id: responseId,
+      ...fixed,
       type: question.type,
-      reference,
-      data,
     };
   });
-  const questionRefs = questions.map(question => question.reference);
-  let itemBankResult;
-  if (saveToItembank) {
-    const questionsReq = sdk.init(
-      'data',
-      {
-        consumer_key: effKey,
-        domain,
-      },
-      effSecret,
-      {
-        questions,
-      },
-      "set",
-    );
-    await dataApi({
-      route: "/itembank/questions",
-      request: questionsReq,
-    });
-    // dataApi throws on non-2xx, so reaching here means the write succeeded.
-    itemBankResult = {
-      saved: true,
-      references: questionRefs,
-      savedAt: new Date().toISOString(),
-    };
-  }
   const questionsData = {
-    "id": uuid(),
-    "name": "Test",
+    id: uuid(),
+    name: "Test",
     questions,
     session_id: uuid(),
   };
-  if (itemBankResult) questionsData.itemBank = itemBankResult;
+  const dynamicContentData = getDynamicContentData(templateVariablesRecords || params);
+  if (dynamicContentData) questionsData.dynamic_content_data = dynamicContentData;
   return {
     type: "questions",
     data: questionsData,
-    templateVariablesRecords,
-    questionRefs,
   };
 };
-
-export const buildInitQuestions = ({
-  sdk,
-  key,
-  secret,
-  domain,
-}) => async ({ data }, { key: optKey, secret: optSecret } = {}) => {
-  // Construct a questions api request.
-  const user_id = uuid();
-  const consumer = {
-    consumer_key: optKey ?? key,
-    domain,
-    user_id,
-  };
-  const signedRequest = sdk.init(
-    'questions',
-    consumer,
-    optSecret ?? secret,
-    data
-  );
-  return signedRequest;
-}

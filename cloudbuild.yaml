@@ -32,14 +32,17 @@ steps:
         --labels=commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
       - '--region=$_DEPLOY_REGION'
       - '--quiet'
-      - '--set-env-vars=AUTH_URL=$_AUTH_URL,LEARNOSITY_KEY=$_LEARNOSITY_KEY'
-      # --update-secrets is ADDITIVE, so other mounts carry over between
-      # revisions. The legacy GRAFFITICODE_SECRET_KEY (get-val-private
-      # decryption, once mounted out-of-band by the console's
-      # set-compiler-secret.sh) is retired: compilers must never hold
-      # credentials (capability spec SECRET-01), so every deploy removes it.
-      - '--update-secrets=LEARNOSITY_SECRET=learnosity-secret:latest'
-      - '--remove-secrets=GRAFFITICODE_SECRET_KEY'
+      # L0158 holds no credential (capability spec SECRET-01): L0176 signs its
+      # previews through Broker. Cloud Run carries a revision's env vars and
+      # secret mounts over to the next one unless a deploy removes them, so
+      # every deploy removes LEARNOSITY_KEY, LEARNOSITY_SECRET and the retired
+      # GRAFFITICODE_SECRET_KEY (get-val-private decryption, once mounted
+      # out-of-band by the console's set-compiler-secret.sh).
+      # --remove-env-vars can't be combined with --set-env-vars, hence
+      # --update-env-vars.
+      - '--update-env-vars=AUTH_URL=$_AUTH_URL'
+      - '--remove-env-vars=LEARNOSITY_KEY'
+      - '--remove-secrets=LEARNOSITY_SECRET,GRAFFITICODE_SECRET_KEY'
       - '--allow-unauthenticated'
     id: Deploy
     entrypoint: gcloud
@@ -53,7 +56,6 @@ options:
 substitutions:
   _DEPLOY_REGION: us-central1
   _AUTH_URL: https://auth.graffiticode.org
-  _LEARNOSITY_KEY: UsF4dy1YxZd4JIyq
 
 tags:
   - l0158

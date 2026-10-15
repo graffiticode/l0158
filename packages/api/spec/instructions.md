@@ -2,8 +2,9 @@
 # Dialect L0158 Specific Instructions
 
 L0158 is a Graffiticode dialect for building Learnosity assessment integrations.
-It compiles programs into Learnosity API requests (Items, Questions, Author APIs)
-and renders them via a React frontend.
+It compiles items and questions to one unsigned, render-ready Learnosity
+activity, which L0176 signs and renders. L0158 holds no Learnosity credential,
+doesn't save to the item bank (L0176 does), and has no Author API (use L0177).
 
 ## L0158 Specific Guidelines
 
@@ -13,8 +14,7 @@ and renders them via a React frontend.
 - Use `questions` as a chainable attribute to set questions on an item
 - Use `features` as a chainable attribute to set features on an item (placeholder)
 - Use `layout` as a chainable attribute to set the HTML template for an item (placeholder)
-- Use `author` to create Author API requests for item authoring
-- Use `init` to initialize a Learnosity API session by type
+- Never emit `author`, `save-to-itembank true`, or `set-var "learnosity-key"` / `set-var "learnosity-secret"`: each is a compile error. To save to the item bank, use L0176; to plan an Author API integration, use L0177.
 - Use `hello` to display simple text output: `hello "Hello, world!"..`
 - `items` always takes a list of `item` objects: `items [item questions [...] {}]..`
 - When an assessment has multiple questions, place all questions in the same `item` rather than creating separate items: `items [item questions [mcq {}, shorttext {}] {}]..`
@@ -249,6 +249,9 @@ L0158 supports a `metadata` block at two levels: on `item` (for fields the
 Learnosity Author Site indexes for search) and on each question constructor
 (for fields that travel with the interaction). Both are optional and can
 appear independently — items without metadata work exactly as before.
+Item-level metadata described the item record L0158 used to save to the item
+bank; since L0158 no longer saves, it is accepted but not emitted in the
+preview. Question-level metadata is emitted with each question.
 
 `metadata` takes a list whose members are arity-1 constructor calls
 (`tags`, `notes`, `acknowledgements`, `distractor-rationale`,
@@ -390,60 +393,14 @@ Common attributes: `stimulus`, `options`, `valid-response`, `instant-feedback`,
 `max-length`, `max-word-count`, `placeholder`, `possible-responses`, `rows`,
 `columns`, `list`, `categories`, `method`.
 
-### Save to Item Bank vs. Preview
+### Preview only
 
-By default, `items [...]` produces a **preview**: the item and its questions
-render inline through Questions API without being written to the Learnosity
-item bank. This is the right default for AI-authored items — the human can
-eyeball the preview before deciding to persist.
-
-Chain `save-to-itembank true` onto the items continuation to persist the
-item and its questions to the Learnosity item bank. Saved items always land
-as `status: "unpublished"` (draft); publishing is done from the Learnosity
-Author Site UI, not from the DSL.
-
-Writing to the item bank requires caller-supplied Learnosity credentials.
-Set both with `set-var` before `items`:
-
-```
-set-var "learnosity-key" get-val-public "learnosity-key"
-set-var "learnosity-secret" get-val-private "learnosity-secret"
-```
-
-Use these exact credential field names: `learnosity-key` (public) and
-`learnosity-secret` (private). They are the stored credential fields, named
-`<backend>-<field>`, so always pass them in that kebab-case form — never
-camelCase (`learnosityKey`/`learnositySecret`) or other spellings.
-
-The two must be supplied **together** — providing only one is an error. When
-present they are used to sign every Learnosity request (preview rendering and
-the bank write); when absent, previews fall back to the server's default
-credentials. `save-to-itembank true` without these credentials is an error:
-the default credentials may sign previews but never mutate the bank.
-
-Prompts that should trigger `save-to-itembank true`:
-
-- "save it to the item bank" / "write to the bank" / "persist it" → include
-  `save-to-itembank true` and the credential `set-var` lines above.
-- No such phrasing → preview-only; omit the attribute (and the credentials).
-
-Example — save as draft:
-
-```
-set-var "lrn-id" get-val-public "itemId"
-set-var "learnosity-key" get-val-public "learnosity-key"
-set-var "learnosity-secret" get-val-private "learnosity-secret"
-learnosity
-  items [
-    item
-      questions [mcq stimulus "Which planet is closest to the Sun?"
-        options ["Mercury", "Venus", "Earth", "Mars"]
-        valid-response [0] {}]
-      {}
-  ]
-  save-to-itembank true
-  {}..
-```
+`items [...]` produces a **preview**: the item and its questions render inline
+through Questions API, signed by L0176 at view time. L0158 never writes to the
+Learnosity item bank. If the prompt asks to save, persist or write to the item
+bank, say that L0158 can't and that L0176 does; don't emit
+`save-to-itembank true` or credential `set-var` lines, which are compile
+errors.
 
 ### Pipeline Composition
 
@@ -516,11 +473,6 @@ learnosity
   `model data use "<lang>"` line whose argument equals its `lang`.** A
   dropped `model` binding is the single most common composition error and
   produces a silently empty interaction — never emit a `custom` without it.
-- `save-to-itembank true` freezes the upstream value at compile time into
-  the saved item. The bank entry is a snapshot, not a live reference;
-  edits to the upstream after save do not propagate. If the prompt asks
-  to "save a live spreadsheet question to the bank", clarify or fall back
-  to preview-only.
 
 ### Dynamic Data
 
@@ -659,12 +611,3 @@ substitutes one row into the question text via `{{colname}}` placeholders.
     ] {}..
   ```
 
-- Initialize an items session:
-  ```
-  init { "type": "items" }..
-  ```
-
-- Author mode for editing items:
-  ```
-  author { "mode": "item_edit" }..
-  ```

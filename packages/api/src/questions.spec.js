@@ -1,42 +1,59 @@
 // SPDX-License-Identifier: MIT
-import { jest } from "@jest/globals";
-import { buildCreateQuestions } from "./questions.js";
+/* eslint-env jest, node */
+import { createQuestions } from "./questions.js";
+import { expectContractActivity } from "./testing/validate-preview.js";
 
-describe("buildCreateQuestions preview vs save", () => {
-  const fakeSdk = {
-    init: jest.fn((kind, consumer, secret, payload) => ({ signed: true, payload })),
-  };
+describe("createQuestions (standalone questions)", () => {
   const makeQuestions = () => [{
     type: "mcq",
     stimulus: "2 + 2?",
     options: ["3", "4", "5"],
     validation: { valid_response: { value: ["1"] } },
+  }, {
+    type: "shorttext",
+    stimulus: "{{A1}} + 1?",
   }];
 
-  beforeEach(() => {
-    fakeSdk.init.mockClear();
+  it("returns one unsigned activity that Broker's validatePreview accepts", () => {
+    const result = createQuestions(makeQuestions(), { id: "test" });
+    expectContractActivity(result);
+    expect(result).toEqual({ type: "questions", data: expect.any(Object) });
+    expect(result.data.questions.map(q => q.response_id)).toEqual([
+      "artcompiler-mcq-test-0",
+      "artcompiler-shorttext-test-1",
+    ]);
+    expect(result.data.questions[0]).toMatchObject({ type: "mcq", stimulus: "2 + 2?" });
+    // No legacy record fields, no save receipt.
+    expect(result.data.questions[0].reference).toBeUndefined();
+    expect(result.data.questions[0].data).toBeUndefined();
+    expect(result.data.itemBank).toBeUndefined();
   });
 
-  it("preview mode (default): skips dataApi but still returns questions payload", async () => {
-    const dataApi = jest.fn();
-    const createQuestions = buildCreateQuestions({
-      sdk: fakeSdk, key: "k", secret: "s", domain: "localhost", dataApi,
-    });
-    const result = await createQuestions(makeQuestions(), { id: "test" });
-    expect(dataApi).not.toHaveBeenCalled();
-    expect(result.type).toBe("questions");
-    expect(result.data.questions).toHaveLength(1);
-    expect(result.questionRefs).toEqual(["artcompiler-mcq-test-0"]);
+  it("keeps the compile-time {{var:X}} rewriting", () => {
+    const result = createQuestions(makeQuestions(), { id: "test" });
+    expect(result.data.questions[1].stimulus).toBe("{{var:A1}} + 1?");
   });
 
-  it("save mode: POSTs to /itembank/questions", async () => {
-    const dataApi = jest.fn().mockResolvedValue({ meta: { status: true } });
-    const createQuestions = buildCreateQuestions({
-      sdk: fakeSdk, key: "k", secret: "s", domain: "localhost", dataApi,
-    });
-    await createQuestions(makeQuestions(), { id: "test", saveToItembank: true });
-    expect(dataApi).toHaveBeenCalledTimes(1);
-    const [callArg] = dataApi.mock.calls[0];
-    expect(callArg.route).toBe("/itembank/questions");
+  it("makes response_ids Broker accepts from any lrn-id", () => {
+    const result = createQuestions(makeQuestions(), { id: "my item/№ 1" });
+    expectContractActivity(result);
+    expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-my_item___1-0");
+  });
+
+  it("inherits dynamic_content_data from an embedded custom question", () => {
+    const result = createQuestions([{
+      type: "custom",
+      data: { templateVariablesRecords: [{ A1: "50" }, { A1: "100" }] },
+    }], { id: "test" });
+    expectContractActivity(result);
+    expect(result.data.dynamic_content_data.cols).toEqual(["A1"]);
+    expect(Object.values(result.data.dynamic_content_data.rows)).toHaveLength(2);
+    // The custom question's own data field is kept.
+    expect(result.data.questions[0].data.templateVariablesRecords).toHaveLength(2);
+  });
+
+  it("has no dynamic_content_data without a table", () => {
+    const result = createQuestions(makeQuestions(), { id: "test" });
+    expect("dynamic_content_data" in result.data).toBe(false);
   });
 });

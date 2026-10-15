@@ -51,7 +51,7 @@ Say this to get that:
 - **Distractor rationale** — for MCQ, ask for "a one-line rationale per distractor" or "explain why each wrong answer is wrong". L0158 attaches these at the question level so the Author Site review pane shows the teaching intent alongside the item.
 - **Instant feedback** — turns on immediate per-response feedback in the interaction.
 - **Shuffle options** — randomizes option order at render time.
-- **Save to the item bank** — by default an item renders as a preview and is *not* written to the Learnosity item bank. Say "save to the item bank" (or equivalent) to persist it; it lands as `status: unpublished` (draft). Publishing is done from the Learnosity Author Site UI, not from the DSL.
+- **Preview only** — an L0158 item renders as a preview, signed and shown by L0176, and is *not* written to the Learnosity item bank. L0158 can't save: to save an item to the bank, author it in L0176. L0158 has no Author API either; to plan an Author API integration, use L0177.
 - **Bow-tie (NGN/NCLEX)** — three source pools and three drop zones in a 2-1-2 layout. Standard NCLEX phrasing is "actions to take", "condition most likely", "parameters to monitor". Prompt with the clinical scenario as the stimulus and three lists of options plus the 2-1-2 correct picks; the compiler will reject inputs that don't satisfy the 2-1-2 shape.
 - **Hot text (token highlight)** — the learner clicks words/phrases in a passage. Provide the passage, the correct tokens, and the *distractors* (clickable words that are wrong). Only the tokens you list are clickable. Matching is case-insensitive and whole-word, and a repeated correct word counts at every occurrence; say "they may pick at most N" to cap selections. Works for tasks like "click every verb" or "highlight the supporting evidence".
 - **Embedded interaction (custom question)** — when the item should render an interaction authored in another Graffiticode language (e.g. an L0166 spreadsheet), say "embed the L0166 spreadsheet" or "use this spreadsheet as the question". Name the language by its number (`L0166`, `L0167`, …). Provide the stem and any framing prose; the deployed interaction handles its own rendering and scoring.
@@ -70,7 +70,6 @@ What happens automatically:
 
 - L0158 emits a `custom` question with `lang` set to the embedded language and `data: data use "<lang>"` reading the upstream value. The `use` annotation lets the console discover the upstream language and chain it; without an upstream bound, `data` falls back to `{}` so the item still renders for preview.
 - Scoring is delegated to the deployed interaction's own scorer; do not request `valid-response` for embedded interactions.
-- `save-to-itembank` produces a snapshot. Persisted items capture the upstream content at compile time and do not update when the upstream is later edited. If the user wants live updates from the upstream, keep the item in preview mode rather than persisting.
 
 A single L0158 program has at most one upstream. Distinct upstreams per question require distinct L0158 programs.
 
@@ -87,7 +86,7 @@ When both are present, the inherited table wins — embedded L0166 widgets are a
 
 L0158 attaches metadata at two levels.
 
-**Item-level metadata** is what the Learnosity Author Site indexes for search and filtering. Standards tags (NGSS, CCSS, custom taxonomies), difficulty, and DOK go here. Mention them in the prompt and L0158 attaches them to the item record.
+**Item-level metadata** is what the Learnosity Author Site indexes for search and filtering. Standards tags (NGSS, CCSS, custom taxonomies), difficulty, and DOK go here. Mention them in the prompt and L0158 attaches them to the item record. L0158 no longer saves the item record to the bank, so item-level metadata is accepted but not emitted in the preview; to save a tagged item, use L0176.
 
 **Question-level metadata** travels with the individual interaction if it is reused. The headline field is per-distractor rationale on MCQ — when you ask for "a one-line rationale per distractor", L0158 emits these as question-level metadata that the Author Site shows in the review pane.
 
