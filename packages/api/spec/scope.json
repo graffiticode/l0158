@@ -12,12 +12,13 @@
     "Learnosity spreadsheet-based assessment items",
     "Learnosity concept-web assessment items",
     "Learnosity custom items that embed interactive content authored in another Graffiticode dialect",
-    "Learnosity item-level metadata: tags, NGSS/CCSS/custom standards, DOK, difficulty",
     "Learnosity question-level metadata: per-distractor rationale, notes, acknowledgements",
-    "Save-to-itembank for persistence vs. preview-only items"
+    "Preview-only items, rendered and signed by L0176"
   ],
   "out_of_scope": [
     "Any new Learnosity item content — L0158 is deprecated; use L0176 instead",
+    "Saving items to a Learnosity Item Bank — L0158 can't save; use L0176",
+    "Learnosity Author API (the Author Site) — L0158 has no Author; use L0177 to plan an Author API integration",
     "Generic quizzes, tests, homework, and practice items that do not name Learnosity — no matter the question type. A request for \"a 5-question multiple-choice quiz on the water cycle\" is NOT an L0158 request",
     "Assessment items for any platform other than Learnosity (e.g. Kahoot, Quizizz, Google Forms, Edulastic, OpenAssessments, Canvas Quizzes, Moodle, plain HTML quiz pages) — L0158 emits Learnosity-shaped JSON only",
     "Activity-level assembly (timed tests, sections, branching) — use Learnosity Activities API",

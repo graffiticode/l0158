@@ -1,9 +1,13 @@
 // SPDX-License-Identifier: MIT
-import { buildDataApi } from "./dataapi.js";
-import { buildCreateItems, buildInitItems } from "./items.js";
-import { buildCreateQuestions, buildInitQuestions } from "./questions.js";
-import { buildInitAuthor, buildCreateAuthor } from "./author.js";
-import { questionTypeBuilders, attributeFields, metadataMembers, validAttributes } from "./question-types.js";
+import { createItems } from "./items.js";
+import { createQuestions } from "./questions.js";
+import {
+  AUTHOR_ERROR,
+  CREDENTIAL_ERROR,
+  SAVE_ERROR,
+  normalizeActivity,
+} from "./activity.js";
+import { questionTypeBuilders, attributeFields, metadataMembers } from "./question-types.js";
 
 /* Copyright (c) 2023, ARTCOMPILER INC */
 import {
@@ -11,6 +15,12 @@ import {
   Transformer as BasisTransformer,
   Compiler as BasisCompiler
 } from '@graffiticode/basis';
+
+// L0158 holds no Learnosity credential and signs nothing. `items` and
+// `questions` compile to one unsigned, render-ready activity (activity.js),
+// which L0176 signs at render time through Broker. Item-bank saves and the
+// Author API are gone: saves go through L0176, Author integrations are planned
+// with L0177.
 
 function toPlainObject(val) {
   if (val !== null && typeof val === 'object' && val._type === 'record' && val._entries instanceof Map) {
@@ -27,49 +37,24 @@ function toPlainObject(val) {
   return val;
 }
 
-import LearnositySDK from "learnosity-sdk-nodejs";
-const sdk = new LearnositySDK();
-const key = process.env.LEARNOSITY_KEY;
-const secret = process.env.LEARNOSITY_SECRET;
-const domain = process.env.NODE_ENV === "production" ? "l0158.graffiticode.org" : "localhost";
-const baseUrl = 'https://data.learnosity.com/v2025.2.LTS';
-const dataApi = buildDataApi({baseUrl, domain});
-const createItems = buildCreateItems({sdk, key, secret, domain, dataApi});
-const initItems = buildInitItems({sdk, key, secret, domain});
-const createQuestions = buildCreateQuestions({sdk, key, secret, domain, dataApi});
-const initQuestions = buildInitQuestions({sdk, key, secret, domain});
-const initAuthor = buildInitAuthor({sdk, key, secret, domain});
-const createAuthor = buildCreateAuthor({sdk, key, secret, domain, dataApi});
+// A program that still supplies its own consumer key or secret (`set-var
+// "learnosity-key" ...` / `set-var "learnosity-secret" ...`, which basis
+// writes into `options`) used a feature that's gone. It's a compile error
+// rather than silently ignored.
+const usesCredentials = (options) => (
+  Object.prototype.hasOwnProperty.call(options, "learnosity-key") ||
+  Object.prototype.hasOwnProperty.call(options, "learnosity-secret")
+);
 
-// Sentinel `lrn-id` (= get-val-public "itemId") injected by the console during
-// code-generation VERIFICATION. Must match VERIFY_ITEM_ID in the console
-// (code-generation-service.ts). A compile whose lrn-id is this value is a dry
-// run: the caller's Learnosity credentials aren't injected during verification,
-// so we validate the program but skip item-bank writes and their credential
-// gate (the real post-generation compile carries the credentials and performs
-// the write).
-const VERIFY_ITEM_ID = "verify-itemid";
-
-// Resolve the Learnosity credentials for a compilation. A program may supply
-// its own consumer key/secret via `set-var "learnosity-key" ...` /
-// `set-var "learnosity-secret" ...`, which basis writes into `options`. The two
-// must be supplied together (a key with a mismatched secret fails Learnosity's
-// signature validation). When both are present they're used for all signing and
-// `fromOptions` is true (the gate that permits item-bank mutations); otherwise
-// the env defaults are used. Returns `{ error }` when exactly one is supplied.
-function resolveCredentials(options) {
-  const optKey = options["learnosity-key"];
-  const optSecret = options["learnosity-secret"];
-  const hasKey = typeof optKey === "string" && optKey !== "";
-  const hasSecret = typeof optSecret === "string" && optSecret !== "";
-  if (hasKey !== hasSecret) {
-    return { error: `Error: set-var "learnosity-key" and "learnosity-secret" must both be set together.` };
+const toList = (plain) => {
+  if (Array.isArray(plain)) {
+    return plain;
   }
-  if (hasKey && hasSecret) {
-    return { key: optKey, secret: optSecret, fromOptions: true };
+  if (plain && typeof plain === "object" && plain.list != null) {
+    return Array.isArray(plain.list) ? plain.list : [plain.list];
   }
-  return { key, secret, fromOptions: false };
-}
+  return [plain];
+};
 
 export class Checker extends BasisChecker {
   HELLO(node, options, resume) {
@@ -202,33 +187,27 @@ export class Transformer extends BasisTransformer {
     });
   }
 
+  // `init <activity>` normalizes a questions or items activity to the
+  // render-ready contract and returns it unsigned (L0176 signs it). An Author
+  // activity is the same error as `author`.
   INIT(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const plain = toPlainObject(v0);
-      const err = [];
-      const creds = resolveCredentials(options);
-      if (creds.error) {
-        resume([creds.error], undefined);
+      const err = [].concat(e0 || []);
+      if (err.length > 0) {
+        resume(err, undefined);
         return;
       }
-      const credArgs = { key: creds.key, secret: creds.secret };
-      const { type } = plain;
-      let val;
-      switch (type) {
-      case "questions":
-        val = await initQuestions(plain, credArgs);
-        break;
-      case "items":
-        val = await initItems(plain, credArgs);
-        break;
-      case "author":
-        val = await initAuthor(plain, credArgs);
-        break;
+      const { activity, errors } = normalizeActivity(toPlainObject(v0));
+      if (errors) {
+        resume(errors, undefined);
+        return;
       }
-      resume(err, val);
+      resume([], activity);
     });
   }
 
+  // `learnosity <value>` is a pass-through wrapper: it returns its argument
+  // unchanged and carries no credential or configuration.
   LEARNOSITY(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
       const plain = toPlainObject(v0);
@@ -239,57 +218,24 @@ export class Transformer extends BasisTransformer {
   }
 
   ITEMS(node, options, resume) {
-    // Visit the continuation (elts[1]) BEFORE the items list (elts[0]) so
-    // that save-to-itembank chained after items sets `options` before the
-    // QUESTIONS transformers inside the items list run and read it.
-    this.visit(node.elts[1], options, async (e1, v1) => {
+    // Visit the continuation (elts[1]) first, so a `save-to-itembank true`
+    // chained after items reports its error ahead of the items themselves.
+    this.visit(node.elts[1], options, async (e1) => {
       this.visit(node.elts[0], options, async (e0, v0) => {
-        const plain = toPlainObject(v0);
         const err = [].concat(e0 || [], e1 || []);
-        // Expects a list of item records
-        let items;
-        if (Array.isArray(plain)) {
-          items = plain;
-        } else if (plain && typeof plain === "object" && plain.list != null) {
-          items = Array.isArray(plain.list) ? plain.list : [plain.list];
-        } else {
-          items = [plain];
-        }
+        const items = toList(toPlainObject(v0));
         if (!options["lrn-id"]) {
           resume([...err, `Error: set-var "lrn-id" must be set to a non-empty string before items is called.`], undefined);
           return;
         }
         // If any child errored (e.g. a builder threw validation), bail before
         // createItems — the items/questions arrays contain `undefined` for the
-        // failed entry and would crash the wrapper.
+        // failed entry.
         if (err.length > 0) {
           resume(err, undefined);
           return;
         }
-        // Dry run during generation-time verification: credentials aren't
-        // injected (and `get-val-private` of an absent value bakes encrypt("")),
-        // so skip BOTH credential gates and the write — just validate structure.
-        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
-        const creds = resolveCredentials(options);
-        if (creds.error && !dryRun) {
-          resume([...err, creds.error], undefined);
-          return;
-        }
-        const saveToItembank = options["save-to-itembank"] === true && !dryRun;
-        if (saveToItembank && !creds.fromOptions) {
-          resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], undefined);
-          return;
-        }
-        const itemsResult = await createItems({
-          items,
-          id: options["lrn-id"],
-          saveToItembank,
-          key: creds.key,
-          secret: creds.secret,
-        });
-        const continuation = toPlainObject(v1);
-        const val = { ...continuation, ...itemsResult };
-        resume(err, val);
+        resume(err, createItems({ items, id: options["lrn-id"] }));
       });
     });
   }
@@ -304,55 +250,29 @@ export class Transformer extends BasisTransformer {
   }
 
   QUESTIONS(node, options, resume) {
-    // Same continuation-first ordering as ITEMS, so save-to-itembank chained
-    // on top-level `questions [...] save-to-itembank true {}` is honored.
+    // Same continuation-first ordering as ITEMS.
     this.visit(node.elts[1], options, async (e1, v1) => {
       this.visit(node.elts[0], options, async (e0, v0) => {
-        const plain = toPlainObject(v0);
         const err = [].concat(e0 || [], e1 || []);
-        // Normalize to array: basis LIST node may produce {list: item} or an array
-        let questions;
-        if (Array.isArray(plain)) {
-          questions = plain;
-        } else if (plain && typeof plain === "object" && plain.list != null) {
-          questions = Array.isArray(plain.list) ? plain.list : [plain.list];
-        } else {
-          questions = [plain];
-        }
+        const questions = toList(toPlainObject(v0));
         if (!options["lrn-id"]) {
           resume(err, {});
           return;
         }
         // If any child errored (e.g. a question builder threw validation),
         // bail before createQuestions — the questions array contains
-        // `undefined` for the failed entry and would crash the wrapper.
+        // `undefined` for the failed entry.
         if (err.length > 0) {
           resume(err, {});
           return;
         }
-        // Dry run during generation-time verification: credentials aren't
-        // injected (and `get-val-private` of an absent value bakes encrypt("")),
-        // so skip BOTH credential gates and the write — just validate structure.
-        const dryRun = options["lrn-id"] === VERIFY_ITEM_ID;
-        const creds = resolveCredentials(options);
-        if (creds.error && !dryRun) {
-          resume([...err, creds.error], {});
-          return;
-        }
-        const saveToItembank = options["save-to-itembank"] === true && !dryRun;
-        if (saveToItembank && !creds.fromOptions) {
-          resume([...err, `Error: save-to-itembank requires set-var "learnosity-key" and "learnosity-secret"; item bank writes are not permitted with the default credentials.`], {});
-          return;
-        }
-        const questionsResult = await createQuestions(questions, {
-          id: options["lrn-id"],
-          saveToItembank,
-          key: creds.key,
-          secret: creds.secret,
-        });
+        // The output is exactly the activity; of the continuation only a
+        // hardwired `params` table is used.
         const continuation = toPlainObject(v1);
-        const val = { ...continuation, ...questionsResult };
-        resume(err, val);
+        resume(err, createQuestions(questions, {
+          id: options["lrn-id"],
+          params: continuation?.params,
+        }));
       });
     });
   }
@@ -389,22 +309,18 @@ export class Transformer extends BasisTransformer {
     });
   }
 
+  // Author is gone. The keyword stays in the lexicon so stored `author`
+  // programs still parse and get this compile error, not a parse error.
   AUTHOR(node, options, resume) {
-    this.visit(node.elts[0], options, async (e0, v0) => {
-      const plain = toPlainObject(v0);
-      const err = [];
-      if (!options["lrn-id"]) {
-        resume([`Error: set-var "lrn-id" must be set to a non-empty string before author is called.`], undefined);
-        return;
-      }
-      const val = await createAuthor({...plain, id: options["lrn-id"]});
-      resume(err, val);
-    });
+    resume([AUTHOR_ERROR], undefined);
   }
 
   PROG(node, options, resume) {
     this.visit(node.elts[0], options, async (e0, v0) => {
-      const data = options?.data || {};
+      if (usesCredentials(options)) {
+        resume([...(e0 || []), CREDENTIAL_ERROR], undefined);
+        return;
+      }
       const err = e0;
       const val = v0.pop();
       resume(err, val);
@@ -477,7 +393,7 @@ for (const [name, meta] of Object.entries(metadataMembers)) {
 }
 
 // Override ID to set options["lrn-id"] before visiting continuation,
-// so child transformers (ITEMS, QUESTIONS, AUTHOR) can read it.
+// so child transformers (ITEMS, QUESTIONS) can read it.
 // Don't include id in the output record — it flows via options only.
 Transformer.prototype.ID = function(node, options, resume) {
   this.visit(node.elts[0], options, async (e0, v0) => {
@@ -490,17 +406,19 @@ Transformer.prototype.ID = function(node, options, resume) {
   });
 };
 
-// save-to-itembank is a control-flow attribute: it doesn't emit an output
-// field, it mutates `options` so the enclosing ITEMS transformer sees the
-// flag when it runs. Placement in the chain is flexible because ITEMS
-// visits its continuation first.
+// save-to-itembank used to write the item to the Learnosity item bank. L0158
+// no longer saves (L0176 does), so `save-to-itembank true` is a compile error.
+// `save-to-itembank false` asked for nothing and stays a no-op. The keyword
+// stays in the lexicon so stored programs parse.
 Transformer.prototype.SAVE_TO_ITEMBANK = function(node, options, resume) {
   this.visit(node.elts[0], options, async (e0, v0) => {
-    options["save-to-itembank"] = v0 === true;
     this.visit(node.elts[1], options, async (e1, v1) => {
       const err = [].concat(e0 || [], e1 || []);
-      const val = toPlainObject(v1);
-      resume(err, val);
+      if (v0 === true) {
+        resume([...err, SAVE_ERROR], undefined);
+        return;
+      }
+      resume(err, toPlainObject(v1));
     });
   });
 };

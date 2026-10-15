@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import useSWR from 'swr';
 import { Form } from "./components";
 import { createState } from "./lib/state";
-import { compile, getData, initRequest } from './swr/fetchers';
+import { getData } from './swr/fetchers';
 //import './index.css';
 
 function isNonNullNonEmptyObject(obj) {
@@ -34,56 +34,6 @@ function unwrapEnvelope(resp) {
   return { data: resp, errors: [] };
 }
 
-// Dynamic-data substitution applied at session init. Learnosity substitutes
-// {{var:X}} in the standard fields it owns the schema for (stimulus, options,
-// ...), but it treats custom-question `data` as opaque pass-through — that's
-// confirmed by inspection: a custom question whose widget data contains
-// {{var:A1}} reaches the widget unsubstituted. To give custom and built-in
-// questions the same author-facing behavior, we substitute everywhere in the
-// compile output ourselves before handing it to LearnosityApp.init.
-//
-// Each View mount picks a fresh row, so reloads re-randomize. The compile
-// output (and any saved bank item) keeps the full dynamic_content_data
-// table, so items rendered later via Items API still re-randomize via
-// Learnosity's own substitution.
-function pickRow(dcd) {
-  if (!dcd || !Array.isArray(dcd.cols)) return null;
-  const rowIds = Object.keys(dcd.rows || {});
-  if (rowIds.length === 0) return null;
-  const rowId = rowIds[Math.floor(Math.random() * rowIds.length)];
-  const row = dcd.rows[rowId];
-  if (!row || !Array.isArray(row.values)) return null;
-  return dcd.cols.reduce((env, col, i) => {
-    env[col] = row.values[i];
-    return env;
-  }, {});
-}
-
-function resolveVariables(val, env) {
-  if (typeof val === "string") {
-    let out = val;
-    for (const key of Object.keys(env)) {
-      const re = new RegExp(`\\{\\{var:${key}\\}\\}`, "g");
-      out = out.replace(re, env[key]);
-    }
-    return out;
-  }
-  if (Array.isArray(val)) return val.map(item => resolveVariables(item, env));
-  if (val !== null && typeof val === "object") {
-    const acc = {};
-    for (const key of Object.keys(val)) acc[key] = resolveVariables(val[key], env);
-    return acc;
-  }
-  return val;
-}
-
-function applyDynamicData(compiled) {
-  const dcd = compiled?.data?.dynamic_content_data;
-  const env = pickRow(dcd);
-  if (!env) return compiled;
-  return resolveVariables(compiled, env);
-}
-
 export const View = () => {
   const params = new URLSearchParams(window.location.search);
   const rawId = params.get("id");
@@ -97,10 +47,7 @@ export const View = () => {
   const [ accessToken, setAccessToken ] = useState(params.get("access_token"));
   const [ targetOrigin, setTargetOrigin ] = useState(params.get("origin"));
   const [ doRecompile, setDoRecompile ] = useState(false);
-  const [ doInit, setDoInit ] = useState(false);
-  const [ height, setHeight ] = useState(0);
   const parsedData = JSON.parse(params.get("data")) || {};
-  const [ data, setData ] = useState(parsedData);
 
   const initialState = isNonNullNonEmptyObject(parsedData)
     ? { type: parsedData.type, request: parsedData.request }
@@ -108,7 +55,7 @@ export const View = () => {
 
   const [ state ] = useState(createState(initialState, (data, { type, args }) => {
     switch (type) {
-    case "signed":
+    case "compiled":
       return {
         ...data,
         ...args,
@@ -147,46 +94,29 @@ export const View = () => {
   const fetchKey = doRecompile && id ? { accessToken, id } : null;
   const compileResp = useSWR(fetchKey, getData);
 
+  // L0158 holds no Learnosity credential: its compile output is an unsigned
+  // activity, which L0176 signs and renders (the api sends L0158 items to
+  // L0176's form after the cutover). This View can't sign it, so it records
+  // the activity's type with no `request`, and the Form shows "Preview
+  // unavailable" instead of initializing Learnosity.
   if (compileResp.data) {
     setDoRecompile(false);
     const { data: compiled, errors } = unwrapEnvelope(compileResp.data);
     state.setErrors(errors);
     if (errors.length === 0 && compiled !== null && compiled !== undefined) {
-      setData(applyDynamicData(compiled));
-      setDoInit(true);
+      state.apply({
+        type: "compiled",
+        args: {
+          type: compiled?.type,
+          request: undefined,
+        },
+      });
     }
   }
   if (compileResp.error) {
     setDoRecompile(false);
     state.setErrors([{ message: String(compileResp.error.message || compileResp.error) }]);
   }
-
-  const initResp = useSWR(
-    doInit && data && {
-      accessToken,
-      data,
-  }, initRequest);
-
-  useEffect(() => {
-    if (initResp.data) {
-      setDoInit(false);
-      const { data: signed, errors } = unwrapEnvelope(initResp.data);
-      state.setErrors(errors);
-      if (errors.length === 0 && signed !== null && signed !== undefined) {
-        state.apply({
-          type: "signed",
-          args: {
-            type: data.type,
-            request: signed,
-          },
-        });
-      }
-    }
-    if (initResp.error) {
-      setDoInit(false);
-      state.setErrors([{ message: String(initResp.error.message || initResp.error) }]);
-    }
-  }, [initResp.data, initResp.error]);
 
   // When embedded (e.g. the MCP/ChatGPT inline widget iframe), report our actual
   // content height to the parent so it can size the iframe to the form instead

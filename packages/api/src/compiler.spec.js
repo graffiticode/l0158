@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+/* eslint-env jest, node */
 import { parser } from "@graffiticode/parser";
 import {
   Compiler,
@@ -7,6 +8,8 @@ import {
 } from "@graffiticode/basis";
 import { Checker, Transformer } from "./compiler.js";
 import { lexicon as l0158Lexicon } from "./lexicon.js";
+import { AUTHOR_ERROR, CREDENTIAL_ERROR, SAVE_ERROR } from "./activity.js";
+import { expectContractActivity } from "./testing/validate-preview.js";
 
 const lexicon = { ...basisLexicon, ...l0158Lexicon };
 
@@ -42,12 +45,11 @@ describe("compiler", () => {
     expect(result.stimulus).toBeDefined();
   });
 
-  test("items [item questions [mcq {}] {}] compiles", async () => {
-    // Default (no save-to-itembank) is preview via Questions API, since Items
-    // API always does a bank lookup — only the save path returns type: "items".
+  test("items [item questions [mcq {}] {}] compiles to the contract activity", async () => {
     const result = await compile('id "test-preview" items [item questions [mcq {}] {}] {}..');
-    expect(result).toBeDefined();
+    expectContractActivity(result);
     expect(result.type).toBe("questions");
+    expect(result.request).toBeUndefined();
   });
 
   test("items defaults to inline Questions API preview (no bank lookup)", async () => {
@@ -57,53 +59,144 @@ describe("compiler", () => {
     expect(result.type).toBe("questions");
     expect(Array.isArray(result.data.questions)).toBe(true);
     expect(result.data.questions[0].type).toBe("mcq");
+    expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-test-preview-0");
   });
 
-  test("save-to-itembank false stays in preview mode", async () => {
+  test("standalone questions compiles to the contract activity", async () => {
+    const result = await compile('id "test-q" questions [mcq {} shorttext {}] {}..');
+    expectContractActivity(result);
+    expect(result.type).toBe("questions");
+    expect(result.data.questions.map(q => q.type)).toEqual(["mcq", "shorttext"]);
+    expect(result.data.questions.every(q => q.reference === undefined)).toBe(true);
+  });
+
+  test("continuation fields (features, layout) stay out of the activity", async () => {
+    const result = await compile(
+      'id "test-f" items [item questions [mcq {}] {}] features [{ a: 1 }] layout "column" {}..'
+    );
+    expectContractActivity(result);
+  });
+
+  test("an lrn-id with spaces still yields valid response_ids", async () => {
+    const result = await compile('id "my item 1" items [item questions [mcq {}] {}] {}..');
+    expectContractActivity(result);
+    expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-my_item_1-0");
+  });
+
+  test("save-to-itembank false stays a no-op", async () => {
     const src =
       'id "test-save" items [item questions [mcq {}] {}] save-to-itembank false {}..';
     const result = await compile(src);
-    expect(result.type).toBe("questions");
+    expectContractActivity(result);
   });
 
-  test("save-to-itembank true without caller credentials errors", async () => {
-    // Item-bank writes require the caller to supply credentials via set-var;
-    // the default env credentials may sign previews but must not mutate the bank.
+  test("save-to-itembank true is a compile error pointing to L0176", async () => {
     const src = `set-var "lrn-id" "t"
 items [item questions [mcq {}] {}] save-to-itembank true {}..`;
     await expect(compile(src)).rejects.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          message: expect.stringContaining("save-to-itembank requires set-var"),
-        }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ message: SAVE_ERROR })])
+    );
+    expect(SAVE_ERROR).toBe("Error: L0158 no longer saves to the item bank; use L0176.");
+  });
+
+  test("save-to-itembank true on standalone questions is a compile error", async () => {
+    await expect(compile('id "t" questions [mcq {}] save-to-itembank true {}..')).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: SAVE_ERROR })])
     );
   });
 
-  test("set-var learnosity-key without learnosity-secret errors", async () => {
-    const src = `set-var "learnosity-key" "k"
-set-var "lrn-id" "t"
+  test.each([
+    ["learnosity-key and learnosity-secret", `set-var "learnosity-key" "k"
+set-var "learnosity-secret" "s"
+`],
+    ["learnosity-key alone", `set-var "learnosity-key" "k"
+`],
+    ["learnosity-secret alone", `set-var "learnosity-secret" "s"
+`],
+    ["an empty learnosity-key", `set-var "learnosity-key" ""
+`],
+  ])("set-var %s is a compile error pointing to L0176", async (_name, prefix) => {
+    const src = `${prefix}set-var "lrn-id" "t"
 items [item questions [mcq {}] {}] {}..`;
     await expect(compile(src)).rejects.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          message: expect.stringContaining("must both be set together"),
-        }),
-      ])
+      expect.arrayContaining([expect.objectContaining({ message: CREDENTIAL_ERROR })])
+    );
+    expect(CREDENTIAL_ERROR).toContain("L0176");
+  });
+
+  test("a credential set-var errors even without items or questions", async () => {
+    await expect(compile(`set-var "learnosity-secret" "s"
+mcq {}..`)).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: CREDENTIAL_ERROR })])
     );
   });
 
-  test("set-var learnosity-secret without learnosity-key errors", async () => {
-    const src = `set-var "learnosity-secret" "s"
-set-var "lrn-id" "t"
-items [item questions [mcq {}] {}] {}..`;
-    await expect(compile(src)).rejects.toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          message: expect.stringContaining("must both be set together"),
-        }),
-      ])
+  test("author is a compile error pointing to L0177", async () => {
+    expect(AUTHOR_ERROR).toBe("Error: L0158 doesn't open the Learnosity Author Site; to plan an Author API integration, which your own application signs, use L0177.");
+    await expect(compile('id "a" author { mode: "item_edit" }..')).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: AUTHOR_ERROR })])
     );
+    // Without an lrn-id too (it used to be required first).
+    await expect(compile('author {}..')).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: AUTHOR_ERROR })])
+    );
+  });
+
+  test("init of a compiled items activity returns it unsigned and normalized", async () => {
+    const result = await compile('init id "i" items [item questions [mcq {}] {}] {}..');
+    expectContractActivity(result);
+    expect(result.data.questions[0].response_id).toBe("artcompiler-mcq-i-0");
+  });
+
+  test("init data {} returns a posted questions activity unsigned", async () => {
+    const posted = {
+      type: "questions",
+      data: {
+        id: "x",
+        name: "Test",
+        session_id: "s",
+        questions: [{ response_id: "r-1", type: "mcq", stimulus: "50 + 25?" }],
+      },
+    };
+    const result = await compile("init data {}..", posted);
+    expectContractActivity(result);
+    expect(result).toEqual(posted);
+  });
+
+  test("init of a legacy items activity normalizes its questions and drops request", async () => {
+    const posted = {
+      type: "items",
+      data: {
+        id: "x",
+        questions: [{ type: "mcq", reference: "artcompiler-mcq-x-0", data: { type: "mcq", stimulus: "?" } }],
+        request: { security: { signature: "old" } },
+      },
+    };
+    const result = await compile("init data {}..", posted);
+    expectContractActivity(result);
+    expect(result.type).toBe("items");
+    expect(result.data.questions).toEqual([{ response_id: "artcompiler-mcq-x-0", type: "mcq", stimulus: "?" }]);
+    expect(JSON.stringify(result)).not.toContain("signature");
+  });
+
+  test("init of an Author activity is the Author compile error", async () => {
+    await expect(compile("init data {}..", { type: "author", data: { mode: "item_edit" } })).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: AUTHOR_ERROR })])
+    );
+    await expect(compile('init { type: "author" }..')).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: AUTHOR_ERROR })])
+    );
+  });
+
+  test("init of something that isn't an activity is a compile error", async () => {
+    await expect(compile('init { foo: 1 }..')).rejects.toEqual(
+      expect.arrayContaining([expect.objectContaining({ message: expect.stringContaining("init expects") })])
+    );
+  });
+
+  test("learnosity is an inert pass-through of its argument", async () => {
+    const result = await compile('learnosity id "l" items [item questions [mcq {}] {}] {}..');
+    expectContractActivity(result);
   });
 
   test("bowtie compiles to the native Learnosity shape", async () => {
@@ -257,6 +350,7 @@ items [item questions [mcq {}] {}] {}..`;
       ]
       {}..`;
     const result = await compile(src);
+    expectContractActivity(result);
     expect(result.type).toBe("questions");
     const customQ = result.data.questions.find((q) => q && q.type === "custom");
     expect(customQ).toBeTruthy();
@@ -347,6 +441,7 @@ items [item questions [mcq {}] {}] {}..`;
       ]
       {}..`;
     const result = await compile(src);
+    expectContractActivity(result);
     expect(result.type).toBe("questions");
     const dcd = result.data.dynamic_content_data;
     expect(dcd).toBeDefined();

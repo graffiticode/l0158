@@ -5,6 +5,33 @@ This specification documents dialect-specific functions available in the
 **L0158** language of Graffiticode. These functions extend the core language
 with functionality for building Learnosity assessment integrations.
 
+L0158 compiles `items` and `questions` to one **unsigned**, render-ready
+Learnosity activity:
+
+```json
+{
+  "type": "questions",
+  "data": {
+    "id": "...",
+    "name": "Test",
+    "questions": [{ "response_id": "...", "type": "mcq", "...": "..." }],
+    "session_id": "...",
+    "dynamic_content_data": { "cols": ["..."], "rows": { "...": "..." } }
+  }
+}
+```
+
+L0158 holds no Learnosity credential and signs nothing:
+
+- **Rendering** goes through **L0176**, which signs the activity at view time
+  (through Graffiticode's Broker) and renders it on its own host.
+- **Saving** to the Learnosity item bank goes through **L0176**.
+  `save-to-itembank true` and the `learnosity-key` / `learnosity-secret`
+  set-vars are compile errors.
+- **Author** is gone: `author`, and `init` of an Author activity, are compile
+  errors. To plan an Author API integration, which your own application
+  signs, use **L0177**.
+
 The core language specification including the definition of its syntax,
 semantics and base library can be found here:
 [Graffiticode Language Specification](./graffiticode-language-spec.html)
@@ -13,14 +40,14 @@ semantics and base library can be found here:
 
 | Function | Arity | Signature | Description |
 | :------- | :---: | :-------- | :---------- |
-| `learnosity` | 2 | `<record, continuation: record>` | Top-level wrapper for Learnosity API requests |
-| `init` | 1 | `<record: record>` | Initializes a Learnosity API session |
-| `items` | 1 | `<record: record>` | Creates a Learnosity Items API request from a record or list of items |
+| `learnosity` | 1 | `<value>` | Optional wrapper; returns its argument unchanged |
+| `init` | 1 | `<record: record>` | Normalizes a `questions` or `items` activity to the render-ready shape, unsigned |
+| `items` | 2 | `<list: list, continuation: record>` | Compiles a list of items to the render-ready activity |
 | `item` | 1 | `<record: record>` | Defines a single item (for use in a list passed to `items`) |
 | `questions` | 2 | `<list: list, continuation: record>` | Chainable attribute: sets the questions for an item |
 | `features` | 2 | `<list: list, continuation: record>` | Chainable attribute: sets the features for an item (placeholder) |
 | `layout` | 2 | `<string: string, continuation: record>` | Chainable attribute: sets the layout template for an item (placeholder) |
-| `author` | 1 | `<record: record>` | Creates a Learnosity Author API request |
+| `author` | 1 | `<record: record>` | Removed: a compile error (use L0177) |
 | `hello` | 1 | `<string: string>` | Renders a hello message |
 
 ### Question Type Functions
@@ -79,14 +106,15 @@ of attributes for a question type. The chain terminates with `{}`.
 | `lang` | string | — (URL/`custom_type` synthesis) | custom |
 | `model` | record or string | `data` (JSON-stringified) | custom |
 | `metadata` | list | `metadata` / `tags` | item, all question types |
-| `save-to-itembank` | boolean | — (compiler flag) | items chain |
+| `save-to-itembank` | boolean | — (removed: `true` is a compile error; use L0176) | items chain |
 
 #### Metadata Member Constructors
 
 The `metadata` keyword takes a list whose members are arity-1 constructor
-calls. Each member tags its payload with a `kind`, so the compiler can route
-faceted fields to `tags` and free-form fields to `metadata` in the Learnosity
-output.
+calls. Each member tags its payload with a `kind`. Question-level members are
+emitted in the question's `metadata`. Item-level members described the item
+record L0158 used to save to the item bank; since L0158 no longer saves, they
+are accepted but not emitted (save through L0176).
 
 | Keyword | Value Type | Level | Notes |
 | :------ | :--------- | :---- | :---- |
@@ -102,8 +130,8 @@ output.
 
 ### learnosity
 
-Top-level wrapper for Learnosity API requests. Takes two arguments: an API
-call (`items` or `author`) and a continuation record.
+Optional wrapper. Returns its argument (usually an `items` call) unchanged; it
+carries no credential or configuration.
 
 ```
 learnosity
@@ -122,16 +150,24 @@ learnosity
 
 ### init
 
-Initializes a Learnosity API session for items, questions, or author mode
-based on the `type` field in the given record.
+Takes a `{ type, data }` activity of type `questions` or `items` and returns
+it **unsigned**, normalized to the render-ready shape: each question inline
+as `{ response_id, type, ...questionData }` (legacy `{ type, reference, data }`
+records are converted), and any old signed `request` dropped. L0176 signs it
+at render time. Anything else in `data` beyond `id`, `name`, `questions`,
+`session_id`, `dynamic_content_data` and `type`, a question without a `type`
+and a valid `response_id`, a value that isn't an activity, and an Author
+activity are compile errors.
 
 ```
-init { "type": "items" }
+init data {}
 ```
 
 ### items
 
-Creates a Learnosity Items API request from a list of `item` objects.
+Compiles a list of `item` objects to the render-ready activity: the first
+item's questions, inline, rendered through Questions API (`type:
+"questions"`). Requires `set-var "lrn-id" ...` (or `id`) first.
 
 ```
 items [
@@ -147,29 +183,11 @@ items [
 ]
 ```
 
-By default `items` emits a preview: the item (and its questions) render
-inline through Questions API without being written to the Learnosity
-item bank. Chain `save-to-itembank true` into the items continuation to
-persist the item. Saved items always land as `status: "unpublished"`
-(draft) — publishing is an Author Site concern, not a DSL one.
-
-Item-bank writes require caller-supplied Learnosity credentials, set with
-`set-var "learnosity-key" ...` and `set-var "learnosity-secret" ...` before
-`items`. The two must be supplied together (only one is an error). When
-present they sign every Learnosity request (preview and write); when absent,
-previews use the server's default credentials but `save-to-itembank true` is
-an error — the default credentials may sign previews but never mutate the bank.
-
-```
-id "mitochondria-mcq"
-set-var "learnosity-key" get-val-public "learnosityKey"
-set-var "learnosity-secret" get-val-private "learnositySecret"
-items [
-  item questions [mcq stimulus "..." options [...] valid-response [0] {}] {}
-]
-  save-to-itembank true
-  {}
-```
+`items` is a preview only: nothing is written to the Learnosity item bank.
+L0158 no longer saves; `save-to-itembank true` is a compile error ("L0158 no
+longer saves to the item bank; use L0176."), and so is supplying Learnosity
+credentials with `set-var "learnosity-key"` or `set-var "learnosity-secret"`.
+To save an item to the bank, author it in L0176.
 
 ### item
 
@@ -219,11 +237,9 @@ layout "<div class='row'><span class='learnosity-response question-q0'></span></
 
 ### author
 
-Creates a Learnosity Author API request from the given configuration record.
-
-```
-author { "mode": "item_edit" }
-```
+Removed. `author` is a compile error: "L0158 doesn't open the Learnosity
+Author Site; to plan an Author API integration, which your own application
+signs, use L0177." The keyword is kept so stored programs still parse.
 
 ### hello
 
@@ -533,9 +549,6 @@ custom
   in the same program all read the same upstream value.
 - Scoring is the deployed interaction's own concern (`scorer.js`).
   `valid-response` is not used with `custom`.
-- `save-to-itembank true` freezes the upstream value at compile time into
-  the saved item — the bank entry is a snapshot, not a live reference.
-  Re-authoring the upstream after save does not update the bank entry.
 
 ## Program Examples
 
